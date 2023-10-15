@@ -40,14 +40,13 @@ private:
     int pos = 0; // step position
     bool mute[8]; // used to mute channel
     SDL_Rect tracker_box;
-    void quit();
 
 public:
-    Tracker(); // default constructor, add argument for SDL_Renderer?
-    
-    ~Tracker(); // default destructor, cleans up memory for Tracker object
-    
     TTF_Font* gFont = NULL;
+    
+    Tracker(); // default constructor, add argument for SDL_Renderer?
+
+    ~Tracker(); // default destructor, cleans up memory for Tracker object
 
     void incpos(int amount);
 
