@@ -10,8 +10,6 @@ const int SCREEN_HEIGHT = 720;
 
 int main(int argc, char* args[]) {
 
-    Tracker tracker;
-
     SDL_Window* tracker_window = NULL;
 
     SDL_Surface* t_surface = NULL;
@@ -45,14 +43,14 @@ int main(int argc, char* args[]) {
         return 2;
     }
 
+    Tracker tracker(tracker_render);
+
     tracker.gFont = TTF_OpenFont("font.TTF", 20);
     if (tracker.gFont == NULL)
     {
         printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
         return 3;
     }
-
-    tracker.init(tracker_render);
 
     SDL_Event e;
     bool run = true;
@@ -107,8 +105,10 @@ int main(int argc, char* args[]) {
     }
 
     // destructor takes care of cleaning up the memory for us when the program exits
+
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
+    TTF_CloseFont(tracker.gFont);
     TTF_Quit();
     SDL_Quit();
 

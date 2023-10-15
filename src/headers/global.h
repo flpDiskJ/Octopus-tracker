@@ -9,4 +9,8 @@ using namespace std;
 #include <cmath>
 #include <sstream>
 
+#define CHANNELS 8
+#define DISPLAYRECTS 40
+
+
 #endif

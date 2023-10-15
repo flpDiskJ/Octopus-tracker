@@ -8,8 +8,8 @@ class Tracker
 private:
     SDL_Surface *surf = NULL;
     SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0};
-    SDL_Rect displayrects[40]; // 1280x18 // Used to display sequence steps
-    SDL_Texture *displaytextures[40];
+    SDL_Rect displayrects[DISPLAYRECTS]; // 1280x18 // Used to display sequence steps
+    SDL_Texture *displaytextures[DISPLAYRECTS];
 
     struct Note{
         char note; // A, B, C, D, E, F, G or - for blank
@@ -20,7 +20,7 @@ private:
         char parameter[2];
     };
     struct Block{
-        Note *channel[8];
+        Note *channel[CHANNELS];
         int length;
         int speed;
         string name;
@@ -43,8 +43,8 @@ private:
 
 public:
     TTF_Font* gFont = NULL;
-    
-    Tracker(); // default constructor, add argument for SDL_Renderer?
+
+    Tracker(SDL_Renderer *renderer); // default constructor, add argument for SDL_Renderer?
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
@@ -53,8 +53,6 @@ public:
     void decpos(int amount);
 
     void clear_block(int blk);
-
-    void init(SDL_Renderer *renderer);
 
     void render_info(SDL_Renderer *renderer);
 

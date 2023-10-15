@@ -1,6 +1,6 @@
 #include "tracker.h"
 
-Tracker::Tracker() { // default constructor with no arguments
+Tracker::Tracker(SDL_Renderer *renderer) { // default constructor with no arguments
     tracker_box.x = 20;
     tracker_box.y = 20;
     tracker_box.w = 1240;
@@ -27,17 +27,30 @@ Tracker::Tracker() { // default constructor with no arguments
     }
     clear_block(0);
 
-    for (int s = 0; s < 40; s++) // init step display rects
+    for (int s = 0; s < DISPLAYRECTS; s++) // init step display rects
     {
         displayrects[s].x = 20;
         displayrects[s].y = (s * 17)+20;
         displayrects[s].w = 1240;
         displayrects[s].h = 17;
     }
+    for (int s = 0; s < DISPLAYRECTS; s++) // initializes throwaway textures so that SDL_DestroyTexture() doesn't throw an error.
+    {
+        displaytextures[s] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
+    }
+    surf = TTF_RenderText_Solid(gFont, block[0].name.c_str(), color_black);
+    blkname_displaytex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
 }
 
 Tracker::~Tracker() {
-    TTF_CloseFont(gFont);
+    for (int b = 0; b < total_blocks; b++)
+    {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            free(block[b].channel[c]);
+        }
+    }
     free(block);
     free(sequence);
 }
@@ -64,7 +77,7 @@ void Tracker::decpos(int amount)
 
 void Tracker::clear_block(int blk) // Clears indicated block
 {
-    for (int c = 0; c < 8; c++)
+    for (int c = 0; c < CHANNELS; c++)
     {
         for (int s = 0; s < block[blk].length; s++)
         {
@@ -81,17 +94,6 @@ void Tracker::clear_block(int blk) // Clears indicated block
     }
 }
 
-void Tracker::init(SDL_Renderer *renderer)
-{
-    for (int s = 0; s < 40; s++) // initializes throwaway textures so that SDL_DestroyTexture() doesn't throw an error.
-    {
-        displaytextures[s] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
-    }
-    surf = TTF_RenderText_Solid(gFont, block[0].name.c_str(), color_black);
-    blkname_displaytex = SDL_CreateTextureFromSurface(renderer, surf);
-    SDL_FreeSurface(surf);
-}
-
 void Tracker::render_info(SDL_Renderer *renderer)
 {
     SDL_RenderCopy(renderer, blkname_displaytex, NULL, &blkname_displayrect);
@@ -102,15 +104,15 @@ void Tracker::render_steps(SDL_Renderer *renderer) // Renders block data to scre
 {
     string step_data;
     int step_pos = 0;
-    for (int step = 0; step < 40; step++)
+    for (int step = 0; step < DISPLAYRECTS; step++)
     {
-        step_pos = pos + (step - 20); // calculates position offset
+        step_pos = pos + (step - (DISPLAYRECTS / 2)); // calculates position offset
         step_data.clear();
         if (step_pos < block[b_pos].length && step_pos >= 0) // Checks if position is in bounds of the block
         {
             // combines all elements into one string
             step_data += "> ";
-            for (int chan = 0; chan < 8; chan++)
+            for (int chan = 0; chan < CHANNELS; chan++)
             {
                 step_data += block[b_pos].channel[chan][step_pos].note;
                 step_data += block[b_pos].channel[chan][step_pos].key;
@@ -121,7 +123,7 @@ void Tracker::render_steps(SDL_Renderer *renderer) // Renders block data to scre
                 step_data += block[b_pos].channel[chan][step_pos].command[1];
                 step_data += block[b_pos].channel[chan][step_pos].parameter[0];
                 step_data += block[b_pos].channel[chan][step_pos].parameter[1];
-                if (chan < 7) {step_data += " | ";}
+                if (chan < CHANNELS-1) {step_data += " | ";}
             }
             step_data += " <";
         } else {
