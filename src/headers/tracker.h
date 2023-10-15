@@ -26,8 +26,17 @@ private:
         string name;
     };
 
-    Block *block;
+    struct Sample{
+        uint16_t *data;
+        int length;
+        int level;
+        int tune;
+        string name;
+    };
+
+    Block block[MAXBLOCKS]; // static array of blocks
     int total_blocks = 0;
+    Sample sample[MAXSAMPLES]; // static array of samples
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
     int sequence_len = 0;
     SDL_Rect blkname_displayrect;
@@ -35,11 +44,18 @@ private:
     int master_tempo = 120; // master bpm
     int master_speed = 4; // steps per beat
     // note: if master speed is changed: ask user if the speed in the existing blocks should be set to match or left as is.
-    int s_pos = 0; // sequence position
+    int sq_pos = 0; // sequence position
     int b_pos = 0; // block position
     int pos = 0; // step position
+    int s_pos = 0; //sample position
     bool mute[8]; // used to mute channel
-    SDL_Rect tracker_box;
+    SDL_Rect tracker_box; // only functions for design (box around tracker)
+    SDL_Rect sequence_display; // displays sequence position
+    SDL_Rect block_display; // displays block position
+    SDL_Rect sample_display; // displays sample position
+    SDL_Texture *sequence_display_tex;
+    SDL_Texture *block_display_tex;
+    SDL_Texture *sample_display_tex;
 
 public:
     TTF_Font* gFont = NULL;
@@ -47,6 +63,8 @@ public:
     Tracker(SDL_Renderer *renderer); // default constructor, add argument for SDL_Renderer?
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    void update_info(SDL_Renderer *renderer);
 
     void incpos(int amount);
 
