@@ -6,4 +6,3 @@ It is also designed to make efficient use of the keyboard. The mouse is barely u
 Due to this however, the program may seem intimidating to someone with little or no experience with trackers.
 We have included a help menu inside the program that should provide everything you need to get started.
 
-!
