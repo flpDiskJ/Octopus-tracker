@@ -59,6 +59,7 @@ int main(int argc, char* args[]) {
     SDL_Event e;
     bool run = true;
     bool render = true; // set to true to update screen
+    int windowID = 0; // 0 = main
     while(run)
     {
         // Event loop
@@ -74,35 +75,9 @@ int main(int argc, char* args[]) {
                     break;
                 case SDL_KEYDOWN:
                     render = true;
-                    switch (e.key.keysym.sym) // Keyboard input
-                    {
-                        case SDLK_UP:
-                            if (SDL_GetModState() & KMOD_SHIFT)
-                            {
-                                tracker.block_dec();
-                            } else {
-                                tracker.decpos(1);
-                            }
-                            break;
-                        case SDLK_DOWN:
-                            if (SDL_GetModState() & KMOD_SHIFT)
-                            {
-                                tracker.block_inc();
-                            } else {
-                                tracker.incpos(1);
-                            }
-                            break;
-                        case SDLK_RIGHT:
-                            if (SDL_GetModState() & KMOD_SHIFT)
-                            {
-                                tracker.sample_inc();
-                            }
-                            break;
-                        case SDLK_LEFT:
-                            if (SDL_GetModState() & KMOD_SHIFT)
-                            {
-                                tracker.sample_dec();
-                            }
+                    switch (windowID) {
+                        case 0:
+                            tracker.keyboard(&e);
                             break;
                         default:
                             break;

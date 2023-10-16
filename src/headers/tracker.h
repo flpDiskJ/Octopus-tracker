@@ -86,6 +86,8 @@ public:
 
     void render_steps();
 
+    void keyboard(SDL_Event *e);
+
 };
 
 #endif

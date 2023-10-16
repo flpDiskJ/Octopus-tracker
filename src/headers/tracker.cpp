@@ -253,3 +253,40 @@ void Tracker::render_steps() // Renders block data to screen
         SDL_FreeSurface(surf); // frees surface otherwise there will be a memory leak
     }
 }
+
+void Tracker::keyboard(SDL_Event *e)
+{
+    switch (e->key.keysym.sym) // Keyboard input
+    {
+        case SDLK_UP:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                block_dec();
+            } else {
+                decpos(1);
+            }
+            break;
+        case SDLK_DOWN:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                block_inc();
+            } else {
+                incpos(1);
+            }
+            break;
+        case SDLK_RIGHT:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                sample_inc();
+            }
+            break;
+        case SDLK_LEFT:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                sample_dec();
+            }
+            break;
+        default:
+            break;
+    }
+}
