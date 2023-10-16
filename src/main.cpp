@@ -77,10 +77,32 @@ int main(int argc, char* args[]) {
                     switch (e.key.keysym.sym) // Keyboard input
                     {
                         case SDLK_UP:
-                            tracker.decpos(1);
+                            if (SDL_GetModState() & KMOD_SHIFT)
+                            {
+                                tracker.block_dec();
+                            } else {
+                                tracker.decpos(1);
+                            }
                             break;
                         case SDLK_DOWN:
-                            tracker.incpos(1);
+                            if (SDL_GetModState() & KMOD_SHIFT)
+                            {
+                                tracker.block_inc();
+                            } else {
+                                tracker.incpos(1);
+                            }
+                            break;
+                        case SDLK_RIGHT:
+                            if (SDL_GetModState() & KMOD_SHIFT)
+                            {
+                                tracker.sample_inc();
+                            }
+                            break;
+                        case SDLK_LEFT:
+                            if (SDL_GetModState() & KMOD_SHIFT)
+                            {
+                                tracker.sample_dec();
+                            }
                             break;
                         default:
                             break;

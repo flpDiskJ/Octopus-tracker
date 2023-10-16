@@ -58,6 +58,7 @@ private:
     SDL_Texture *sequence_display_tex;
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;
+    bool edit_mode = false;
 
 public:
 
@@ -66,6 +67,14 @@ public:
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
     void update_info();
+
+    void block_dec();
+
+    void sample_inc();
+
+    void sample_dec();
+
+    void block_inc();
 
     void incpos(int amount);
 

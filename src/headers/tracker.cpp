@@ -120,6 +120,50 @@ void Tracker::update_info()
     SDL_FreeSurface(surf);
 }
 
+void Tracker::block_dec()
+{
+    if ((b_pos - 1) >= 0)
+    {
+        b_pos--;
+    } else {
+        b_pos = total_blocks - 1;
+    }
+    update_info();
+}
+
+void Tracker::block_inc()
+{
+    if ((b_pos + 1) < total_blocks)
+    {
+        b_pos++;
+    } else {
+        b_pos = 0;
+    }
+    update_info();
+}
+
+void Tracker::sample_inc()
+{
+    if (s_pos + 1 < MAXSAMPLES)
+    {
+        s_pos++;
+    } else {
+        s_pos = 0;
+    }
+    update_info();
+}
+
+void Tracker::sample_dec()
+{
+    if (s_pos - 1 >= 0)
+    {
+        s_pos--;
+    } else {
+        s_pos = MAXSAMPLES - 1;
+    }
+    update_info();
+}
+
 void Tracker::incpos(int amount) // Incriment pos by amount
 {
     if ((pos + amount) < block[b_pos].length)
