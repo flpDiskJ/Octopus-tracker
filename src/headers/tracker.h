@@ -11,6 +11,7 @@ private:
     SDL_Rect displayrects[DISPLAYRECTS]; // 1280x18 // Used to display sequence steps
     SDL_Texture *displaytextures[DISPLAYRECTS];
     SDL_Renderer *renderer;
+    TTF_Font *font;
 
     struct Note{
         char note; // A, B, C, D, E, F, G or - for blank
@@ -59,9 +60,8 @@ private:
     SDL_Texture *sample_display_tex;
 
 public:
-    TTF_Font* gFont = NULL;
 
-    Tracker(SDL_Renderer *tracker_renderer); // default constructor, add argument for SDL_Renderer?
+    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont); // default constructor, add argument for SDL_Renderer?
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 

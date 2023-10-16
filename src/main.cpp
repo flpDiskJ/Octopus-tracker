@@ -10,6 +10,8 @@ const int SCREEN_HEIGHT = 720;
 
 int main(int argc, char* args[]) {
 
+    TTF_Font* Font = NULL;
+
     SDL_Window* tracker_window = NULL;
 
     SDL_Surface* t_surface = NULL;
@@ -43,14 +45,14 @@ int main(int argc, char* args[]) {
         return 2;
     }
 
-    Tracker tracker(tracker_render);
-
-    tracker.gFont = TTF_OpenFont("font.TTF", 20);
-    if (tracker.gFont == NULL)
+    Font = TTF_OpenFont("font.TTF", 20);
+    if (Font == NULL)
     {
         printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
         return 3;
     }
+
+    Tracker tracker(tracker_render, Font);
 
     tracker.update_info();
 
@@ -110,7 +112,7 @@ int main(int argc, char* args[]) {
 
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
-    TTF_CloseFont(tracker.gFont);
+    TTF_CloseFont(Font);
     TTF_Quit();
     SDL_Quit();
 

@@ -1,7 +1,8 @@
 #include "tracker.h"
 
-Tracker::Tracker(SDL_Renderer *tracker_renderer) { // default constructor with no arguments
+Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default constructor with no arguments
     renderer = tracker_renderer;
+    font = gFont;
 
     tracker_box.x = 20;
     tracker_box.y = 20;
@@ -84,7 +85,7 @@ void Tracker::update_info()
             text += " ";
         }
     }
-    surf = TTF_RenderText_Solid(gFont, text.c_str(), color_black);
+    surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
     SDL_DestroyTexture(blkname_displaytex);
     blkname_displaytex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -94,7 +95,7 @@ void Tracker::update_info()
     if (sq_pos < 100){text += "0";}
     if (sq_pos < 10){text += "0";}
     text += to_string(sq_pos);
-    surf = TTF_RenderText_Solid(gFont, text.c_str(), color_black);
+    surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
     SDL_DestroyTexture(sequence_display_tex);
     sequence_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -104,7 +105,7 @@ void Tracker::update_info()
     if (b_pos < 100){text += "0";}
     if (b_pos < 10){text += "0";}
     text += to_string(b_pos);
-    surf = TTF_RenderText_Solid(gFont, text.c_str(), color_black);
+    surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
     SDL_DestroyTexture(block_display_tex);
     block_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -113,7 +114,7 @@ void Tracker::update_info()
     text += "INST:";
     if (s_pos < 10){text += "0";}
     text += to_string(s_pos);
-    surf = TTF_RenderText_Solid(gFont, text.c_str(), color_black);
+    surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
     SDL_DestroyTexture(sample_display_tex);
     sample_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -198,9 +199,9 @@ void Tracker::render_steps() // Renders block data to screen
         }
         if (step_pos == pos) // Renders the cursor positon red instead of black
         {
-            surf = TTF_RenderText_Solid(gFont, step_data.c_str(), color_red); // Makes surface with text
+            surf = TTF_RenderText_Solid(font, step_data.c_str(), color_red); // Makes surface with text
         } else {
-            surf = TTF_RenderText_Solid(gFont, step_data.c_str(), color_black);
+            surf = TTF_RenderText_Solid(font, step_data.c_str(), color_black);
         }
         SDL_DestroyTexture(displaytextures[step]); // destroys old texture. If not destroyed there will be a memory leak.
         displaytextures[step] = SDL_CreateTextureFromSurface(renderer, surf); // Coverts surface to texture
