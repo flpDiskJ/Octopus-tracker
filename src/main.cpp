@@ -52,7 +52,7 @@ int main(int argc, char* args[]) {
         return 3;
     }
 
-    tracker.update_info(tracker_render);
+    tracker.update_info();
 
     SDL_Event e;
     bool run = true;
@@ -97,9 +97,9 @@ int main(int argc, char* args[]) {
 
             SDL_SetRenderDrawColor(tracker_render, 0, 0, 0, 0xFF); // Black
 
-            tracker.render_info(tracker_render);
+            tracker.render_info();
 
-            tracker.render_steps(tracker_render);
+            tracker.render_steps();
 
             SDL_RenderPresent(tracker_render); // Present image to screen
             render = false;

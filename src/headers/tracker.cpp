@@ -1,6 +1,8 @@
 #include "tracker.h"
 
-Tracker::Tracker(SDL_Renderer *renderer) { // default constructor with no arguments
+Tracker::Tracker(SDL_Renderer *tracker_renderer) { // default constructor with no arguments
+    renderer = tracker_renderer;
+
     tracker_box.x = 20;
     tracker_box.y = 20;
     tracker_box.w = 1240;
@@ -70,7 +72,7 @@ Tracker::~Tracker() {
     free(sequence);
 }
 
-void Tracker::update_info(SDL_Renderer *renderer)
+void Tracker::update_info()
 {
     string text;
     text = block[0].name;
@@ -156,7 +158,7 @@ void Tracker::clear_block(int blk) // Clears indicated block
     }
 }
 
-void Tracker::render_info(SDL_Renderer *renderer)
+void Tracker::render_info()
 {
     SDL_RenderCopy(renderer, blkname_displaytex, NULL, &blkname_displayrect);
     SDL_RenderDrawRect(renderer, &tracker_box);
@@ -165,7 +167,7 @@ void Tracker::render_info(SDL_Renderer *renderer)
     SDL_RenderCopy(renderer, sample_display_tex, NULL, &sample_display);
 }
 
-void Tracker::render_steps(SDL_Renderer *renderer) // Renders block data to screen
+void Tracker::render_steps() // Renders block data to screen
 {
     string step_data;
     int step_pos = 0;

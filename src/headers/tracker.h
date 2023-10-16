@@ -10,6 +10,7 @@ private:
     SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0};
     SDL_Rect displayrects[DISPLAYRECTS]; // 1280x18 // Used to display sequence steps
     SDL_Texture *displaytextures[DISPLAYRECTS];
+    SDL_Renderer *renderer;
 
     struct Note{
         char note; // A, B, C, D, E, F, G or - for blank
@@ -60,11 +61,11 @@ private:
 public:
     TTF_Font* gFont = NULL;
 
-    Tracker(SDL_Renderer *renderer); // default constructor, add argument for SDL_Renderer?
+    Tracker(SDL_Renderer *tracker_renderer); // default constructor, add argument for SDL_Renderer?
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
-    void update_info(SDL_Renderer *renderer);
+    void update_info();
 
     void incpos(int amount);
 
@@ -72,9 +73,9 @@ public:
 
     void clear_block(int blk);
 
-    void render_info(SDL_Renderer *renderer);
+    void render_info();
 
-    void render_steps(SDL_Renderer *renderer);
+    void render_steps();
 
 };
 
