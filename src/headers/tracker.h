@@ -7,7 +7,7 @@ class Tracker
 {
 private:
     SDL_Surface *surf = NULL;
-    SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0};
+    SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0}, color_blue = {0, 0, 180};
     SDL_Rect displayrects[DISPLAYRECTS]; // 1280x18 // Used to display sequence steps
     SDL_Texture *displaytextures[DISPLAYRECTS];
     SDL_Renderer *renderer;
@@ -59,35 +59,42 @@ private:
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;
     bool edit_mode = false;
+    SDL_Rect cursor; // used to display cursor
+    int cursor_channel = 0; // the channel that the cursor is inside
+    int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
 
 public:
-
-    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont); // default constructor, add argument for SDL_Renderer?
+    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont);
+    // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
-    void update_info();
+    void update_info(); // re-creates textures for sequence, block, sample, etc position displays
 
-    void block_dec();
+    void move_cursor(int position, int chn, int direction); // moves cursor_pos
+    // (1, 0, 1) moves cursor right 1
+    // (1, 0, 0) moves cursor left 1
+    // (0, 1, 1) moves cursor to start of next channel and so on...
 
-    void sample_inc();
+    void block_inc(); // incriment block position
 
-    void sample_dec();
+    void block_dec(); // decriment block position
 
-    void block_inc();
+    void sample_inc(); // incriment sample position
 
-    void incpos(int amount);
+    void sample_dec(); // decriment sample position
 
-    void decpos(int amount);
+    void incpos(int amount); // incriment step position by amount
 
-    void clear_block(int blk);
+    void decpos(int amount); // decriment step position by amount
 
-    void render_info();
+    void clear_block(int blk); // set all values to default on indicated block
 
-    void render_steps();
+    void render_info(); // render info (same stuff in update info) to the screen
 
-    void keyboard(SDL_Event *e);
+    void render_steps(); // creates textures and renders tracker steps to screen
 
+    void keyboard(SDL_Event *e); // handles keyboard input specific to the main window
 };
 
 #endif

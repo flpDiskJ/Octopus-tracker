@@ -29,6 +29,11 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     blkname_displayrect.x = (1280/2)-(blkname_displayrect.w/2);
     blkname_displayrect.h = 20;
 
+    cursor.x = 45;
+    cursor.y = 360;
+    cursor.w = 40;
+    cursor.h = 17;
+
     sequence = (int*)malloc(sizeof(int));
     sequence[0] = 0;
     sequence_len = 1;
@@ -118,6 +123,102 @@ void Tracker::update_info()
     SDL_DestroyTexture(sample_display_tex);
     sample_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
+}
+
+void Tracker::move_cursor(int position, int chn, int direction)
+{
+    // set cursor_pos and cursor_channel
+    if (position == 1)
+    {
+        if (direction == 1)
+        {
+            if (cursor_pos < 6)
+            {cursor_pos++;}
+            else
+            {cursor_pos = 0;
+            if (cursor_channel < CHANNELS-1){cursor_channel++;}else{cursor_channel = 0;}
+            }
+        } else {
+            if (cursor_pos > 0)
+            {cursor_pos--;}
+            else
+            {cursor_pos = 6;
+            if (cursor_channel > 0){cursor_channel--;}else{cursor_channel = CHANNELS-1;}
+            }
+        }
+    } else if (chn > 0)
+    {
+        if (direction == 1)
+        {
+            if (cursor_channel < CHANNELS-1){cursor_channel++;}else{cursor_channel = 0;}
+        } else {
+            if (cursor_channel > 0){cursor_channel--;}else{cursor_channel = CHANNELS-1;}
+        }
+    }
+
+    // set cursor rect positions
+    int width;
+    switch (cursor_channel) {
+        case 0:
+            width = 0;
+            break;
+        case 1:
+            width = 153;
+            break;
+        case 2:
+            width = 306;
+            break;
+        case 3:
+            width = 460;
+            break;
+        case 4:
+            width = 613;
+            break;
+        case 5:
+            width = 767;
+            break;
+        case 6:
+            width = 920;
+            break;
+        case 7:
+            width = 1074;
+            break;
+        default:
+            width = 0;
+            break;
+    }
+    switch (cursor_pos) {
+        case 0:
+            cursor.x = 45 + width;
+            cursor.w = 40;
+            break;
+        case 1:
+            cursor.x = 84 + width;
+            cursor.w = 12;
+            break;
+        case 2:
+            cursor.x = 97 + width;
+            cursor.w = 12;
+            break;
+        case 3:
+            cursor.x = 110 + width;
+            cursor.w = 12;
+            break;
+        case 4:
+            cursor.x = 122 + width;
+            cursor.w = 12;
+            break;
+        case 5:
+            cursor.x = 135 + width;
+            cursor.w = 12;
+            break;
+        case 6:
+            cursor.x = 148 + width;
+            cursor.w = 12;
+            break;
+        default:
+            break;
+    }
 }
 
 void Tracker::block_dec()
@@ -210,6 +311,7 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, sequence_display_tex, NULL, &sequence_display);
     SDL_RenderCopy(renderer, block_display_tex, NULL, &block_display);
     SDL_RenderCopy(renderer, sample_display_tex, NULL, &sample_display);
+    SDL_RenderDrawRect(renderer, &cursor);
 }
 
 void Tracker::render_steps() // Renders block data to screen
@@ -243,7 +345,12 @@ void Tracker::render_steps() // Renders block data to screen
         }
         if (step_pos == pos) // Renders the cursor positon red instead of black
         {
-            surf = TTF_RenderText_Solid(font, step_data.c_str(), color_red); // Makes surface with text
+            if (edit_mode)
+            {
+                surf = TTF_RenderText_Solid(font, step_data.c_str(), color_red); // Makes surface with text
+            } else {
+                surf = TTF_RenderText_Solid(font, step_data.c_str(), color_blue); // Makes surface with text
+            }
         } else {
             surf = TTF_RenderText_Solid(font, step_data.c_str(), color_black);
         }
@@ -278,12 +385,27 @@ void Tracker::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 sample_inc();
+            } else {
+                move_cursor(1, 0, 1);
             }
             break;
         case SDLK_LEFT:
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 sample_dec();
+            } else {
+                move_cursor(1, 0, 0);
+            }
+            break;
+        case SDLK_ESCAPE:
+            if (edit_mode){edit_mode = false;} else {edit_mode = true;}
+            break;
+        case SDLK_TAB:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                move_cursor(0, 1, 0);
+            } else {
+                move_cursor(0, 1, 1);
             }
             break;
         default:
