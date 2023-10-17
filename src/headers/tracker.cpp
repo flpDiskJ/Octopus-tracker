@@ -249,6 +249,21 @@ void Tracker::decpos(int amount)
     }
 }
 
+void Tracker::clear_channel()
+{
+    for (int s = 0; s < block[b_pos].length; s++)
+    {
+        block[b_pos].channel[cursor_channel][s].note = '-';
+        block[b_pos].channel[cursor_channel][s].key = '-';
+        block[b_pos].channel[cursor_channel][s].octave = 0;
+        block[b_pos].channel[cursor_channel][s].sample = 0;
+        block[b_pos].channel[cursor_channel][s].command[0] = '0';
+        block[b_pos].channel[cursor_channel][s].command[1] = '0';
+        block[b_pos].channel[cursor_channel][s].parameter[0] = '0';
+        block[b_pos].channel[cursor_channel][s].parameter[1] = '0';
+    }
+}
+
 void Tracker::clear_block(int blk) // Clears indicated block
 {
     for (int c = 0; c < CHANNELS; c++)
@@ -415,6 +430,19 @@ void Tracker::get_note(SDL_Event *e)
     }
 }
 
+void Tracker::clear_step()
+{
+    block[b_pos].channel[cursor_channel][pos].note = '-';
+    block[b_pos].channel[cursor_channel][pos].key = '-';
+    block[b_pos].channel[cursor_channel][pos].octave = 0;
+    block[b_pos].channel[cursor_channel][pos].sample = 0;
+    block[b_pos].channel[cursor_channel][pos].command[0] = '0';
+    block[b_pos].channel[cursor_channel][pos].command[1] = '0';
+    block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
+    block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
+    incpos(skip);
+}
+
 void Tracker::keyboard(SDL_Event *e)
 {
     switch (e->key.keysym.sym) // Keyboard input
@@ -439,7 +467,9 @@ void Tracker::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 sample_inc();
-            } else {
+            } else if (SDL_GetModState() & KMOD_ALT){
+                move_cursor(0, 1, 1);
+            }else{
                 move_cursor(1, 0, 1);
             }
             break;
@@ -447,7 +477,9 @@ void Tracker::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 sample_dec();
-            } else {
+            } else if (SDL_GetModState() & KMOD_ALT){
+                move_cursor(0, 1, 0);
+            }else{
                 move_cursor(1, 0, 0);
             }
             break;
@@ -462,6 +494,26 @@ void Tracker::keyboard(SDL_Event *e)
                 move_cursor(0, 1, 1);
             }
             break;
+        case SDLK_DELETE:
+        case SDLK_BACKSPACE:
+            if (edit_mode)
+            {
+                clear_step();
+            }
+            break;
+
+        // keyboard keys. if there's no modstate then drops to default and checks for note
+        case SDLK_x:
+            if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
+            {
+                clear_block(b_pos);
+                pos = 0;
+                break;
+            } else if (SDL_GetModState() & KMOD_CTRL)
+            {
+                clear_channel();
+                break;
+            }
         default:
             if (cursor_pos == 0)
             {

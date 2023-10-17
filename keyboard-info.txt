@@ -1,0 +1,37 @@
+
+X marks functional
+
+Note for Stephen: Once all are functional, these need to be-
+                  -documented in the help window.
+
+
+Main window (tracker):
+
+    X CTRL+X = clear channel
+    X CTRL+SHIFT+X = clear block
+    X Delete & Backspace = delete step
+    X ESC = toggle edit mode
+    X Arrows = navigation
+    X TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
+    X SHIFT+UP/DOWN = change block
+    X SHIFT+LEFT/RIGHT = change instrument/sample
+      CTRL+N = append new block
+      CTRL+SHIFT+N = insert new block
+      CTRL+C/V = Copy/Paste channel
+      CTRL+SHIFT+C/V = Copy/Paste block
+      SHIFT+0-9 = Paste copy buffer from edit menu
+
+      ALT+SPACE = play block
+      SHIFT+SPACE = play sequence
+      SPACE = stop all
+
+      CTRL+L = open block list window (can also click block display)
+      CTRL+Q = open sequencer window (can also click sequence display)
+      CTRL+H = open track properties window (bpm, speed, and such)
+      CTRL+B = open block properties window (block length, speed, and such)
+      CTRL+O = open file op window (load/save module)
+      CTRL+E = open edit window (copy buffers)
+      CTRL+I = open instrument window
+      CTRL+S = open sampler window
+
+    X CTRL+SHIFT+Q = quit

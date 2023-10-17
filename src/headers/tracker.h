@@ -73,14 +73,6 @@ private:
     int cursor_channel = 0; // the channel that the cursor is inside
     int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
 
-public:
-    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont);
-    // default constructor, sets up rects, textures, and copies renderer and font pointers
-
-    ~Tracker(); // default destructor, cleans up memory for Tracker object
-
-    void update_info(); // re-creates textures for sequence, block, sample, etc position displays
-
     void move_cursor(int position, int chn, int direction); // moves cursor_pos
     // (1, 0, 1) moves cursor right 1
     // (1, 0, 0) moves cursor left 1
@@ -98,15 +90,27 @@ public:
 
     void decpos(int amount); // decriment step position by amount
 
+    void clear_step(); // clears current step
+
+    void clear_channel(); // clears current channel
+
     void clear_block(int blk); // set all values to default on indicated block
-
-    void render_info(); // render info (same stuff in update info) to the screen
-
-    void render_steps(); // creates textures and renders tracker steps to screen
 
     int getFreq(char note, char key, int oct); // returns sample rate of note
 
     void get_note(SDL_Event *e); // handles keyboard notes
+
+public:
+    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont);
+    // default constructor, sets up rects, textures, and copies renderer and font pointers
+
+    ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    void update_info(); // re-creates textures for sequence, block, sample, etc position displays
+
+    void render_info(); // render info (same stuff in update info) to the screen
+
+    void render_steps(); // creates textures and renders tracker steps to screen
 
     void keyboard(SDL_Event *e); // handles keyboard input specific to the main window
 };

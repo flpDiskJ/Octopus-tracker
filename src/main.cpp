@@ -74,6 +74,10 @@ int main(int argc, char* args[]) {
                     render = true; // ensures window re-renders when un-minimized (linux)
                     break;
                 case SDL_KEYDOWN:
+                    if (e.key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
+                    {
+                        run = false;
+                    }
                     render = true;
                     switch (windowID) {
                         case 0:
