@@ -13,22 +13,22 @@ private:
     SDL_Renderer *renderer;
     TTF_Font *font;
 
-    struct Note{
+    struct Note{ // holds data for single note
         char note; // A, B, C, D, E, F, G or - for blank
         char key; // - or #
-        char octave; // 1 thru 5 or - for blank
-        char sample[2]; // 00 - 99
+        int octave; // 1 thru 6 or - for blank
+        int sample; // 0 - 99
         char command[2];
         char parameter[2];
     };
-    struct Block{
+    struct Block{ // holds all data for block
         Note *channel[CHANNELS];
         int length;
         int speed;
         string name;
     };
 
-    struct Sample{
+    struct Sample{ // data for each instrument
         uint16_t *data;
         int length;
         int level;
@@ -36,9 +36,17 @@ private:
         string name;
     };
 
+    struct AudioSpec{ // specs for each channel
+        int rate; // current channel rate
+        int sample; // instrument being played
+        int pos; // position of sample being played
+        int level; // volume at which instrument is played
+    };
+
     Block block[MAXBLOCKS]; // static array of blocks
     int total_blocks = 0;
     Sample sample[MAXSAMPLES]; // static array of samples
+    AudioSpec channelspec[CHANNELS];
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
     int sequence_len = 0;
     SDL_Rect blkname_displayrect;
@@ -49,7 +57,9 @@ private:
     int sq_pos = 0; // sequence position
     int b_pos = 0; // block position
     int pos = 0; // step position
+    int skip = 1; // number of steps to incriment when note is entered
     int s_pos = 0; //sample position
+    int octave = 4;
     bool mute[8]; // used to mute channel
     SDL_Rect tracker_box; // only functions for design (box around tracker)
     SDL_Rect sequence_display; // displays sequence position
@@ -93,6 +103,10 @@ public:
     void render_info(); // render info (same stuff in update info) to the screen
 
     void render_steps(); // creates textures and renders tracker steps to screen
+
+    int getFreq(char note, char key, int oct); // returns sample rate of note
+
+    void get_note(SDL_Event *e); // handles keyboard notes
 
     void keyboard(SDL_Event *e); // handles keyboard input specific to the main window
 };

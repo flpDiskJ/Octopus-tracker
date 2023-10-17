@@ -46,6 +46,10 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     {
         block[0].channel[c] = (Note*)malloc(64*sizeof(Note));
         mute[c] = false;
+        channelspec[c].rate = 0;
+        channelspec[c].sample = 0;
+        channelspec[c].pos = 0;
+        channelspec[c].level = 0;
     }
     clear_block(0);
 
@@ -159,65 +163,25 @@ void Tracker::move_cursor(int position, int chn, int direction)
     // set cursor rect positions
     int width;
     switch (cursor_channel) {
-        case 0:
-            width = 0;
-            break;
-        case 1:
-            width = 153;
-            break;
-        case 2:
-            width = 306;
-            break;
-        case 3:
-            width = 460;
-            break;
-        case 4:
-            width = 613;
-            break;
-        case 5:
-            width = 767;
-            break;
-        case 6:
-            width = 920;
-            break;
-        case 7:
-            width = 1074;
-            break;
-        default:
-            width = 0;
-            break;
+        case 0: width = 0; break;
+        case 1: width = 153; break;
+        case 2: width = 306; break;
+        case 3: width = 460; break;
+        case 4: width = 613; break;
+        case 5: width = 767; break;
+        case 6: width = 920; break;
+        case 7: width = 1074; break;
+        default: width = 0; break;
     }
     switch (cursor_pos) {
-        case 0:
-            cursor.x = 45 + width;
-            cursor.w = 40;
-            break;
-        case 1:
-            cursor.x = 84 + width;
-            cursor.w = 12;
-            break;
-        case 2:
-            cursor.x = 97 + width;
-            cursor.w = 12;
-            break;
-        case 3:
-            cursor.x = 110 + width;
-            cursor.w = 12;
-            break;
-        case 4:
-            cursor.x = 122 + width;
-            cursor.w = 12;
-            break;
-        case 5:
-            cursor.x = 135 + width;
-            cursor.w = 12;
-            break;
-        case 6:
-            cursor.x = 148 + width;
-            cursor.w = 12;
-            break;
-        default:
-            break;
+        case 0: cursor.x = 45 + width; cursor.w = 40; break;
+        case 1: cursor.x = 84 + width; cursor.w = 12; break;
+        case 2: cursor.x = 97 + width; cursor.w = 12; break;
+        case 3: cursor.x = 110 + width; cursor.w = 12; break;
+        case 4: cursor.x = 122 + width; cursor.w = 12; break;
+        case 5: cursor.x = 135 + width; cursor.w = 12; break;
+        case 6: cursor.x = 148 + width; cursor.w = 12; break;
+        default: break;
     }
 }
 
@@ -293,9 +257,8 @@ void Tracker::clear_block(int blk) // Clears indicated block
         {
             block[blk].channel[c][s].note = '-';
             block[blk].channel[c][s].key = '-';
-            block[blk].channel[c][s].octave = '-';
-            block[blk].channel[c][s].sample[0] = '0';
-            block[blk].channel[c][s].sample[1] = '0';
+            block[blk].channel[c][s].octave = 0;
+            block[blk].channel[c][s].sample = 0;
             block[blk].channel[c][s].command[0] = '0';
             block[blk].channel[c][s].command[1] = '0';
             block[blk].channel[c][s].parameter[0] = '0';
@@ -330,9 +293,10 @@ void Tracker::render_steps() // Renders block data to screen
             {
                 step_data += block[b_pos].channel[chan][step_pos].note;
                 step_data += block[b_pos].channel[chan][step_pos].key;
-                step_data += block[b_pos].channel[chan][step_pos].octave;
-                step_data += block[b_pos].channel[chan][step_pos].sample[0];
-                step_data += block[b_pos].channel[chan][step_pos].sample[1];
+                if (block[b_pos].channel[chan][step_pos].octave == 0){step_data += '-';} else
+                {step_data += to_string(block[b_pos].channel[chan][step_pos].octave);}
+                if (block[b_pos].channel[chan][step_pos].sample < 10) {step_data += '0';}
+                step_data += to_string(block[b_pos].channel[chan][step_pos].sample);
                 step_data += block[b_pos].channel[chan][step_pos].command[0];
                 step_data += block[b_pos].channel[chan][step_pos].command[1];
                 step_data += block[b_pos].channel[chan][step_pos].parameter[0];
@@ -358,6 +322,96 @@ void Tracker::render_steps() // Renders block data to screen
         displaytextures[step] = SDL_CreateTextureFromSurface(renderer, surf); // Coverts surface to texture
         SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
         SDL_FreeSurface(surf); // frees surface otherwise there will be a memory leak
+    }
+}
+
+int Tracker::getFreq(char note, char key, int oct)
+{
+    int rate;
+    switch (note)
+    {
+        case 'C': if (key == '#') {rate = 4238;} else {rate = 4000;} break;
+        case 'D': if (key == '#') {rate = 4757;} else {rate = 4490;} break;
+        case 'E': rate = 5040; break;
+        case 'F': if (key == '#') {rate = 5658;} else {rate = 5340;} break;
+        case 'G': if (key == '#') {rate = 6350;} else {rate = 5994;} break;
+        case 'A': if (key == '#') {rate = 7128;} else {rate = 6728;} break;
+        case 'B': rate = 7552; break;
+        default: rate =  0; break;
+    }
+    for (int a = 1; a < oct; a++)
+    {
+        rate = rate * 2;
+    }
+    return rate;
+}
+
+void Tracker::get_note(SDL_Event *e)
+{
+    // figure out note data
+    char note = '-';
+    char key = '-';
+    int oct = octave;
+    switch (e->key.keysym.sym)
+    {
+        case SDLK_z: note = 'C'; break;
+        case SDLK_s: note = 'C'; key = '#'; break;
+        case SDLK_l: note = 'C'; key = '#'; oct++; break;
+        case SDLK_q:
+        case SDLK_COMMA: note = 'C'; oct++; break;
+        case SDLK_2: note = 'C'; key = '#'; oct++; break;
+        case SDLK_i: note = 'C'; oct += 2; break;
+        case SDLK_9: note = 'C'; key = '#'; oct += 2; break;
+        case SDLK_x: note = 'D'; break;
+        case SDLK_d: note = 'D'; break;
+        case SDLK_PERIOD: note = 'D'; oct++; break;
+        case SDLK_SEMICOLON: note = 'D'; key = '#'; oct++; break;
+        case SDLK_w: note = 'D'; oct++; break;
+        case SDLK_3: note = 'D'; key = '#'; oct++; break;
+        case SDLK_o: note = 'D'; oct += 2; break;
+        case SDLK_0: note = 'D'; key = '#'; oct += 2; break;
+        case SDLK_c: note = 'E'; break;
+        case SDLK_SLASH: note = 'E'; oct++; break;
+        case SDLK_e: note = 'E'; oct++; break;
+        case SDLK_p: note = 'E'; oct += 2; break;
+        case SDLK_v: note = 'F'; break;
+        case SDLK_g: note = 'F'; key = '#'; break;
+        case SDLK_r: note = 'F'; oct++; break;
+        case SDLK_5: note = 'F'; key = '#'; oct++; break;
+        case SDLK_LEFTBRACKET: note = 'F'; oct += 2; break;
+        case SDLK_EQUALS: note = 'F'; key = '#'; oct += 2; break;
+        case SDLK_b: note = 'G'; break;
+        case SDLK_h: note = 'G'; key = '#'; break;
+        case SDLK_t: note = 'G'; oct++; break;
+        case SDLK_6: note = 'G'; key = '#'; oct++; break;
+        case SDLK_n: note = 'A'; break;
+        case SDLK_j: note = 'A'; key = '#'; break;
+        case SDLK_y: note = 'A'; oct++; break;
+        case SDLK_7: note = 'A'; key = '#'; oct++; break;
+        case SDLK_m: note = 'B'; break;
+        case SDLK_u: note = 'B'; oct++; break;
+        default:
+            oct = 0;
+            break;
+    }
+
+    if (oct != 0)
+    {
+        // play note in channel
+        channelspec[cursor_channel].rate = getFreq(note, key, oct);
+        channelspec[cursor_channel].sample = s_pos;
+        channelspec[cursor_channel].level = sample[s_pos].level;
+        channelspec[cursor_channel].pos = 0;
+
+        // add note if edit_mode is true
+        if (edit_mode)
+        {
+            block[b_pos].channel[cursor_channel][pos].note = note;
+            block[b_pos].channel[cursor_channel][pos].key = key;
+            block[b_pos].channel[cursor_channel][pos].octave = oct;
+            block[b_pos].channel[cursor_channel][pos].sample = s_pos;
+        }
+        incpos(skip);
     }
 }
 
@@ -409,6 +463,10 @@ void Tracker::keyboard(SDL_Event *e)
             }
             break;
         default:
+            if (cursor_pos == 0)
+            {
+                get_note(e);
+            }
             break;
     }
 }
