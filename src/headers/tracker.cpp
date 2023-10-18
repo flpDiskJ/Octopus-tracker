@@ -509,70 +509,125 @@ int Tracker::getFreq(char note, char key, int oct)
 
 void Tracker::get_note(SDL_Event *e)
 {
-    // figure out note data
-    char note = '-';
-    char key = '-';
-    int oct = octave;
-    switch (e->key.keysym.sym)
+    if (cursor_pos == 0)
     {
-        case SDLK_z: note = 'C'; break;
-        case SDLK_s: note = 'C'; key = '#'; break;
-        case SDLK_l: note = 'C'; key = '#'; oct++; break;
-        case SDLK_q:
-        case SDLK_COMMA: note = 'C'; oct++; break;
-        case SDLK_2: note = 'C'; key = '#'; oct++; break;
-        case SDLK_i: note = 'C'; oct += 2; break;
-        case SDLK_9: note = 'C'; key = '#'; oct += 2; break;
-        case SDLK_x: note = 'D'; break;
-        case SDLK_d: note = 'D'; break;
-        case SDLK_PERIOD: note = 'D'; oct++; break;
-        case SDLK_SEMICOLON: note = 'D'; key = '#'; oct++; break;
-        case SDLK_w: note = 'D'; oct++; break;
-        case SDLK_3: note = 'D'; key = '#'; oct++; break;
-        case SDLK_o: note = 'D'; oct += 2; break;
-        case SDLK_0: note = 'D'; key = '#'; oct += 2; break;
-        case SDLK_c: note = 'E'; break;
-        case SDLK_SLASH: note = 'E'; oct++; break;
-        case SDLK_e: note = 'E'; oct++; break;
-        case SDLK_p: note = 'E'; oct += 2; break;
-        case SDLK_v: note = 'F'; break;
-        case SDLK_g: note = 'F'; key = '#'; break;
-        case SDLK_r: note = 'F'; oct++; break;
-        case SDLK_5: note = 'F'; key = '#'; oct++; break;
-        case SDLK_LEFTBRACKET: note = 'F'; oct += 2; break;
-        case SDLK_EQUALS: note = 'F'; key = '#'; oct += 2; break;
-        case SDLK_b: note = 'G'; break;
-        case SDLK_h: note = 'G'; key = '#'; break;
-        case SDLK_t: note = 'G'; oct++; break;
-        case SDLK_6: note = 'G'; key = '#'; oct++; break;
-        case SDLK_n: note = 'A'; break;
-        case SDLK_j: note = 'A'; key = '#'; break;
-        case SDLK_y: note = 'A'; oct++; break;
-        case SDLK_7: note = 'A'; key = '#'; oct++; break;
-        case SDLK_m: note = 'B'; break;
-        case SDLK_u: note = 'B'; oct++; break;
-        default:
-            oct = 0;
-            break;
-    }
-
-    if (oct != 0)
-    {
-        // play note in channel
-        channelspec[cursor_channel].rate = getFreq(note, key, oct);
-        channelspec[cursor_channel].sample = s_pos;
-        channelspec[cursor_channel].level = sample[s_pos].level;
-        channelspec[cursor_channel].pos = 0;
-
-        // add note if edit_mode is true
-        if (edit_mode)
+        // figure out note data
+        char note = '-';
+        char key = '-';
+        int oct = octave;
+        switch (e->key.keysym.sym)
         {
-            block[b_pos].channel[cursor_channel][pos].note = note;
-            block[b_pos].channel[cursor_channel][pos].key = key;
-            block[b_pos].channel[cursor_channel][pos].octave = oct;
-            block[b_pos].channel[cursor_channel][pos].sample = s_pos;
+            case SDLK_z: note = 'C'; break;
+            case SDLK_s: note = 'C'; key = '#'; break;
+            case SDLK_l: note = 'C'; key = '#'; oct++; break;
+            case SDLK_q:
+            case SDLK_COMMA: note = 'C'; oct++; break;
+            case SDLK_2: note = 'C'; key = '#'; oct++; break;
+            case SDLK_i: note = 'C'; oct += 2; break;
+            case SDLK_9: note = 'C'; key = '#'; oct += 2; break;
+            case SDLK_x: note = 'D'; break;
+            case SDLK_d: note = 'D'; break;
+            case SDLK_PERIOD: note = 'D'; oct++; break;
+            case SDLK_SEMICOLON: note = 'D'; key = '#'; oct++; break;
+            case SDLK_w: note = 'D'; oct++; break;
+            case SDLK_3: note = 'D'; key = '#'; oct++; break;
+            case SDLK_o: note = 'D'; oct += 2; break;
+            case SDLK_0: note = 'D'; key = '#'; oct += 2; break;
+            case SDLK_c: note = 'E'; break;
+            case SDLK_SLASH: note = 'E'; oct++; break;
+            case SDLK_e: note = 'E'; oct++; break;
+            case SDLK_p: note = 'E'; oct += 2; break;
+            case SDLK_v: note = 'F'; break;
+            case SDLK_g: note = 'F'; key = '#'; break;
+            case SDLK_r: note = 'F'; oct++; break;
+            case SDLK_5: note = 'F'; key = '#'; oct++; break;
+            case SDLK_LEFTBRACKET: note = 'F'; oct += 2; break;
+            case SDLK_EQUALS: note = 'F'; key = '#'; oct += 2; break;
+            case SDLK_b: note = 'G'; break;
+            case SDLK_h: note = 'G'; key = '#'; break;
+            case SDLK_t: note = 'G'; oct++; break;
+            case SDLK_6: note = 'G'; key = '#'; oct++; break;
+            case SDLK_n: note = 'A'; break;
+            case SDLK_j: note = 'A'; key = '#'; break;
+            case SDLK_y: note = 'A'; oct++; break;
+            case SDLK_7: note = 'A'; key = '#'; oct++; break;
+            case SDLK_m: note = 'B'; break;
+            case SDLK_u: note = 'B'; oct++; break;
+            default:
+                oct = 0;
+                break;
         }
-        incpos(skip);
+
+        if (oct != 0)
+        {
+            // play note in channel
+            channelspec[cursor_channel].rate = getFreq(note, key, oct);
+            channelspec[cursor_channel].sample = s_pos;
+            channelspec[cursor_channel].level = sample[s_pos].level;
+            channelspec[cursor_channel].pos = 0;
+
+            // add note if edit_mode is true
+            if (edit_mode)
+            {
+                block[b_pos].channel[cursor_channel][pos].note = note;
+                block[b_pos].channel[cursor_channel][pos].key = key;
+                block[b_pos].channel[cursor_channel][pos].octave = oct;
+                block[b_pos].channel[cursor_channel][pos].sample = s_pos;
+                incpos(skip);
+            }
+        }
+    } else if (edit_mode)
+    {
+        char k; int i = 11;
+        bool vkey = true;
+        switch (e->key.keysym.sym) {
+            case SDLK_a: k = 'A'; break;
+            case SDLK_b: k = 'B'; break;
+            case SDLK_c: k = 'C'; break;
+            case SDLK_d: k = 'D'; break;
+            case SDLK_e: k = 'E'; break;
+            case SDLK_f: k = 'F'; break;
+            case SDLK_0: k = '0'; i = 0; break;
+            case SDLK_1: k = '1'; i = 1; break;
+            case SDLK_2: k = '2'; i = 2; break;
+            case SDLK_3: k = '3'; i = 3; break;
+            case SDLK_4: k = '4'; i = 4; break;
+            case SDLK_5: k = '5'; i = 5; break;
+            case SDLK_6: k = '6'; i = 6; break;
+            case SDLK_7: k = '7'; i = 7; break;
+            case SDLK_8: k = '8'; i = 8; break;
+            case SDLK_9: k = '9'; i = 9; break;
+            default:
+                vkey = false;
+                break;
+        }
+        if (vkey)
+        {
+            if (cursor_pos == 1 && i != 11)
+            {
+                block[b_pos].channel[cursor_channel][pos].sample = i * 10; incpos(skip);
+            } else if (cursor_pos == 2 && i != 11)
+            {
+                if (block[b_pos].channel[cursor_channel][pos].sample >= 10){
+                    block[b_pos].channel[cursor_channel][pos].sample = block[b_pos].channel[cursor_channel][pos].sample / 10;
+                    block[b_pos].channel[cursor_channel][pos].sample = (block[b_pos].channel[cursor_channel][pos].sample * 10) + i;}
+                else {
+                    block[b_pos].channel[cursor_channel][pos].sample = i;
+                } incpos(skip);
+            } else if (cursor_pos == 3)
+            {
+                block[b_pos].channel[cursor_channel][pos].command[0] = k; incpos(skip);
+            } else if (cursor_pos == 4)
+            {
+                block[b_pos].channel[cursor_channel][pos].command[1] = k; incpos(skip);
+            } else if (cursor_pos == 5)
+            {
+                block[b_pos].channel[cursor_channel][pos].parameter[0] = k; incpos(skip);
+            } else if (cursor_pos == 6)
+            {
+                block[b_pos].channel[cursor_channel][pos].parameter[1] = k; incpos(skip);
+            }
+        }
     }
 }
 
@@ -587,6 +642,30 @@ void Tracker::clear_step()
     block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
     incpos(skip);
+}
+
+void Tracker::clear_index()
+{
+    switch (cursor_pos) {
+        case 3:
+            block[b_pos].channel[cursor_channel][pos].command[0] = '0';
+            incpos(skip);
+            break;
+        case 4:
+            block[b_pos].channel[cursor_channel][pos].command[1] = '0';
+            incpos(skip);
+            break;
+        case 5:
+            block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
+            incpos(skip);
+            break;
+        case 6:
+            block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
+            incpos(skip);
+            break;
+        default:
+            break;
+    }
 }
 
 void Tracker::keyboard(SDL_Event *e)
@@ -644,7 +723,12 @@ void Tracker::keyboard(SDL_Event *e)
         case SDLK_BACKSPACE:
             if (edit_mode)
             {
-                clear_step();
+                if (cursor_pos == 0)
+                {
+                    clear_step();
+                } else {
+                    clear_index();
+                }
             }
             break;
 
@@ -699,10 +783,7 @@ void Tracker::keyboard(SDL_Event *e)
             get_note(e);
             break;
         default:
-            if (cursor_pos == 0)
-            {
-                get_note(e);
-            }
+            get_note(e);
             break;
     }
 }

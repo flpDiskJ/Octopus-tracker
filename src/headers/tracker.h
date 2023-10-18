@@ -117,6 +117,8 @@ private:
 
     void get_note(SDL_Event *e); // handles keyboard notes
 
+    void clear_index(); // sets cursor_pos index to 0
+
 public:
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
