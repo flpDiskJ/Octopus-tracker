@@ -38,6 +38,9 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     sequence[0] = 0;
     sequence_len = 1;
 
+    block_buffer.length = 0;
+    channel_buffer.length = 0;
+
     total_blocks = 1;
     block[0].length = 64;
     block[0].speed = 4;
@@ -77,9 +80,152 @@ Tracker::~Tracker() {
         for (int c = 0; c < CHANNELS; c++)
         {
             free(block[b].channel[c]);
+            if (block_buffer.length > 0)
+            {
+                free(block_buffer.channel[c]);
+            }
         }
     }
+    if (channel_buffer.length > 0)
+    {
+        free(channel_buffer.data);
+    }
     free(sequence);
+}
+
+void Tracker::copy_channel()
+{
+    if (channel_buffer.length == 0)
+    {
+        channel_buffer.data = (Note*)malloc(block[b_pos].length*sizeof(Note));
+    } else if (channel_buffer.length < block[b_pos].length)
+    {
+        channel_buffer.data = (Note*)realloc(channel_buffer.data, block[b_pos].length*sizeof(Note));
+    }
+    channel_buffer.length = block[b_pos].length;
+    for (int s = 0; s < channel_buffer.length; s++)
+    {
+        channel_buffer.data[s].note = block[b_pos].channel[cursor_channel][s].note;
+        channel_buffer.data[s].key = block[b_pos].channel[cursor_channel][s].key;
+        channel_buffer.data[s].octave = block[b_pos].channel[cursor_channel][s].octave;
+        channel_buffer.data[s].sample = block[b_pos].channel[cursor_channel][s].sample;
+        channel_buffer.data[s].command[0] = block[b_pos].channel[cursor_channel][s].command[0];
+        channel_buffer.data[s].command[1] = block[b_pos].channel[cursor_channel][s].command[1];
+        channel_buffer.data[s].parameter[0] = block[b_pos].channel[cursor_channel][s].parameter[0];
+        channel_buffer.data[s].parameter[1] = block[b_pos].channel[cursor_channel][s].parameter[1];
+    }
+}
+
+void Tracker::paste_channel()
+{
+    int length;
+    if (channel_buffer.length > block[b_pos].length)
+    {
+        length = block[b_pos].length;
+    } else {
+        length = channel_buffer.length;
+    }
+    for (int s = 0; s < length; s++)
+    {
+        block[b_pos].channel[cursor_channel][s].note = channel_buffer.data[s].note;
+        block[b_pos].channel[cursor_channel][s].key = channel_buffer.data[s].key;
+        block[b_pos].channel[cursor_channel][s].octave = channel_buffer.data[s].octave;
+        block[b_pos].channel[cursor_channel][s].sample = channel_buffer.data[s].sample;
+        block[b_pos].channel[cursor_channel][s].command[0] = channel_buffer.data[s].command[0];
+        block[b_pos].channel[cursor_channel][s].command[1] = channel_buffer.data[s].command[1];
+        block[b_pos].channel[cursor_channel][s].parameter[0] = channel_buffer.data[s].parameter[0];
+        block[b_pos].channel[cursor_channel][s].parameter[1] = channel_buffer.data[s].parameter[1];
+    }
+}
+
+void Tracker::copy_block(int blk)
+{
+    if (block_buffer.length == 0)
+    {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            block_buffer.channel[c] = (Note*)malloc(block[blk].length*sizeof(Note));
+        }
+    } else if (block_buffer.length < block[blk].length)
+    {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            block_buffer.channel[c] = (Note*)realloc(block_buffer.channel[c], block[blk].length*sizeof(Note));
+        }
+    }
+    block_buffer.length = block[blk].length;
+    block_buffer.speed = block[blk].speed;
+    block_buffer.name = block[blk].name;
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        for (int s = 0; s < block[blk].length; s++)
+        {
+            block_buffer.channel[c][s].note = block[blk].channel[c][s].note;
+            block_buffer.channel[c][s].key = block[blk].channel[c][s].key;
+            block_buffer.channel[c][s].octave = block[blk].channel[c][s].octave;
+            block_buffer.channel[c][s].sample = block[blk].channel[c][s].sample;
+            block_buffer.channel[c][s].command[0] = block[blk].channel[c][s].command[0];
+            block_buffer.channel[c][s].command[1] = block[blk].channel[c][s].command[1];
+            block_buffer.channel[c][s].parameter[0] = block[blk].channel[c][s].parameter[0];
+            block_buffer.channel[c][s].parameter[1] = block[blk].channel[c][s].parameter[1];
+        }
+    }
+}
+
+void Tracker::paste_block(int blk)
+{
+    if (block[blk].length == 0)
+    {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            block[blk].channel[c] = (Note*)malloc(block_buffer.length*sizeof(Note));
+        }
+    } else if (block[blk].length < block_buffer.length)
+    {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            block[blk].channel[c] = (Note*)realloc(block[blk].channel[c], block_buffer.length*sizeof(Note));
+        }
+    }
+    block[blk].length = block_buffer.length;
+    block[blk].speed = block_buffer.speed;
+    block[blk].name = block_buffer.name;
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        for (int s = 0; s < block_buffer.length; s++)
+        {
+            block[blk].channel[c][s].note = block_buffer.channel[c][s].note;
+            block[blk].channel[c][s].key = block_buffer.channel[c][s].key;
+            block[blk].channel[c][s].octave = block_buffer.channel[c][s].octave;
+            block[blk].channel[c][s].sample = block_buffer.channel[c][s].sample;
+            block[blk].channel[c][s].command[0] = block_buffer.channel[c][s].command[0];
+            block[blk].channel[c][s].command[1] = block_buffer.channel[c][s].command[1];
+            block[blk].channel[c][s].parameter[0] = block_buffer.channel[c][s].parameter[0];
+            block[blk].channel[c][s].parameter[1] = block_buffer.channel[c][s].parameter[1];
+        }
+    }
+}
+
+void Tracker::create_block(bool insert)
+{
+    block[total_blocks].length = block[total_blocks-1].length;
+    block[total_blocks].speed = block[total_blocks-1].speed;
+    block[total_blocks].name = "New Block";
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        block[total_blocks].channel[c] = (Note*)malloc(block[total_blocks].length*sizeof(Note));
+    }
+    clear_block(total_blocks);
+    if (insert) // copy all blocks ahead of b_pos down and clear current block
+    {
+        for (int b = total_blocks; b > b_pos; b--)
+        {
+            copy_block(b-1);
+            paste_block(b);
+        }
+        clear_block(b_pos);
+    }
+    total_blocks++;
 }
 
 void Tracker::update_info()
@@ -502,7 +648,7 @@ void Tracker::keyboard(SDL_Event *e)
             }
             break;
 
-        // keyboard keys. if there's no modstate then drops to default and checks for note
+        // keyboard keys. if there's no modstate run get_note(e)
         case SDLK_x:
             if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
             {
@@ -514,6 +660,44 @@ void Tracker::keyboard(SDL_Event *e)
                 clear_channel();
                 break;
             }
+            get_note(e);
+            break;
+        case SDLK_c:
+            if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
+            {
+                copy_block(b_pos);
+                break;
+            } else if (SDL_GetModState() & KMOD_CTRL)
+            {
+                copy_channel();
+                break;
+            }
+            get_note(e);
+            break;
+        case SDLK_v:
+            if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
+            {
+                paste_block(b_pos);
+                break;
+            } else if (SDL_GetModState() & KMOD_CTRL)
+            {
+                paste_channel();
+                break;
+            }
+            get_note(e);
+            break;
+        case SDLK_n:
+            if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
+            {
+                create_block(true);
+                break;
+            } else if (SDL_GetModState() & KMOD_CTRL)
+            {
+                create_block(false);
+                break;
+            }
+            get_note(e);
+            break;
         default:
             if (cursor_pos == 0)
             {

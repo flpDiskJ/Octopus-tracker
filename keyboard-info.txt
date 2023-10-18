@@ -15,10 +15,10 @@ Main window (tracker):
     X TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
     X SHIFT+UP/DOWN = change block
     X SHIFT+LEFT/RIGHT = change instrument/sample
-      CTRL+N = append new block
-      CTRL+SHIFT+N = insert new block
-      CTRL+C/V = Copy/Paste channel
-      CTRL+SHIFT+C/V = Copy/Paste block
+    X CTRL+N = append new block
+    X CTRL+SHIFT+N = insert new block
+    X CTRL+C/V = Copy/Paste channel
+    X CTRL+SHIFT+C/V = Copy/Paste block
       SHIFT+0-9 = Paste copy buffer from edit menu
 
       ALT+SPACE = play block

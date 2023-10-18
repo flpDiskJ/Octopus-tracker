@@ -28,6 +28,11 @@ private:
         string name;
     };
 
+    struct Buffer{ // used to copy and paste channels
+        Note *data;
+        int length;
+    };
+
     struct Sample{ // data for each instrument
         uint16_t *data;
         int length;
@@ -44,6 +49,8 @@ private:
     };
 
     Block block[MAXBLOCKS]; // static array of blocks
+    Block block_buffer; // used to copy blocks
+    Buffer channel_buffer; // used to copy channels
     int total_blocks = 0;
     Sample sample[MAXSAMPLES]; // static array of samples
     AudioSpec channelspec[CHANNELS];
@@ -72,6 +79,16 @@ private:
     SDL_Rect cursor; // used to display cursor
     int cursor_channel = 0; // the channel that the cursor is inside
     int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
+
+    void copy_channel();
+
+    void paste_channel();
+
+    void copy_block(int blk);
+
+    void paste_block(int blk);
+
+    void create_block(bool insert); // creates new block. false = append to end / true = insert to current b_pos
 
     void move_cursor(int position, int chn, int direction); // moves cursor_pos
     // (1, 0, 1) moves cursor right 1
