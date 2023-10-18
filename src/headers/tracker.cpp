@@ -4,9 +4,9 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     renderer = tracker_renderer;
     font = gFont;
 
-    tracker_box.x = 20;
+    tracker_box.x = 10;
     tracker_box.y = 20;
-    tracker_box.w = 1240;
+    tracker_box.w = 1261;
     tracker_box.h = 680;
 
     sequence_display.x = 20;
@@ -19,19 +19,19 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     block_display.w = 70;
     block_display.h = 20;
 
-    sample_display.x = 180;
+    blkname_displayrect.y = 0;
+    blkname_displayrect.w = 200;
+    blkname_displayrect.x = 280-(blkname_displayrect.w/2);
+    blkname_displayrect.h = 20;
+
+    sample_display.x = 290;
     sample_display.y = 0;
     sample_display.w = 80;
     sample_display.h = 20;
 
-    blkname_displayrect.y = 700;
-    blkname_displayrect.w = 200;
-    blkname_displayrect.x = (1280/2)-(blkname_displayrect.w/2);
-    blkname_displayrect.h = 20;
-
-    cursor.x = 45;
+    cursor.x = 36;
     cursor.y = 360;
-    cursor.w = 40;
+    cursor.w = 39;
     cursor.h = 17;
 
     sequence = (int*)malloc(sizeof(int));
@@ -44,7 +44,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     total_blocks = 1;
     block[0].length = 64;
     block[0].speed = 4;
-    block[0].name = "New Block";
+    block[0].name = "----------";
     for (int c = 0; c < CHANNELS; c++)
     {
         block[0].channel[c] = (Note*)malloc(64*sizeof(Note));
@@ -58,9 +58,9 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
 
     for (int s = 0; s < DISPLAYRECTS; s++) // init step display rects
     {
-        displayrects[s].x = 20;
+        displayrects[s].x = 10;
         displayrects[s].y = (s * 17)+20;
-        displayrects[s].w = 1240;
+        displayrects[s].w = 1261;
         displayrects[s].h = 17;
     }
     for (int s = 0; s < DISPLAYRECTS; s++) // initializes throwaway textures so that SDL_DestroyTexture() doesn't throw an error.
@@ -307,26 +307,27 @@ void Tracker::move_cursor(int position, int chn, int direction)
     }
 
     // set cursor rect positions
+    // Note each symbol is 13x17 WxH
     int width;
     switch (cursor_channel) {
-        case 0: width = 0; break;
-        case 1: width = 153; break;
-        case 2: width = 306; break;
-        case 3: width = 460; break;
-        case 4: width = 613; break;
-        case 5: width = 767; break;
-        case 6: width = 920; break;
-        case 7: width = 1074; break;
+        case 0: width = 36; break;
+        case 1: width = 192; break;
+        case 2: width = 348; break;
+        case 3: width = 504; break;
+        case 4: width = 660; break;
+        case 5: width = 816; break;
+        case 6: width = 972; break;
+        case 7: width = 1128; break;
         default: width = 0; break;
     }
     switch (cursor_pos) {
-        case 0: cursor.x = 45 + width; cursor.w = 40; break;
-        case 1: cursor.x = 84 + width; cursor.w = 12; break;
-        case 2: cursor.x = 97 + width; cursor.w = 12; break;
-        case 3: cursor.x = 110 + width; cursor.w = 12; break;
-        case 4: cursor.x = 122 + width; cursor.w = 12; break;
-        case 5: cursor.x = 135 + width; cursor.w = 12; break;
-        case 6: cursor.x = 148 + width; cursor.w = 12; break;
+        case 0: cursor.x = width; cursor.w = 39; break;
+        case 1: cursor.x = 39 + width; cursor.w = 13; break;
+        case 2: cursor.x = 52 + width; cursor.w = 13; break;
+        case 3: cursor.x = 65 + width; cursor.w = 13; break;
+        case 4: cursor.x = 78 + width; cursor.w = 13; break;
+        case 5: cursor.x = 91 + width; cursor.w = 13; break;
+        case 6: cursor.x = 104 + width; cursor.w = 13; break;
         default: break;
     }
 }
