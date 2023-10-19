@@ -29,7 +29,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     sample_display.w = 80;
     sample_display.h = 20;
 
-    cursor.x = 36;
+    cursor.x = 49;
     cursor.y = 360;
     cursor.w = 39;
     cursor.h = 17;
@@ -168,6 +168,7 @@ void Tracker::copy_block(int blk)
             block_buffer.channel[c][s].command[1] = block[blk].channel[c][s].command[1];
             block_buffer.channel[c][s].parameter[0] = block[blk].channel[c][s].parameter[0];
             block_buffer.channel[c][s].parameter[1] = block[blk].channel[c][s].parameter[1];
+            block_buffer.channel[c][s].rate = block[blk].channel[c][s].rate;
         }
     }
 }
@@ -202,6 +203,7 @@ void Tracker::paste_block(int blk)
             block[blk].channel[c][s].command[1] = block_buffer.channel[c][s].command[1];
             block[blk].channel[c][s].parameter[0] = block_buffer.channel[c][s].parameter[0];
             block[blk].channel[c][s].parameter[1] = block_buffer.channel[c][s].parameter[1];
+            block[blk].channel[c][s].rate = block_buffer.channel[c][s].rate;
         }
     }
 }
@@ -320,6 +322,7 @@ void Tracker::move_cursor(int position, int chn, int direction)
         case 7: width = 1128; break;
         default: width = 0; break;
     }
+    width += 13;
     switch (cursor_pos) {
         case 0: cursor.x = width; cursor.w = 39; break;
         case 1: cursor.x = 39 + width; cursor.w = 13; break;
@@ -408,6 +411,7 @@ void Tracker::clear_channel()
         block[b_pos].channel[cursor_channel][s].command[1] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[0] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[1] = '0';
+        block[b_pos].channel[cursor_channel][s].rate = 0;
     }
 }
 
@@ -425,6 +429,7 @@ void Tracker::clear_block(int blk) // Clears indicated block
             block[blk].channel[c][s].command[1] = '0';
             block[blk].channel[c][s].parameter[0] = '0';
             block[blk].channel[c][s].parameter[1] = '0';
+            block[blk].channel[c][s].rate = 0;
         }
     }
 }
@@ -450,7 +455,9 @@ void Tracker::render_steps() // Renders block data to screen
         if (step_pos < block[b_pos].length && step_pos >= 0) // Checks if position is in bounds of the block
         {
             // combines all elements into one string
-            step_data += "> ";
+            if (step_pos < 100){step_data += '>';}
+            if (step_pos < 10){step_data += '0';}
+            step_data += to_string(step_pos);
             for (int chan = 0; chan < CHANNELS; chan++)
             {
                 step_data += block[b_pos].channel[chan][step_pos].note;
@@ -465,7 +472,7 @@ void Tracker::render_steps() // Renders block data to screen
                 step_data += block[b_pos].channel[chan][step_pos].parameter[1];
                 if (chan < CHANNELS-1) {step_data += " | ";}
             }
-            step_data += " <";
+            step_data += "<";
         } else {
             step_data = " "; // renders empty step if position is out of bounds
         }
@@ -504,6 +511,10 @@ int Tracker::getFreq(char note, char key, int oct)
     for (int a = 1; a < oct; a++)
     {
         rate = rate * 2;
+    }
+    if (rate > 96000)
+    {
+        rate = rate / 2;
     }
     return rate;
 }
@@ -574,6 +585,7 @@ void Tracker::get_note(SDL_Event *e)
                 block[b_pos].channel[cursor_channel][pos].key = key;
                 block[b_pos].channel[cursor_channel][pos].octave = oct;
                 block[b_pos].channel[cursor_channel][pos].sample = s_pos;
+                block[b_pos].channel[cursor_channel][pos].rate = getFreq(note, key, oct);
                 incpos(skip);
             }
         }

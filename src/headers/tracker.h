@@ -20,6 +20,7 @@ private:
         int sample; // 0 - 99
         char command[2];
         char parameter[2];
+        int rate; // rate to play note at. Caulculated by getFreq()
     };
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
