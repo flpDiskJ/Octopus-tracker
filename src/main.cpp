@@ -108,9 +108,7 @@ int main(int argc, char* args[]) {
             render = false;
         }
     }
-
-    // destructor takes care of cleaning up the memory for us when the program exits
-
+    
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
     TTF_CloseFont(Font);

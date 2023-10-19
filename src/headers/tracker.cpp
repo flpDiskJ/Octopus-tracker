@@ -11,23 +11,35 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
 
     sequence_display.x = 20;
     sequence_display.y = 0;
-    sequence_display.w = 70;
+    sequence_display.w = 84;
     sequence_display.h = 20;
 
-    block_display.x = 100;
+    block_display.x = 116;
     block_display.y = 0;
-    block_display.w = 70;
+    block_display.w = 84;
     block_display.h = 20;
 
     blkname_displayrect.y = 0;
-    blkname_displayrect.w = 200;
-    blkname_displayrect.x = 280-(blkname_displayrect.w/2);
+    blkname_displayrect.w = 120;
+    blkname_displayrect.x = 212;
     blkname_displayrect.h = 20;
 
-    sample_display.x = 290;
+    sample_display.x = 344;
     sample_display.y = 0;
-    sample_display.w = 80;
+    sample_display.w = 84;
     sample_display.h = 20;
+
+    sample_name.x = 440;
+    sample_name.y = 0;
+    sample_name.w = 180;
+    sample_name.h = 20;
+
+    octave_display.x = 632;
+    octave_display.y = 0;
+    octave_display.w = 96;
+    octave_display.h = 20;
+
+    sample[0].name = "sample name";
 
     cursor.x = 49;
     cursor.y = 360;
@@ -44,7 +56,6 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     total_blocks = 1;
     block[0].length = 64;
     block[0].speed = 4;
-    block[0].name = "----------";
     for (int c = 0; c < CHANNELS; c++)
     {
         block[0].channel[c] = (Note*)malloc(64*sizeof(Note));
@@ -72,6 +83,8 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont) { // default c
     block_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     sample_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     blkname_displaytex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
+    octave_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
+    sample_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
 }
 
 Tracker::~Tracker() {
@@ -235,9 +248,9 @@ void Tracker::update_info()
     string text;
     text = block[0].name;
     int length = strlen(text.c_str());
-    if ( length < 20)
+    if ( length < 10)
     {
-        for (int a = 0; a < 20 - length; a++)
+        for (int a = 0; a < 10 - length; a++)
         {
             text += " ";
         }
@@ -274,6 +287,29 @@ void Tracker::update_info()
     surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
     SDL_DestroyTexture(sample_display_tex);
     sample_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
+    text.clear();
+    text = sample[s_pos].name;
+    length = strlen(text.c_str());
+    if ( length < 15)
+    {
+        for (int a = 0; a < 15 - length; a++)
+        {
+            text += " ";
+        }
+    }
+    surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
+    SDL_DestroyTexture(sample_name_tex);
+    sample_name_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
+    text.clear();
+    text += "OCTAVE:";
+    text += to_string(octave);
+    surf = TTF_RenderText_Solid(font, text.c_str(), color_black);
+    SDL_DestroyTexture(octave_display_tex);
+    octave_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
 }
 
@@ -441,6 +477,8 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, sequence_display_tex, NULL, &sequence_display);
     SDL_RenderCopy(renderer, block_display_tex, NULL, &block_display);
     SDL_RenderCopy(renderer, sample_display_tex, NULL, &sample_display);
+    SDL_RenderCopy(renderer, octave_display_tex, NULL, &octave_display);
+    SDL_RenderCopy(renderer, sample_name_tex, NULL, &sample_name);
     SDL_RenderDrawRect(renderer, &cursor);
 }
 
@@ -511,10 +549,6 @@ int Tracker::getFreq(char note, char key, int oct)
     for (int a = 1; a < oct; a++)
     {
         rate = rate * 2;
-    }
-    if (rate > 96000)
-    {
-        rate = rate / 2;
     }
     return rate;
 }
@@ -794,6 +828,54 @@ void Tracker::keyboard(SDL_Event *e)
                 break;
             }
             get_note(e);
+            break;
+        case SDLK_F1:
+            octave = 1; update_info();
+            break;
+        case SDLK_F2:
+            octave = 2; update_info();
+            break;
+        case SDLK_F3:
+            octave = 3; update_info();
+            break;
+        case SDLK_F4:
+            octave = 4; update_info();
+            break;
+        case SDLK_F5:
+            octave = 5; update_info();
+            break;
+        case SDLK_F6:
+            pos = 0;
+            break;
+        case SDLK_F7:
+            pos = block[b_pos].length / 4;
+            break;
+        case SDLK_F8:
+            pos = block[b_pos].length / 2;
+            break;
+        case SDLK_F9:
+            pos = block[b_pos].length - (block[b_pos].length / 4);
+            break;
+        case SDLK_F10:
+            pos = block[b_pos].length - 1;
+            break;
+        case SDLK_1:
+            if (SDL_GetModState() & KMOD_CTRL){pos = 0;}
+            break;
+        case SDLK_2:
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length / 4;}else
+            {get_note(e);}
+            break;
+        case SDLK_3:
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length / 2;}else
+            {get_note(e);}
+            break;
+        case SDLK_4:
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length - (block[b_pos].length / 4);}
+            break;
+        case SDLK_5:
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length - 1;}else
+            {get_note(e);}
             break;
         default:
             get_note(e);

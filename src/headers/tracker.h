@@ -67,15 +67,19 @@ private:
     int pos = 0; // step position
     int skip = 1; // number of steps to incriment when note is entered
     int s_pos = 0; //sample position
-    int octave = 4;
+    int octave = 3;
     bool mute[8]; // used to mute channel
     SDL_Rect tracker_box; // only functions for design (box around tracker)
     SDL_Rect sequence_display; // displays sequence position
     SDL_Rect block_display; // displays block position
     SDL_Rect sample_display; // displays sample position
+    SDL_Rect octave_display;
+    SDL_Rect sample_name;
     SDL_Texture *sequence_display_tex;
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;
+    SDL_Texture *octave_display_tex;
+    SDL_Texture *sample_name_tex;
     bool edit_mode = false;
     SDL_Rect cursor; // used to display cursor
     int cursor_channel = 0; // the channel that the cursor is inside

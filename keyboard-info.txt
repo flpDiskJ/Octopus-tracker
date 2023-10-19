@@ -19,6 +19,8 @@ Main window (tracker):
     X CTRL+SHIFT+N = insert new block
     X CTRL+C/V = Copy/Paste channel
     X CTRL+SHIFT+C/V = Copy/Paste block
+    X FUNC1-5 = change octave
+    X FUNC6-10 or CTRL+1-5 = navigate block
       SHIFT+0-9 = Paste copy buffer from edit menu
 
       ALT+SPACE = play block
