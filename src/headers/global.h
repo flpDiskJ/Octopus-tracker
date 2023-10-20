@@ -15,4 +15,10 @@ using namespace std;
 #define MAXSAMPLES 100 // max number of samples that can be used
 #define MAXBLOCKS 200 // max number of blocks that can be used
 
+struct Pallet{
+    SDL_Color black;
+    SDL_Color red;
+    SDL_Color blue;
+};
+
 #endif

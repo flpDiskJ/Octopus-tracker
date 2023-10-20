@@ -7,7 +7,8 @@ class Tracker
 {
 private:
     SDL_Surface *surf = NULL;
-    SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0}, color_blue = {0, 0, 180};
+    //SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0}, color_blue = {0, 0, 180};
+    Pallet *p;
     SDL_Rect displayrects[DISPLAYRECTS]; // 1280x18 // Used to display sequence steps
     SDL_Texture *displaytextures[DISPLAYRECTS];
     SDL_Renderer *renderer;
@@ -125,7 +126,7 @@ private:
     void clear_index(); // sets cursor_pos index to 0
 
 public:
-    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont);
+    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object

@@ -3,12 +3,18 @@
 // Open source. Free to distribute.
 
 #include "headers/tracker.h"
+#include "headers/util.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
 int main(int argc, char* args[]) {
+
+    Pallet pallet;
+    pallet.black = {0, 0, 0};
+    pallet.red = {200, 0, 0};
+    pallet.blue = {0, 0, 180};
 
     TTF_Font* Font = NULL;
 
@@ -52,9 +58,11 @@ int main(int argc, char* args[]) {
         return 3;
     }
 
-    Tracker tracker(tracker_render, Font);
+    Tracker tracker(tracker_render, Font, &pallet);
 
     tracker.update_info();
+
+    Util util(Font, &pallet);
 
     SDL_Event e;
     bool run = true;
@@ -108,7 +116,7 @@ int main(int argc, char* args[]) {
             render = false;
         }
     }
-    
+
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
     TTF_CloseFont(Font);
