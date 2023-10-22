@@ -36,14 +36,14 @@ private:
 
     void update(); // updates textures
 
-    bool checkButton(int mouseX, int mouseY, SDL_Rect *button); // returns true if mouse is inside button
-
 public:
     char command = 'n'; // used to send instructions to main
 
     Util(Tracker *t, TTF_Font *gfont, Pallet *pallet);
 
     ~Util();
+
+    bool checkButton(int mouseX, int mouseY, SDL_Rect *button); // returns true if mouse is inside button
 
     void open(string title, int m); // opens window for specified purpose (m for mode)
 

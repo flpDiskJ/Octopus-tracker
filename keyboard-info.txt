@@ -27,13 +27,12 @@ Main window (tracker):
       SHIFT+SPACE = play sequence
       SPACE = stop all
 
-      CTRL+L = open block list window (can also click block display)
-      CTRL+Q = open sequencer window (can also click sequence display)
+      CTRL+O = open sequence order window
       CTRL+H = open track properties window (bpm, speed, and such)
-      CTRL+B = open block properties window (block length, speed, and such)
-      CTRL+O = open file op window (load/save module)
+    X CTRL+B = open block properties window (block length, speed, and such)
+      CTRL+F = open file op window (load/save module)
       CTRL+E = open edit window (copy buffers)
       CTRL+I = open instrument window
-      CTRL+S = open sampler window
+      CTRL+S = open sample edit window
 
     X CTRL+SHIFT+Q = quit

@@ -50,11 +50,11 @@ private:
         int level; // volume at which instrument is played
     };
     SDL_Rect tracker_box; // only functions for design (box around tracker)
+    SDL_Rect octave_display;
+    SDL_Rect sample_name;
     SDL_Rect sequence_display; // displays sequence position
     SDL_Rect block_display; // displays block position
     SDL_Rect sample_display; // displays sample position
-    SDL_Rect octave_display;
-    SDL_Rect sample_name;
     SDL_Texture *sequence_display_tex;
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;
