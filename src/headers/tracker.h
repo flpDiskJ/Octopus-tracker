@@ -49,27 +49,6 @@ private:
         int pos; // position of sample being played
         int level; // volume at which instrument is played
     };
-
-    Block block[MAXBLOCKS]; // static array of blocks
-    Block block_buffer; // used to copy blocks
-    Buffer channel_buffer; // used to copy channels
-    int total_blocks = 0;
-    Sample sample[MAXSAMPLES]; // static array of samples
-    AudioSpec channelspec[CHANNELS];
-    int *sequence; // array of block numbers ex. block[sequence[s_pos]]
-    int sequence_len = 0;
-    SDL_Rect blkname_displayrect;
-    SDL_Texture *blkname_displaytex;
-    int master_tempo = 120; // master bpm
-    int master_speed = 4; // steps per beat
-    // note: if master speed is changed: ask user if the speed in the existing blocks should be set to match or left as is.
-    int sq_pos = 0; // sequence position
-    int b_pos = 0; // block position
-    int pos = 0; // step position
-    int skip = 1; // number of steps to incriment when note is entered
-    int s_pos = 0; //sample position
-    int octave = 3;
-    bool mute[8]; // used to mute channel
     SDL_Rect tracker_box; // only functions for design (box around tracker)
     SDL_Rect sequence_display; // displays sequence position
     SDL_Rect block_display; // displays block position
@@ -126,6 +105,28 @@ private:
     void clear_index(); // sets cursor_pos index to 0
 
 public:
+
+    Block block[MAXBLOCKS]; // static array of blocks
+    Block block_buffer; // used to copy blocks
+    Buffer channel_buffer; // used to copy channels
+    int total_blocks = 0;
+    Sample sample[MAXSAMPLES]; // static array of samples
+    AudioSpec channelspec[CHANNELS];
+    int *sequence; // array of block numbers ex. block[sequence[s_pos]]
+    int sequence_len = 0;
+    SDL_Rect blkname_displayrect;
+    SDL_Texture *blkname_displaytex;
+    int master_tempo = 120; // master bpm
+    int master_speed = 4; // steps per beat
+    // note: if master speed is changed: ask user if the speed in the existing blocks should be set to match or left as is.
+    int sq_pos = 0; // sequence position
+    int b_pos = 0; // block position
+    int pos = 0; // step position
+    int skip = 1; // number of steps to incriment when note is entered
+    int s_pos = 0; //sample position
+    int octave = 3;
+    bool mute[8]; // used to mute channel
+
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 

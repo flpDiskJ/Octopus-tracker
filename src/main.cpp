@@ -15,6 +15,7 @@ int main(int argc, char* args[]) {
     pallet.black = {0, 0, 0};
     pallet.red = {200, 0, 0};
     pallet.blue = {0, 0, 180};
+    pallet.green = {0, 100, 0};
 
     TTF_Font* Font = NULL;
 
@@ -62,12 +63,13 @@ int main(int argc, char* args[]) {
 
     tracker.update_info();
 
-    Util util(Font, &pallet);
+    Util util(&tracker, Font, &pallet);
 
     SDL_Event e;
-    bool run = true;
     bool render = true; // set to true to update screen
-    int windowID = 0; // 0 = main
+    int windowID = 0; // 0 = main // 1 = utility window
+    int xM, yM; // mouse cords
+    bool run = true;
     while(run)
     {
         // Event loop
@@ -79,17 +81,72 @@ int main(int argc, char* args[]) {
                     run = false;
                     break;
                 case SDL_WINDOWEVENT:
-                    render = true; // ensures window re-renders when un-minimized (linux)
+                    if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+                    {
+                        switch (windowID)
+                        {
+                            case 0:
+                                util.open("Quit?", 0);
+                                windowID = 1;
+                                break;
+                            case 1:
+                                util.close();
+                                windowID = 0;
+                                break;
+                            default: break;
+                        }
+                    }
+                    render = true;
+                    if (windowID == 1)
+                    {
+                        util.render();
+                    }
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    SDL_GetMouseState(&xM, &yM);
+                    switch (windowID) {
+                        case 0:
+                            break;
+                        case 1:
+                            util.mouse(xM, yM);
+                            switch (util.command)
+                            {
+                                case 'Q':
+                                    run = false;
+                                    break;
+                                case 'q':
+                                    util.close();
+                                    windowID = 0;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case SDL_KEYDOWN:
                     if (e.key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
                     {
-                        run = false;
+                        util.open("Quit?", 0);
+                        windowID = 1;
                     }
-                    render = true;
                     switch (windowID) {
                         case 0:
+                            render = true;
+                            if (SDL_GetModState() & KMOD_CTRL)
+                            {
+                                if (e.key.keysym.sym == SDLK_b)
+                                {
+                                    util.open("Block Parameters", 1);
+                                    windowID = 1;
+                                }
+                            }
                             tracker.keyboard(&e);
+                            break;
+                        case 1:
+                            util.input(&e);
                             break;
                         default:
                             break;

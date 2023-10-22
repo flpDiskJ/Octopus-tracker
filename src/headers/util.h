@@ -8,28 +8,54 @@
 class Util
 {
 private:
+    bool windowopen = false;
     SDL_Window *window;
     SDL_Renderer *renderer;
-    SDL_Event e;
     SDL_Surface *surf;
     TTF_Font *font;
-    SDL_Rect name; // displays window name
+    string name;
+    SDL_Rect name_rec; // displays window name
     SDL_Texture *name_tex; // displays window name
     Pallet *p;
+    Tracker *tracker;
+    int mode = 0; // 0 = quit? yes/no // 1 = block parameters
 
-public:
+    struct Buttons{
+        SDL_Rect yes; SDL_Texture *yes_tex;
+        SDL_Rect no; SDL_Texture *no_tex;
+        SDL_Rect save; SDL_Texture *save_tex;
+    };
+    Buttons button;
 
-    Util(TTF_Font *gfont, Pallet *pallet);
-
-    ~Util();
-
-    void open(string title); // opens window for specified purpose
+    // for block parameters (mode 1)
+    SDL_Rect block_list;
+    SDL_Rect block_name; SDL_Texture *block_name_tex;
+    SDL_Rect list_index[10]; SDL_Texture *list_index_tex[10];
+    SDL_Rect cursor;
+    int pos = 0; // position for block list
+    int selected = 0; // selected position in list
 
     void update(); // updates textures
 
+    bool checkButton(int mouseX, int mouseY, SDL_Rect *button); // returns true if mouse is inside button
+
+public:
+    char command = 'n'; // used to send instructions to main
+
+    Util(Tracker *t, TTF_Font *gfont, Pallet *pallet);
+
+    ~Util();
+
+    void open(string title, int m); // opens window for specified purpose (m for mode)
+
+    void close(); // closes window (window is set to hidden)
+
     void render(); // renders everything to the screen
 
-    void input(); // handles keyboard and mouse input
+    void mouse(int x, int y); // mouse stuff
+
+    void input(SDL_Event *e); // handles keyboard input
+
 };
 
 #endif

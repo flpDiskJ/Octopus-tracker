@@ -19,6 +19,7 @@ struct Pallet{
     SDL_Color black;
     SDL_Color red;
     SDL_Color blue;
+    SDL_Color green;
 };
 
 #endif
