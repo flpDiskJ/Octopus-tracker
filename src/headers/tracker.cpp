@@ -150,6 +150,34 @@ void Tracker::paste_channel()
     }
 }
 
+void Tracker::realloc_block(int size)
+{
+    if (block[b_pos].length < size)
+    {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            block[b_pos].channel[c] = (Note*)realloc(block[b_pos].channel[c], size*sizeof(Note));
+            for (int s = block[b_pos].length; s < size; s++)
+            {
+                block[b_pos].channel[c][s].note = '-';
+                block[b_pos].channel[c][s].key = '-';
+                block[b_pos].channel[c][s].octave = 0;
+                block[b_pos].channel[c][s].sample = 0;
+                block[b_pos].channel[c][s].command[0] = '0';
+                block[b_pos].channel[c][s].command[1] = '0';
+                block[b_pos].channel[c][s].parameter[0] = '0';
+                block[b_pos].channel[c][s].parameter[1] = '0';
+                block[b_pos].channel[c][s].rate = 0;
+            }
+        }
+    }
+    block[b_pos].length = size;
+    if (pos >= size)
+    {
+        pos = size - 1;
+    }
+}
+
 void Tracker::copy_block(int blk)
 {
     if (block_buffer.length == 0)
@@ -243,11 +271,11 @@ void Tracker::create_block(bool insert)
 
 void Tracker::delete_block(int blk)
 {
+    clear_block(blk);
     if (total_blocks == 1)
     {
         return;
     }
-    clear_block(blk);
     for (int b = blk; b < total_blocks; b++)
     {
         copy_block(b+1);
@@ -432,23 +460,23 @@ void Tracker::sample_dec()
     update_info();
 }
 
-void Tracker::incpos(int amount) // Incriment pos by amount
+void Tracker::incpos() // Incriment pos by amount
 {
-    if ((pos + amount) < block[b_pos].length)
+    if ((pos + skip) < block[b_pos].length)
     {
-        pos += amount;
+        pos += skip;
     } else {
-        pos = amount - (block[b_pos].length - pos);
+        pos = skip - (block[b_pos].length - pos);
     }
 }
 
-void Tracker::decpos(int amount)
+void Tracker::decpos()
 {
-    if ((pos - amount) >= 0)
+    if ((pos - skip) >= 0)
     {
-        pos -= amount;
+        pos -= skip;
     } else {
-        pos = block[b_pos].length - (amount - pos);
+        pos = block[b_pos].length - (skip - pos);
     }
 }
 
@@ -470,6 +498,7 @@ void Tracker::clear_channel()
 
 void Tracker::clear_block(int blk) // Clears indicated block
 {
+    block[blk].name.clear();
     for (int c = 0; c < CHANNELS; c++)
     {
         for (int s = 0; s < block[blk].length; s++)
@@ -637,7 +666,7 @@ void Tracker::get_note(SDL_Event *e)
                 block[b_pos].channel[cursor_channel][pos].octave = oct;
                 block[b_pos].channel[cursor_channel][pos].sample = s_pos;
                 block[b_pos].channel[cursor_channel][pos].rate = getFreq(note, key, oct);
-                incpos(skip);
+                incpos();
             }
         }
     } else if (edit_mode)
@@ -669,7 +698,7 @@ void Tracker::get_note(SDL_Event *e)
         {
             if (cursor_pos == 1 && i != 11)
             {
-                block[b_pos].channel[cursor_channel][pos].sample = i * 10; incpos(skip);
+                block[b_pos].channel[cursor_channel][pos].sample = i * 10; incpos();
             } else if (cursor_pos == 2 && i != 11)
             {
                 if (block[b_pos].channel[cursor_channel][pos].sample >= 10){
@@ -677,19 +706,19 @@ void Tracker::get_note(SDL_Event *e)
                     block[b_pos].channel[cursor_channel][pos].sample = (block[b_pos].channel[cursor_channel][pos].sample * 10) + i;}
                 else {
                     block[b_pos].channel[cursor_channel][pos].sample = i;
-                } incpos(skip);
+                } incpos();
             } else if (cursor_pos == 3)
             {
-                block[b_pos].channel[cursor_channel][pos].command[0] = k; incpos(skip);
+                block[b_pos].channel[cursor_channel][pos].command[0] = k; incpos();
             } else if (cursor_pos == 4)
             {
-                block[b_pos].channel[cursor_channel][pos].command[1] = k; incpos(skip);
+                block[b_pos].channel[cursor_channel][pos].command[1] = k; incpos();
             } else if (cursor_pos == 5)
             {
-                block[b_pos].channel[cursor_channel][pos].parameter[0] = k; incpos(skip);
+                block[b_pos].channel[cursor_channel][pos].parameter[0] = k; incpos();
             } else if (cursor_pos == 6)
             {
-                block[b_pos].channel[cursor_channel][pos].parameter[1] = k; incpos(skip);
+                block[b_pos].channel[cursor_channel][pos].parameter[1] = k; incpos();
             }
         }
     }
@@ -705,7 +734,7 @@ void Tracker::clear_step()
     block[b_pos].channel[cursor_channel][pos].command[1] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
-    incpos(skip);
+    incpos();
 }
 
 void Tracker::clear_index()
@@ -713,19 +742,19 @@ void Tracker::clear_index()
     switch (cursor_pos) {
         case 3:
             block[b_pos].channel[cursor_channel][pos].command[0] = '0';
-            incpos(skip);
+            incpos();
             break;
         case 4:
             block[b_pos].channel[cursor_channel][pos].command[1] = '0';
-            incpos(skip);
+            incpos();
             break;
         case 5:
             block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
-            incpos(skip);
+            incpos();
             break;
         case 6:
             block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
-            incpos(skip);
+            incpos();
             break;
         default:
             break;
@@ -741,7 +770,7 @@ void Tracker::keyboard(SDL_Event *e)
             {
                 block_dec();
             } else {
-                decpos(1);
+                decpos();
             }
             break;
         case SDLK_DOWN:
@@ -749,7 +778,7 @@ void Tracker::keyboard(SDL_Event *e)
             {
                 block_inc();
             } else {
-                incpos(1);
+                incpos();
             }
             break;
         case SDLK_RIGHT:

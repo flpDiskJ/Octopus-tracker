@@ -31,18 +31,20 @@ private:
     SDL_Rect block_list;
     SDL_Rect block_name; SDL_Texture *block_name_tex;
     SDL_Rect block_speed; SDL_Texture *block_speed_tex;
+    SDL_Rect block_len; SDL_Texture *block_len_tex;
     SDL_Rect list_index[10]; SDL_Texture *list_index_tex[10];
     SDL_Rect cursor;
     int pos = -4;
     bool text_mode = false;
     bool speed_mode = false; string speed_entry;
+    bool len_mode = false; string len_entry;
 
     void update(); // updates textures
 
-    void setSpeedEntry();
+    void setEntry();
 
 public:
-    char command = 'n'; // used to send instructions to main
+    char command = 'n'; // used to send instructions to main (n for null)
 
     Util(Tracker *t, TTF_Font *gfont, Pallet *pallet);
 

@@ -36,6 +36,10 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     block_speed.y = 242;
     block_speed.w = 100;
     block_speed.h = 20;
+    block_len.x = 200;
+    block_len.y = 264;
+    block_len.w = 100;
+    block_len.h = 20;
     cursor.x = 20;
     cursor.y = 20;
     cursor.w = 460;
@@ -65,6 +69,7 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
 
     block_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
     block_speed_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
+    block_len_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
 
     for (int i = 0; i < 10; i++)
     {
@@ -88,6 +93,7 @@ void Util::open(string title, int m)
     {
         close();
     }
+    command = 'n';
     mode = m;
     surf = TTF_RenderText_Solid(font, title.c_str(), p->black);
     name_tex = SDL_CreateTextureFromSurface(renderer, surf);
@@ -99,7 +105,7 @@ void Util::open(string title, int m)
     SDL_SetWindowInputFocus(window);
     if (mode > 0)
     {
-        setSpeedEntry();
+        setEntry();
         update();
     }
     render();
@@ -134,6 +140,17 @@ void Util::update()
             SDL_DestroyTexture(block_speed_tex);
             block_speed_tex = SDL_CreateTextureFromSurface(renderer, surf);
             SDL_FreeSurface(surf);
+
+            text.clear();
+            text = "Length: ";
+            text += len_entry;
+            block_len.w = 20 * strlen(text.c_str());
+            block_len.x = 250 - (block_len.w / 2);
+            surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
+            SDL_DestroyTexture(block_len_tex);
+            block_len_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+
 
             for (int i = 0; i < 10; i++)
             {
@@ -188,9 +205,11 @@ void Util::render()
             SDL_RenderCopy(renderer, button.del_tex, NULL, &button.del);
             SDL_RenderCopy(renderer, block_name_tex, NULL, &block_name);
             SDL_RenderCopy(renderer, block_speed_tex, NULL, &block_speed);
+            SDL_RenderCopy(renderer, block_len_tex, NULL, &block_len);
             SDL_RenderDrawRect(renderer, &button.del);
             SDL_RenderDrawRect(renderer, &block_list);
             SDL_RenderDrawRect(renderer, &block_speed);
+            SDL_RenderDrawRect(renderer, &block_len);
             for (int i = 0; i < 10; i++)
             {
                 SDL_RenderCopy(renderer, list_index_tex[i], NULL, &list_index[i]);
@@ -210,6 +229,11 @@ void Util::render()
                 SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
                 SDL_RenderDrawRect(renderer, &block_speed);
             }
+            if (len_mode)
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
+                SDL_RenderDrawRect(renderer, &block_len);
+            }
             break;
         default:
             break;
@@ -227,9 +251,10 @@ bool Util::checkButton(int mouseX, int mouseY, SDL_Rect *button)
     return false;
 }
 
-void Util::setSpeedEntry()
+void Util::setEntry()
 {
     speed_entry = to_string(tracker->block[tracker->b_pos].speed);
+    len_entry = to_string(tracker->block[tracker->b_pos].length);
 }
 
 void Util::mouse(int x, int y)
@@ -249,7 +274,7 @@ void Util::mouse(int x, int y)
             if (checkButton(x, y, &button.del))
             {
                 tracker->delete_block(tracker->b_pos);
-                setSpeedEntry();
+                setEntry();
                 update();
             }
             if (checkButton(x, y, &block_name))
@@ -262,6 +287,11 @@ void Util::mouse(int x, int y)
                 speed_mode = true;
                 update();
             }
+            if (checkButton(x, y, &block_len))
+            {
+                len_mode = true;
+                update();
+            }
             for (int i = 0; i < 10; i++)
             {
                 if (checkButton(x, y, &list_index[i]))
@@ -270,7 +300,7 @@ void Util::mouse(int x, int y)
                     {
                         tracker->b_pos = pos + i;
                         tracker->update_info();
-                        setSpeedEntry();
+                        setEntry();
                         update();
                     }
                 }
@@ -297,7 +327,7 @@ void Util::input(SDL_Event *e)
             {
                 if (pos > -5) {pos--; update();}
             }
-            if (text_mode || speed_mode)
+            if (text_mode || speed_mode || len_mode)
             {
                 switch (e->key.keysym.sym)
                 {
@@ -307,13 +337,24 @@ void Util::input(SDL_Event *e)
                         if (speed_mode)
                         {
                             speed_mode = false;
-                            if (speed_entry != "0")
+                            if (speed_entry != "0" && strlen(speed_entry.c_str()) > 0)
                             {
                                 tracker->block[tracker->b_pos].speed = stoi(speed_entry, 0, 10); // convert string to int
                             } else {
                                 tracker->block[tracker->b_pos].speed = 1;
                             }
-                            setSpeedEntry();
+                            setEntry();
+                        }
+                        else if (len_mode)
+                        {
+                            len_mode = false;
+                            if (len_entry != "0" && strlen(len_entry.c_str()) > 0)
+                            {
+                                tracker->realloc_block(stoi(len_entry, 0, 10));
+                            } else {
+                                tracker->realloc_block(1);
+                            }
+                            setEntry();
                         }
                         break;
                     case SDLK_DELETE:
@@ -324,6 +365,9 @@ void Util::input(SDL_Event *e)
                         } else if (speed_mode && strlen(speed_entry.c_str()) > 0)
                         {
                             speed_entry.pop_back();
+                        } else if (len_mode && strlen(len_entry.c_str()) > 0)
+                        {
+                            len_entry.pop_back();
                         }
                         break;
                     default:
@@ -348,6 +392,17 @@ void Util::input(SDL_Event *e)
                                 || key == "6" || key == "7" || key == "8" || key == "9")
                                 {
                                     speed_entry += key;
+                                }
+                            }
+                        } else if (len_mode)
+                        {
+                            key = SDL_GetKeyName(e->key.keysym.sym);
+                            if (strlen(len_entry.c_str()) < 4)
+                            {
+                                if (key == "0" || key == "1" || key == "2" || key == "3" || key == "4" || key == "5"
+                                || key == "6" || key == "7" || key == "8" || key == "9")
+                                {
+                                    len_entry += key;
                                 }
                             }
                         }

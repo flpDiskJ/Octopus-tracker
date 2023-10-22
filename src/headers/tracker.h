@@ -88,9 +88,9 @@ private:
 
     void sample_dec(); // decriment sample position
 
-    void incpos(int amount); // incriment step position by amount
+    void incpos(); // incriment step position by amount
 
-    void decpos(int amount); // decriment step position by amount
+    void decpos(); // decriment step position by amount
 
     void clear_step(); // clears current step
 
@@ -131,6 +131,8 @@ public:
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    void realloc_block(int size); // reallocates block at b_pos
 
     void delete_block(int blk); // deletes indicated block
 
