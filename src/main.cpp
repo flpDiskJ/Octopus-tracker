@@ -117,6 +117,7 @@ int main(int argc, char* args[]) {
                                 case 'q':
                                     util.close();
                                     windowID = 0;
+                                    render = true;
                                     break;
                                 default:
                                     break;

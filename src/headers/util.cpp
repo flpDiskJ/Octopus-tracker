@@ -208,6 +208,15 @@ void Util::mouse(int x, int y)
                 tracker->delete_block(tracker->b_pos);
                 update();
             }
+            for (int i = 0; i < 10; i++)
+            {
+                if (checkButton(x, y, &list_index[i]))
+                {
+                    tracker->b_pos = pos + i;
+                    tracker->update_info();
+                    update();
+                }
+            }
             break;
         default:
             break;
