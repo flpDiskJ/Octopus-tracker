@@ -54,7 +54,7 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     button.no.y = 150;
     button.no.w = 40;
     button.no.h = 20;
-    button.del.x = 226;
+    button.del.x = 400;
     button.del.y = 275;
     button.del.w = 48;
     button.del.h = 20;
@@ -139,6 +139,7 @@ void Util::update()
         default:
             break;
     }
+    render();
 }
 
 void Util::render()
@@ -204,7 +205,8 @@ void Util::mouse(int x, int y)
         case 1:
             if (checkButton(x, y, &button.del))
             {
-                command = 'q';
+                tracker->delete_block(tracker->b_pos);
+                update();
             }
             break;
         default:
@@ -231,5 +233,4 @@ void Util::input(SDL_Event *e)
         default:
             break;
     }
-    render();
 }

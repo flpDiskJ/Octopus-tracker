@@ -241,6 +241,21 @@ void Tracker::create_block(bool insert)
     total_blocks++;
 }
 
+void Tracker::delete_block(int blk)
+{
+    if (total_blocks == 1)
+    {
+        return;
+    }
+    clear_block(blk);
+    for (int b = blk; b < total_blocks; b++)
+    {
+        copy_block(b+1);
+        paste_block(b);
+    }
+    total_blocks--;
+}
+
 void Tracker::update_info()
 {
     string text;

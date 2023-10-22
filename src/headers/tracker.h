@@ -132,6 +132,8 @@ public:
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
+    void delete_block(int blk); // deletes indicated block
+
     void update_info(); // re-creates textures for sequence, block, sample, etc position displays
 
     void render_info(); // render info (same stuff in update info) to the screen
