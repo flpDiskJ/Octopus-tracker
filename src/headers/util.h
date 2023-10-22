@@ -23,7 +23,7 @@ private:
     struct Buttons{
         SDL_Rect yes; SDL_Texture *yes_tex;
         SDL_Rect no; SDL_Texture *no_tex;
-        SDL_Rect save; SDL_Texture *save_tex;
+        SDL_Rect del; SDL_Texture *del_tex;
     };
     Buttons button;
 
@@ -32,8 +32,7 @@ private:
     SDL_Rect block_name; SDL_Texture *block_name_tex;
     SDL_Rect list_index[10]; SDL_Texture *list_index_tex[10];
     SDL_Rect cursor;
-    int pos = 0; // position for block list
-    int selected = 0; // selected position in list
+    int pos = -4;
 
     void update(); // updates textures
 

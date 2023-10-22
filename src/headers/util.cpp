@@ -43,8 +43,8 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     surf = TTF_RenderText_Solid(font, "No", p->red);
     button.no_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
-    surf = TTF_RenderText_Solid(font, "Save", p->green);
-    button.save_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    surf = TTF_RenderText_Solid(font, "Delete", p->red);
+    button.del_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
     button.yes.x = 120;
     button.yes.y = 150;
@@ -54,10 +54,10 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     button.no.y = 150;
     button.no.w = 40;
     button.no.h = 20;
-    button.save.x = 226;
-    button.save.y = 275;
-    button.save.w = 48;
-    button.save.h = 20;
+    button.del.x = 226;
+    button.del.y = 275;
+    button.del.w = 48;
+    button.del.h = 20;
 
     for (int i = 0; i < 10; i++)
     {
@@ -112,11 +112,15 @@ void Util::update()
         case 1:
             for (int i = 0; i < 10; i++)
             {
-                if (pos + i < tracker->total_blocks)
+                if (pos + i == tracker->b_pos)
+                {
+                    cursor.y = 20 + (20 * i);
+                }
+                if (pos + i >= 0 && pos + i < tracker->total_blocks)
                 {
                     text.clear();
                     text = "Block ";
-                    text += to_string(tracker->b_pos + pos + i);
+                    text += to_string(pos + i);
                     text += ": ";
                     text += tracker->block[tracker->b_pos].name;
                     for (int f = strlen(text.c_str()); f < 25; f++)
@@ -155,15 +159,18 @@ void Util::render()
             SDL_RenderDrawRect(renderer, &button.no);
             break;
         case 1:
-            SDL_RenderCopy(renderer, button.save_tex, NULL, &button.save);
-            SDL_RenderDrawRect(renderer, &button.save);
+            SDL_RenderCopy(renderer, button.del_tex, NULL, &button.del);
+            SDL_RenderDrawRect(renderer, &button.del);
             SDL_RenderDrawRect(renderer, &block_list);
             for (int i = 0; i < 10; i++)
             {
                 SDL_RenderCopy(renderer, list_index_tex[i], NULL, &list_index[i]);
             }
-            SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
-            SDL_RenderDrawRect(renderer, &cursor);
+            if (tracker->b_pos >= pos && tracker->b_pos < pos + 10)
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
+                SDL_RenderDrawRect(renderer, &cursor);
+            }
             break;
         default:
             break;
@@ -195,7 +202,7 @@ void Util::mouse(int x, int y)
             }
             break;
         case 1:
-            if (checkButton(x, y, &button.save))
+            if (checkButton(x, y, &button.del))
             {
                 command = 'q';
             }
@@ -212,8 +219,17 @@ void Util::input(SDL_Event *e)
         case 0:
             break;
         case 1:
+            if (e->key.keysym.sym == SDLK_DOWN)
+            {
+                if (pos < tracker->total_blocks-5) {pos++; update();}
+            }
+            else if (e->key.keysym.sym == SDLK_UP)
+            {
+                if (pos > -5) {pos--; update();}
+            }
             break;
         default:
             break;
     }
+    render();
 }
