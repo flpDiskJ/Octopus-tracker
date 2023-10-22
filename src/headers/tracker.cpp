@@ -40,6 +40,11 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     octave_display.w = 96;
     octave_display.h = 20;
 
+    skip_display.x = 740;
+    skip_display.y = 0;
+    skip_display.w = 84;
+    skip_display.h = 20;
+
     cursor.x = 49;
     cursor.y = 360;
     cursor.w = 39;
@@ -84,6 +89,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     blkname_displaytex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     octave_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     sample_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
+    skip_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
 }
 
 Tracker::~Tracker() {
@@ -337,7 +343,7 @@ void Tracker::update_info()
     text.clear();
     text = sample[s_pos].name;
     length = strlen(text.c_str());
-    if ( length < 15)
+    if (length < 15)
     {
         for (int a = 0; a < 15 - length; a++)
         {
@@ -355,6 +361,22 @@ void Tracker::update_info()
     surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
     SDL_DestroyTexture(octave_display_tex);
     octave_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
+    text.clear();
+    text = "SKIP:";
+    text += to_string(skip);
+    length = strlen(text.c_str());
+    if (length < 7)
+    {
+        for (int a = 0; a < 7 - length; a++)
+        {
+            text += " ";
+        }
+    }
+    surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
+    SDL_DestroyTexture(skip_display_tex);
+    skip_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
 }
 
@@ -525,6 +547,7 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, sample_display_tex, NULL, &sample_display);
     SDL_RenderCopy(renderer, octave_display_tex, NULL, &octave_display);
     SDL_RenderCopy(renderer, sample_name_tex, NULL, &sample_name);
+    SDL_RenderCopy(renderer, skip_display_tex, NULL, &skip_display);
     SDL_RenderDrawRect(renderer, &cursor);
 }
 
@@ -787,7 +810,10 @@ void Tracker::keyboard(SDL_Event *e)
                 sample_inc();
             } else if (SDL_GetModState() & KMOD_ALT){
                 move_cursor(0, 1, 1);
-            }else{
+            } else if (SDL_GetModState() & KMOD_CTRL){
+                if (skip < 32){skip++;}else{skip = 1;}
+                update_info();
+            } else {
                 move_cursor(1, 0, 1);
             }
             break;
@@ -797,7 +823,10 @@ void Tracker::keyboard(SDL_Event *e)
                 sample_dec();
             } else if (SDL_GetModState() & KMOD_ALT){
                 move_cursor(0, 1, 0);
-            }else{
+            } else if (SDL_GetModState() & KMOD_CTRL){
+                if (skip > 1){skip--;}else{skip = 32;}
+                update_info();
+            } else {
                 move_cursor(1, 0, 0);
             }
             break;

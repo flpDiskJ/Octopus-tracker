@@ -55,11 +55,13 @@ private:
     SDL_Rect sequence_display; // displays sequence position
     SDL_Rect block_display; // displays block position
     SDL_Rect sample_display; // displays sample position
+    SDL_Rect skip_display;
     SDL_Texture *sequence_display_tex;
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;
     SDL_Texture *octave_display_tex;
     SDL_Texture *sample_name_tex;
+    SDL_Texture *skip_display_tex;
     bool edit_mode = false;
     SDL_Rect cursor; // used to display cursor
     int cursor_channel = 0; // the channel that the cursor is inside
@@ -117,7 +119,10 @@ public:
     SDL_Rect blkname_displayrect;
     SDL_Texture *blkname_displaytex;
     int master_tempo = 120; // master bpm
-    int master_speed = 4; // steps per beat
+    // Meta data
+    string track_name = "UNKNOWN"; // Name of the entire track
+    string track_artist = "UNKNOWN"; // Artist(s) that created the track
+    string track_date = "UNKNOWN"; // date track was created
     // note: if master speed is changed: ask user if the speed in the existing blocks should be set to match or left as is.
     int sq_pos = 0; // sequence position
     int b_pos = 0; // block position

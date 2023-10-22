@@ -29,21 +29,38 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     block_list.w = 460;
     block_list.h = 200;
     block_name.x = 200;
-    block_name.y = 220;
+    block_name.y = 222;
     block_name.w = 100;
     block_name.h = 20;
     block_speed.x = 200;
-    block_speed.y = 242;
+    block_speed.y = 244;
     block_speed.w = 100;
     block_speed.h = 20;
     block_len.x = 200;
-    block_len.y = 264;
+    block_len.y = 266;
     block_len.w = 100;
     block_len.h = 20;
     cursor.x = 20;
     cursor.y = 20;
     cursor.w = 460;
     cursor.h = 20;
+
+    track_name.x = 200;
+    track_name.y = 40;
+    track_name.w = 100;
+    track_name.h = 30;
+    track_artist.x = 200;
+    track_artist.y = 80;
+    track_artist.w = 100;
+    track_artist.h = 30;
+    track_date.x = 200;
+    track_date.y = 120;
+    track_date.w = 100;
+    track_date.h = 30;
+    bpm_display.x = 200;
+    bpm_display.y = 160;
+    bpm_display.w = 100;
+    bpm_display.h = 30;
 
     surf = TTF_RenderText_Solid(font, "Yes", p->green);
     button.yes_tex = SDL_CreateTextureFromSurface(renderer, surf);
@@ -62,14 +79,18 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     button.no.y = 150;
     button.no.w = 40;
     button.no.h = 20;
-    button.del.x = 400;
-    button.del.y = 275;
+    button.del.x = 405;
+    button.del.y = 250;
     button.del.w = 48;
     button.del.h = 20;
 
     block_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
     block_speed_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
     block_len_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
+    track_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
+    bpm_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
+    track_artist_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
+    track_date_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2); // throwaway
 
     for (int i = 0; i < 10; i++)
     {
@@ -178,6 +199,47 @@ void Util::update()
                 SDL_FreeSurface(surf);
             }
             break;
+        case 2:
+            text.clear();
+            text = "Title: ";
+            text += tracker->track_name;
+            track_name.w = 16 * strlen(text.c_str());
+            track_name.x = 250 - (track_name.w / 2);
+            surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
+            SDL_DestroyTexture(track_name_tex);
+            track_name_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+
+            text.clear();
+            text = "Artist: ";
+            text += tracker->track_artist;
+            track_artist.w = 16 * strlen(text.c_str());
+            track_artist.x = 250 - (track_artist.w / 2);
+            surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
+            SDL_DestroyTexture(track_artist_tex);
+            track_artist_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+
+            text.clear();
+            text = "Date: ";
+            text += tracker->track_date;
+            track_date.w = 16 * strlen(text.c_str());
+            track_date.x = 250 - (track_date.w / 2);
+            surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
+            SDL_DestroyTexture(track_date_tex);
+            track_date_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+
+            text.clear();
+            text = "Master Tempo: ";
+            text += bpm_entry;
+            bpm_display.w = 16 * strlen(text.c_str());
+            bpm_display.x = 250 - (bpm_display.w / 2);
+            surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
+            SDL_DestroyTexture(bpm_display_tex);
+            bpm_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+            break;
         default:
             break;
     }
@@ -235,6 +297,28 @@ void Util::render()
                 SDL_RenderDrawRect(renderer, &block_len);
             }
             break;
+        case 2:
+            SDL_RenderCopy(renderer, track_name_tex, NULL, &track_name);
+            SDL_RenderCopy(renderer, track_artist_tex, NULL, &track_artist);
+            SDL_RenderCopy(renderer, bpm_display_tex, NULL, &bpm_display);
+            SDL_RenderCopy(renderer, track_date_tex, NULL, &track_date);
+            if (bpm_mode)
+            {
+                SDL_RenderDrawRect(renderer, &bpm_display);
+            }
+            if (name_mode)
+            {
+                SDL_RenderDrawRect(renderer, &track_name);
+            }
+            if (artist_mode)
+            {
+                SDL_RenderDrawRect(renderer, &track_artist);
+            }
+            if (date_mode)
+            {
+                SDL_RenderDrawRect(renderer, &track_date);
+            }
+            break;
         default:
             break;
     }
@@ -255,6 +339,7 @@ void Util::setEntry()
 {
     speed_entry = to_string(tracker->block[tracker->b_pos].speed);
     len_entry = to_string(tracker->block[tracker->b_pos].length);
+    bpm_entry = to_string(tracker->master_tempo);
 }
 
 void Util::mouse(int x, int y)
@@ -305,6 +390,25 @@ void Util::mouse(int x, int y)
                     }
                 }
             }
+            break;
+        case 2:
+            if (checkButton(x, y, &track_name))
+            {
+                name_mode = true;
+            }
+            if (checkButton(x, y, &track_artist))
+            {
+                artist_mode = true;
+            }
+            if (checkButton(x, y, &track_date))
+            {
+                date_mode = true;
+            }
+            if (checkButton(x, y, &bpm_display))
+            {
+                bpm_mode = true;
+            }
+            update();
             break;
         default:
             break;
@@ -359,7 +463,7 @@ void Util::input(SDL_Event *e)
                         break;
                     case SDLK_DELETE:
                     case SDLK_BACKSPACE:
-                        if (text_mode)
+                        if (text_mode && strlen(tracker->block[tracker->b_pos].name.c_str()) > 0)
                         {
                             tracker->block[tracker->b_pos].name.pop_back();
                         } else if (speed_mode && strlen(speed_entry.c_str()) > 0)
@@ -371,7 +475,7 @@ void Util::input(SDL_Event *e)
                         }
                         break;
                     default:
-                        if (text_mode)
+                        if (text_mode && strlen(tracker->block[tracker->b_pos].name.c_str()) < 16)
                         {
                             key = SDL_GetKeyName(e->key.keysym.sym);
                             if (strlen(key.c_str()) == 1)
@@ -410,6 +514,93 @@ void Util::input(SDL_Event *e)
                 }
                 update();
             }
+            break;
+        case 2:
+            switch (e->key.keysym.sym)
+            {
+                case SDLK_ESCAPE:
+                case SDLK_RETURN:
+                    name_mode = false; artist_mode = false; date_mode = false;
+                    if (bpm_mode)
+                    {
+                        bpm_mode = false;
+                        if (bpm_entry != "0" && strlen(bpm_entry.c_str()) > 0)
+                        {
+                            tracker->master_tempo = stoi(bpm_entry, 0, 10); // convert string to int
+                        } else {
+                            tracker->master_tempo = 1;
+                        }
+                        setEntry();
+                    }
+                    break;
+                case SDLK_DELETE:
+                case SDLK_BACKSPACE:
+                    if (name_mode && strlen(tracker->track_name.c_str()) > 0)
+                    {
+                        tracker->track_name.pop_back();
+                    } else if (artist_mode && strlen(tracker->track_artist.c_str()) > 0)
+                    {
+                        tracker->track_artist.pop_back();
+                    } else if (date_mode && strlen(tracker->track_date.c_str()) > 0)
+                    {
+                        tracker->track_date.pop_back();
+                    } else if (bpm_mode && strlen(bpm_entry.c_str()) > 0)
+                    {
+                        bpm_entry.pop_back();
+                    }
+                    break;
+                default:
+                    if (name_mode && strlen(tracker->track_name.c_str()) < 20)
+                    {
+                        key = SDL_GetKeyName(e->key.keysym.sym);
+                        if (strlen(key.c_str()) == 1)
+                        {
+                            tracker->track_name += key;
+                        } else {
+                            if (key == "Space")
+                            {
+                                tracker->track_name += ' ';
+                            }
+                        }
+                    } else if (artist_mode && strlen(tracker->track_artist.c_str()) < 20)
+                    {
+                        key = SDL_GetKeyName(e->key.keysym.sym);
+                        if (strlen(key.c_str()) == 1)
+                        {
+                            tracker->track_artist += key;
+                        } else {
+                            if (key == "Space")
+                            {
+                                tracker->track_artist += ' ';
+                            }
+                        }
+                    } else if (date_mode && strlen(tracker->track_date.c_str()) < 20)
+                    {
+                        key = SDL_GetKeyName(e->key.keysym.sym);
+                        if (strlen(key.c_str()) == 1)
+                        {
+                            tracker->track_date += key;
+                        } else {
+                            if (key == "Space")
+                            {
+                                tracker->track_date += ' ';
+                            }
+                        }
+                    } else if (bpm_mode)
+                    {
+                        key = SDL_GetKeyName(e->key.keysym.sym);
+                        if (strlen(bpm_entry.c_str()) < 3)
+                        {
+                            if (key == "0" || key == "1" || key == "2" || key == "3" || key == "4" || key == "5"
+                            || key == "6" || key == "7" || key == "8" || key == "9")
+                            {
+                                bpm_entry += key;
+                            }
+                        }
+                    }
+                    break;
+            }
+            update();
             break;
         default:
             break;

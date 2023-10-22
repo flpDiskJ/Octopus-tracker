@@ -18,7 +18,7 @@ private:
     SDL_Texture *name_tex; // displays window name
     Pallet *p;
     Tracker *tracker;
-    int mode = 0; // 0 = quit? yes/no // 1 = block parameters
+    int mode = 0; // 0 = quit? yes/no // 1 = block parameters // 2 = track parameters
 
     struct Buttons{
         SDL_Rect yes; SDL_Texture *yes_tex;
@@ -38,6 +38,13 @@ private:
     bool text_mode = false;
     bool speed_mode = false; string speed_entry;
     bool len_mode = false; string len_entry;
+
+    // for track parameters (mode 2)
+    bool name_mode = false; bool bpm_mode = false; bool artist_mode = false; bool date_mode = false;
+    SDL_Rect track_name; SDL_Texture *track_name_tex;
+    SDL_Rect bpm_display; SDL_Texture *bpm_display_tex; string bpm_entry;
+    SDL_Rect track_artist; SDL_Texture *track_artist_tex;
+    SDL_Rect track_date; SDL_Texture *track_date_tex;
 
     void update(); // updates textures
 

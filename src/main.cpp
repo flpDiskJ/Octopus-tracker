@@ -142,6 +142,10 @@ int main(int argc, char* args[]) {
                                 {
                                     util.open("Block Parameters", 1);
                                     windowID = 1;
+                                } else if (e.key.keysym.sym == SDLK_h)
+                                {
+                                    util.open("Track Parameters", 2);
+                                    windowID = 1;
                                 }
                             }
                             tracker.keyboard(&e);
