@@ -224,6 +224,7 @@ void Tracker::create_block(bool insert)
 {
     block[total_blocks].length = block[total_blocks-1].length;
     block[total_blocks].speed = block[total_blocks-1].speed;
+    block[total_blocks].name = "new block";
     for (int c = 0; c < CHANNELS; c++)
     {
         block[total_blocks].channel[c] = (Note*)malloc(block[total_blocks].length*sizeof(Note));
@@ -259,7 +260,7 @@ void Tracker::delete_block(int blk)
 void Tracker::update_info()
 {
     string text;
-    text = block[0].name;
+    text = block[b_pos].name;
     int length = strlen(text.c_str());
     if ( length < 10)
     {

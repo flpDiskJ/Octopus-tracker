@@ -33,6 +33,7 @@ private:
     SDL_Rect list_index[10]; SDL_Texture *list_index_tex[10];
     SDL_Rect cursor;
     int pos = -4;
+    bool text_mode = false;
 
     void update(); // updates textures
 

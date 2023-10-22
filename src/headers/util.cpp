@@ -110,6 +110,13 @@ void Util::update()
     string text;
     switch (mode) {
         case 1:
+            block_name.w = 20 * strlen(tracker->block[tracker->b_pos].name.c_str());
+            if (block_name.w < 20) {block_name.w = 20;}
+            block_name.x = 250 - (block_name.w / 2);
+            surf = TTF_RenderText_Solid(font, tracker->block[tracker->b_pos].name.c_str(), p->black);
+            SDL_DestroyTexture(block_name_tex);
+            block_name_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
             for (int i = 0; i < 10; i++)
             {
                 if (pos + i == tracker->b_pos)
@@ -122,7 +129,7 @@ void Util::update()
                     text = "Block ";
                     text += to_string(pos + i);
                     text += ": ";
-                    text += tracker->block[tracker->b_pos].name;
+                    text += tracker->block[pos + i].name;
                     for (int f = strlen(text.c_str()); f < 25; f++)
                     {
                         text += ' ';
@@ -161,12 +168,18 @@ void Util::render()
             break;
         case 1:
             SDL_RenderCopy(renderer, button.del_tex, NULL, &button.del);
+            SDL_RenderCopy(renderer, block_name_tex, NULL, &block_name);
             SDL_RenderDrawRect(renderer, &button.del);
             SDL_RenderDrawRect(renderer, &block_list);
             for (int i = 0; i < 10; i++)
             {
                 SDL_RenderCopy(renderer, list_index_tex[i], NULL, &list_index[i]);
             }
+            if (text_mode)
+            {
+                SDL_SetRenderDrawColor(renderer, 180, 0, 0, 0xFF); // Red
+            }
+            SDL_RenderDrawRect(renderer, &block_name);
             if (tracker->b_pos >= pos && tracker->b_pos < pos + 10)
             {
                 SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
@@ -208,6 +221,11 @@ void Util::mouse(int x, int y)
                 tracker->delete_block(tracker->b_pos);
                 update();
             }
+            if (checkButton(x, y, &block_name))
+            {
+                text_mode = true;
+                update();
+            }
             for (int i = 0; i < 10; i++)
             {
                 if (checkButton(x, y, &list_index[i]))
@@ -237,6 +255,23 @@ void Util::input(SDL_Event *e)
             else if (e->key.keysym.sym == SDLK_UP)
             {
                 if (pos > -5) {pos--; update();}
+            }
+            if (text_mode)
+            {
+                switch (e->key.keysym.sym)
+                {
+                    case SDLK_ESCAPE:
+                    case SDLK_RETURN:
+                        text_mode = false;
+                        break;
+                    case SDLK_DELETE:
+                    case SDLK_BACKSPACE:
+                        tracker->block[tracker->b_pos].name.pop_back();
+                        break;
+                    default:
+                        break;
+                }
+                update();
             }
             break;
         default:
