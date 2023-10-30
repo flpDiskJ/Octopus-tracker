@@ -15,6 +15,7 @@ add_executable(octapus
 	${SRC}/main.cpp
 	${SRC}/headers/tracker.cpp
 	${SRC}/headers/util.cpp
+	${SRC}/headers/audioworks.cpp
 )
 target_include_directories(
 	octapus PUBLIC
@@ -28,7 +29,7 @@ target_link_libraries(
 	SDL2_ttf
 )
 configure_file(
-	${CMAKE_SOURCE_DIR}/fonts/font.TTF 
-	${CMAKE_CURRENT_BINARY_DIR}/font.TTF 
+	${CMAKE_SOURCE_DIR}/fonts/font.TTF
+	${CMAKE_CURRENT_BINARY_DIR}/font.TTF
 	COPYONLY
 )

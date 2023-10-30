@@ -104,6 +104,11 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
 
 Util::~Util()
 {
+
+}
+
+void Util::close_all()
+{
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }

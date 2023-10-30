@@ -4,6 +4,7 @@
 
 #include "headers/tracker.h"
 #include "headers/util.h"
+#include "headers/audioworks.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
@@ -64,6 +65,8 @@ int main(int argc, char* args[]) {
     tracker.update_info();
 
     Util util(&tracker, Font, &pallet);
+
+    AudioW aworks(&tracker);
 
     SDL_Event e;
     bool render = true; // set to true to update screen
@@ -179,6 +182,8 @@ int main(int argc, char* args[]) {
         }
     }
 
+    util.close_all();
+    aworks.close_audio();
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
     TTF_CloseFont(Font);

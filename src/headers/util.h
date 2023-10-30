@@ -57,6 +57,8 @@ public:
 
     ~Util();
 
+    void close_all();
+
     bool checkButton(int mouseX, int mouseY, SDL_Rect *button); // returns true if mouse is inside button
 
     void open(string title, int m); // opens window for specified purpose (m for mode)
