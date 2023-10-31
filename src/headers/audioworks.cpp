@@ -13,6 +13,10 @@ AudioW::~AudioW()
 
 void AudioW::play_note(SDL_Event *e)
 {
+    if (t->cursor_pos != 0)
+    {
+        return;
+    }
     // figure out note data
     char note = '-';
     char key = '-';

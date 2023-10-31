@@ -111,6 +111,13 @@ Tracker::~Tracker() {
     {
         free(channel_buffer.data);
     }
+    for (int i = 0; i < MAXSAMPLES; i++)
+    {
+        if (sample[i].len > 0)
+        {
+            free(sample[i].data);
+        }
+    }
     free(sequence);
 }
 
