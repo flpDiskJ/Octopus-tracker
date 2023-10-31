@@ -106,15 +106,14 @@ void AudioW::audio_works()
                 }
             }
         }
-        val = val / CHANNELS;
-        clip_val = val;
+        clip_val = val / CHANNELS;
         if (ENDIAN == 1)
         {
-            b->data[p+1] = clip_val;
-            b->data[p] = clip_val >> 8;
-        } else {
-            b->data[p] = clip_val;
+            b->data[p] = clip_val & 0x00ff;
             b->data[p+1] = clip_val >> 8;
+        } else {
+            b->data[p] = clip_val >> 8;
+            b->data[p+1] = clip_val & 0x00ff;
         }
     }
 }
