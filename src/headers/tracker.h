@@ -7,9 +7,8 @@ class Tracker
 {
 private:
     SDL_Surface *surf = NULL;
-    //SDL_Color color_black = {0, 0, 0}, color_red = {200, 0, 0}, color_blue = {0, 0, 180};
     Pallet *p;
-    SDL_Rect displayrects[DISPLAYRECTS]; // 1280x18 // Used to display sequence steps
+    SDL_Rect displayrects[DISPLAYRECTS]; // Used to display sequence steps
     SDL_Texture *displaytextures[DISPLAYRECTS];
     SDL_Renderer *renderer;
     TTF_Font *font;
@@ -21,12 +20,12 @@ private:
         int sample; // 0 - 99
         char command[2];
         char parameter[2];
-        int rate; // rate to play note at. Caulculated by getFreq()
+        double pos_adv; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
         int length;
-        int speed;
+        int speed; // steps per beat
         string name;
     };
 
@@ -35,20 +34,23 @@ private:
         int length;
     };
 
-    struct Sample{ // data for each instrument
-        uint16_t *data;
-        int length;
-        int level;
-        int tune;
+    struct Instrument{ // data for each instrument/sample
+        Uint8 *data;
+        Uint32 len;
+        int level; // 0-128
+        double tune; // 0. - 2
         string name;
     };
 
-    struct AudioSpec{ // specs for each channel
-        int rate; // current channel rate
-        int sample; // instrument being played
-        int pos; // position of sample being played
-        int level; // volume at which instrument is played
+    struct Channel{ // set these values when note is triggered
+        bool play; // set to true to play audio
+        double amplifier; // control level. calculate: 128 / sample[s_pos].level
+        double pitch_mod; // control pitch. set by commands, otherwise set to 1
+        int sample; // sample to play.
+        double pos; // curent position of sample in channel
+        double pos_adv; // amount to advance pos // calculate: Desired rate / SAMPLE_RATE // multiplied by pitch_mod every advance
     };
+
     SDL_Rect tracker_box; // only functions for design (box around tracker)
     SDL_Rect octave_display;
     SDL_Rect sample_name;
@@ -64,8 +66,6 @@ private:
     SDL_Texture *skip_display_tex;
     bool edit_mode = false;
     SDL_Rect cursor; // used to display cursor
-    int cursor_channel = 0; // the channel that the cursor is inside
-    int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
 
     void copy_channel();
 
@@ -90,8 +90,6 @@ private:
 
     void sample_dec(); // decriment sample position
 
-    void incpos(); // incriment step position by amount
-
     void decpos(); // decriment step position by amount
 
     void clear_step(); // clears current step
@@ -100,11 +98,9 @@ private:
 
     void clear_block(int blk); // set all values to default on indicated block
 
-    int getFreq(char note, char key, int oct); // returns sample rate of note
+    void clear_index(); // sets cursor_pos index to 0
 
     void get_note(SDL_Event *e); // handles keyboard notes
-
-    void clear_index(); // sets cursor_pos index to 0
 
 public:
 
@@ -112,8 +108,7 @@ public:
     Block block_buffer; // used to copy blocks
     Buffer channel_buffer; // used to copy channels
     int total_blocks = 0;
-    Sample sample[MAXSAMPLES]; // static array of samples
-    AudioSpec channelspec[CHANNELS];
+    Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
     int sequence_len = 0;
     SDL_Rect blkname_displayrect;
@@ -129,13 +124,22 @@ public:
     int pos = 0; // step position
     int skip = 1; // number of steps to incriment when note is entered
     int s_pos = 0; //sample position
+    int cursor_channel = 0; // the channel that the cursor is inside
+    int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
     int octave = 3;
-    bool mute[8]; // used to mute channel
+    bool mute[CHANNELS]; // used to mute channel
+    Channel channel[CHANNELS];
 
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    bool load_inst(string path, string name); // loads wav into instrument slot of s_pos | returns true if successful
+
+    int getFreq(char note, char key, int oct); // returns sample rate of note
+
+    void incpos(); // incriment step position by amount
 
     void realloc_block(int size); // reallocates block at b_pos
 

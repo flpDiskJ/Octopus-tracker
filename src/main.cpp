@@ -10,6 +10,14 @@
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
+void audio_callback(void* buffer, Uint8* stream, int len)
+{
+    memset(stream, 0, len);
+    AudioBuffer *b = (AudioBuffer*)buffer;
+    SDL_MixAudio(stream, b->data, BUFF_SIZE, SDL_MIX_MAXVOLUME);
+    b->update = true; // tell audio_works() to fill buffer
+}
+
 int main(int argc, char* args[]) {
 
     Pallet pallet;
@@ -66,7 +74,27 @@ int main(int argc, char* args[]) {
 
     Util util(&tracker, Font, &pallet);
 
-    AudioW aworks(&tracker);
+    AudioBuffer audio_buffer;
+
+    SDL_AudioSpec mFormat;
+    mFormat.format = AUDIO_S16; mFormat.freq = SAMPLE_RATE; mFormat.channels = AUDIO_CHANNELS;
+    mFormat.callback = audio_callback; mFormat.samples = BUFF_SIZE;
+    mFormat.userdata = &audio_buffer;
+
+    audio_buffer.data = new Uint8[BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS];
+    audio_buffer.update = false;
+    audio_buffer.stop = false;
+    memset(audio_buffer.data, 0, BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS);
+
+    if (SDL_OpenAudio(&mFormat, NULL) < 0)
+    {
+        fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
+    }
+    SDL_PauseAudio(0);
+
+    AudioW aworks(&tracker, &audio_buffer);
+
+    tracker.load_inst("/home/jake/code/c/octapus/test_sample.wav", "Amen Break"); // used for testing only
 
     SDL_Event e;
     bool render = true; // set to true to update screen
@@ -136,6 +164,10 @@ int main(int argc, char* args[]) {
                         util.open("Quit?", 0);
                         windowID = 1;
                     }
+                    if (e.key.keysym.sym == SDLK_SPACE)
+                    {
+                        audio_buffer.stop = true;
+                    }
                     switch (windowID) {
                         case 0:
                             render = true;
@@ -152,6 +184,7 @@ int main(int argc, char* args[]) {
                                 }
                             }
                             tracker.keyboard(&e);
+                            aworks.play_note(&e);
                             break;
                         case 1:
                             util.input(&e);
@@ -180,10 +213,19 @@ int main(int argc, char* args[]) {
             SDL_RenderPresent(tracker_render); // Present image to screen
             render = false;
         }
+
+        if (audio_buffer.update)
+        {
+            SDL_LockAudio();
+            aworks.audio_works(); // generate audio buffer data
+            SDL_UnlockAudio();
+            audio_buffer.update = false;
+        }
     }
 
     util.close_all();
-    aworks.close_audio();
+    free(audio_buffer.data);
+    SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
     TTF_CloseFont(Font);

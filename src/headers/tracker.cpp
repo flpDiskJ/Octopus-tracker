@@ -50,6 +50,12 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     cursor.w = 39;
     cursor.h = 17;
 
+    for (int s = 0; s < MAXSAMPLES; s++)
+    {
+        sample[s].level = 0;
+        sample[s].len = 0;
+    }
+
     sequence = (int*)malloc(sizeof(int));
     sequence[0] = 0;
     sequence_len = 1;
@@ -64,10 +70,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     {
         block[0].channel[c] = (Note*)malloc(64*sizeof(Note));
         mute[c] = false;
-        channelspec[c].rate = 0;
-        channelspec[c].sample = 0;
-        channelspec[c].pos = 0;
-        channelspec[c].level = 0;
+        channel[c].play = false;
     }
     clear_block(0);
 
@@ -111,6 +114,42 @@ Tracker::~Tracker() {
     free(sequence);
 }
 
+bool Tracker::load_inst(string path, string name)
+{
+    SDL_AudioSpec inputSpec;
+    Uint8 *data;
+    Uint32 length;
+    SDL_AudioCVT cvt;
+    if (SDL_LoadWAV(path.c_str(), &inputSpec, &data, &length) == NULL)
+    {
+        fprintf(stderr, "Could not open wav: %s\n", SDL_GetError());
+        return false;
+    }
+    // convert input format to mono S8
+    SDL_BuildAudioCVT(&cvt, inputSpec.format, inputSpec.channels, inputSpec.freq, AUDIO_S8, 1, inputSpec.freq);
+    SDL_assert(cvt.needed); // obviously, this one is always needed.
+    cvt.len = length; // length of original data
+    cvt.buf = (Uint8*)SDL_malloc(cvt.len * cvt.len_mult); // allocate buffer
+    memcpy(cvt.buf, data, length); // copy data to cvt buffer
+    SDL_ConvertAudio(&cvt); // convert
+    length = cvt.len_cvt; // new length after conversion
+    SDL_LockAudio();
+    if (sample[s_pos].len != 0)
+    {
+        free(sample[s_pos].data);
+    }
+    sample[s_pos].data = (Uint8*)SDL_malloc(length);
+    sample[s_pos].len = length;
+    sample[s_pos].tune = 1; sample[s_pos].level = 128;
+    sample[s_pos].name.clear();
+    sample[s_pos].name += name;
+    memcpy(sample[s_pos].data, cvt.buf, length); // copy converted cvt buffer to instrument
+    SDL_UnlockAudio();
+    SDL_FreeWAV(data);
+    update_info();
+    return true;
+}
+
 void Tracker::copy_channel()
 {
     if (channel_buffer.length == 0)
@@ -131,6 +170,7 @@ void Tracker::copy_channel()
         channel_buffer.data[s].command[1] = block[b_pos].channel[cursor_channel][s].command[1];
         channel_buffer.data[s].parameter[0] = block[b_pos].channel[cursor_channel][s].parameter[0];
         channel_buffer.data[s].parameter[1] = block[b_pos].channel[cursor_channel][s].parameter[1];
+        channel_buffer.data[s].pos_adv = block[b_pos].channel[cursor_channel][s].pos_adv;
     }
 }
 
@@ -153,6 +193,7 @@ void Tracker::paste_channel()
         block[b_pos].channel[cursor_channel][s].command[1] = channel_buffer.data[s].command[1];
         block[b_pos].channel[cursor_channel][s].parameter[0] = channel_buffer.data[s].parameter[0];
         block[b_pos].channel[cursor_channel][s].parameter[1] = channel_buffer.data[s].parameter[1];
+        block[b_pos].channel[cursor_channel][s].pos_adv = channel_buffer.data[s].pos_adv;
     }
 }
 
@@ -173,7 +214,7 @@ void Tracker::realloc_block(int size)
                 block[b_pos].channel[c][s].command[1] = '0';
                 block[b_pos].channel[c][s].parameter[0] = '0';
                 block[b_pos].channel[c][s].parameter[1] = '0';
-                block[b_pos].channel[c][s].rate = 0;
+                block[b_pos].channel[c][s].pos_adv = 0;
             }
         }
     }
@@ -214,7 +255,7 @@ void Tracker::copy_block(int blk)
             block_buffer.channel[c][s].command[1] = block[blk].channel[c][s].command[1];
             block_buffer.channel[c][s].parameter[0] = block[blk].channel[c][s].parameter[0];
             block_buffer.channel[c][s].parameter[1] = block[blk].channel[c][s].parameter[1];
-            block_buffer.channel[c][s].rate = block[blk].channel[c][s].rate;
+            block_buffer.channel[c][s].pos_adv = block[blk].channel[c][s].pos_adv;
         }
     }
 }
@@ -249,7 +290,7 @@ void Tracker::paste_block(int blk)
             block[blk].channel[c][s].command[1] = block_buffer.channel[c][s].command[1];
             block[blk].channel[c][s].parameter[0] = block_buffer.channel[c][s].parameter[0];
             block[blk].channel[c][s].parameter[1] = block_buffer.channel[c][s].parameter[1];
-            block[blk].channel[c][s].rate = block_buffer.channel[c][s].rate;
+            block[blk].channel[c][s].pos_adv = block_buffer.channel[c][s].pos_adv;
         }
     }
 }
@@ -514,7 +555,7 @@ void Tracker::clear_channel()
         block[b_pos].channel[cursor_channel][s].command[1] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[0] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[1] = '0';
-        block[b_pos].channel[cursor_channel][s].rate = 0;
+        block[b_pos].channel[cursor_channel][s].pos_adv = 0;
     }
 }
 
@@ -533,7 +574,7 @@ void Tracker::clear_block(int blk) // Clears indicated block
             block[blk].channel[c][s].command[1] = '0';
             block[blk].channel[c][s].parameter[0] = '0';
             block[blk].channel[c][s].parameter[1] = '0';
-            block[blk].channel[c][s].rate = 0;
+            block[blk].channel[c][s].pos_adv = 0;
         }
     }
 }
@@ -624,6 +665,10 @@ int Tracker::getFreq(char note, char key, int oct)
 
 void Tracker::get_note(SDL_Event *e)
 {
+    if (!edit_mode)
+    {
+        return;
+    }
     if (cursor_pos == 0)
     {
         // figure out note data
@@ -675,24 +720,15 @@ void Tracker::get_note(SDL_Event *e)
 
         if (oct != 0)
         {
-            // play note in channel
-            channelspec[cursor_channel].rate = getFreq(note, key, oct);
-            channelspec[cursor_channel].sample = s_pos;
-            channelspec[cursor_channel].level = sample[s_pos].level;
-            channelspec[cursor_channel].pos = 0;
-
-            // add note if edit_mode is true
-            if (edit_mode)
-            {
-                block[b_pos].channel[cursor_channel][pos].note = note;
-                block[b_pos].channel[cursor_channel][pos].key = key;
-                block[b_pos].channel[cursor_channel][pos].octave = oct;
-                block[b_pos].channel[cursor_channel][pos].sample = s_pos;
-                block[b_pos].channel[cursor_channel][pos].rate = getFreq(note, key, oct);
-                incpos();
-            }
+            // add note
+            block[b_pos].channel[cursor_channel][pos].note = note;
+            block[b_pos].channel[cursor_channel][pos].key = key;
+            block[b_pos].channel[cursor_channel][pos].octave = oct;
+            block[b_pos].channel[cursor_channel][pos].sample = s_pos;
+            block[b_pos].channel[cursor_channel][pos].pos_adv = getFreq(note, key, oct) / SAMPLE_RATE;
+            incpos();
         }
-    } else if (edit_mode)
+    } else
     {
         char k; int i = 11;
         bool vkey = true;
@@ -757,6 +793,7 @@ void Tracker::clear_step()
     block[b_pos].channel[cursor_channel][pos].command[1] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
+    block[b_pos].channel[cursor_channel][pos].pos_adv = 0;
     incpos();
 }
 

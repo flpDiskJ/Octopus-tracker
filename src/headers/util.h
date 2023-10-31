@@ -57,7 +57,7 @@ public:
 
     ~Util();
 
-    void close_all();
+    void close_all(); // call before SDL_Quit() in main
 
     bool checkButton(int mouseX, int mouseY, SDL_Rect *button); // returns true if mouse is inside button
 

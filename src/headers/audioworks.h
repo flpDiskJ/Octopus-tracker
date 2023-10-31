@@ -3,22 +3,20 @@
 
 #include "tracker.h"
 
-void audio_callback(void* userdata, Uint8* stream, int len);
-
 class AudioW{
 private:
-    const int sRate = 48000;
-    SDL_AudioSpec mainFormat;
     Tracker *t;
-    Uint8 *buffer;
+    AudioBuffer *b;
 
 public:
 
-    AudioW(Tracker *tracker);
+    AudioW(Tracker *tracker, AudioBuffer *buffer);
 
     ~AudioW();
 
-    void close_audio();
+    void play_note(SDL_Event *e); // plays note from keyboard
+
+    void audio_works(); // run in program loop // generates buffer data
 
 };
 
