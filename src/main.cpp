@@ -12,9 +12,14 @@ const int SCREEN_HEIGHT = 720;
 
 void audio_callback(void* buffer, Uint8* stream, int len)
 {
-    memset(stream, 0, len);
     AudioBuffer *b = (AudioBuffer*)buffer;
-    SDL_MixAudio(stream, b->data, BUFF_SIZE, SDL_MIX_MAXVOLUME);
+    memset(stream, 0, len);
+    Uint32 amount = b->len - b->pos;
+    if ( amount > len ) {
+        amount = len;
+    }
+    SDL_MixAudio(stream, b->data, amount, SDL_MIX_MAXVOLUME);
+    b->pos += amount;
     b->update = true; // tell audio_works() to fill buffer
 }
 
@@ -77,13 +82,15 @@ int main(int argc, char* args[]) {
     AudioBuffer audio_buffer;
 
     SDL_AudioSpec mFormat;
-    mFormat.format = AUDIO_S16; mFormat.freq = SAMPLE_RATE; mFormat.channels = AUDIO_CHANNELS;
+    mFormat.format = AUDIO_S16LSB; mFormat.freq = SAMPLE_RATE; mFormat.channels = AUDIO_CHANNELS;
     mFormat.callback = audio_callback; mFormat.samples = BUFF_SIZE;
     mFormat.userdata = &audio_buffer;
 
-    audio_buffer.data = new Uint8[BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS];
+    audio_buffer.len = BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS;
+    audio_buffer.data = new Uint8[audio_buffer.len];
     audio_buffer.update = false;
     audio_buffer.stop = false;
+    audio_buffer.pos = 0;
     memset(audio_buffer.data, 0, BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS);
 
     if (SDL_OpenAudio(&mFormat, NULL) < 0)
@@ -94,7 +101,7 @@ int main(int argc, char* args[]) {
 
     AudioW aworks(&tracker, &audio_buffer);
 
-    tracker.load_inst("/home/jake/code/c/octapus/test_sample.wav", "Amen Break"); // used for testing only
+    tracker.load_inst("/home/jake/code/c/octapus/test_sample.wav", "Test Sample"); // used for testing only
 
     SDL_Event e;
     bool render = true; // set to true to update screen

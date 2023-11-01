@@ -78,8 +78,7 @@ void AudioW::audio_works()
 {
     int actual_pos;
     int val;
-    uint16_t clip_val;
-    int size = BUFF_SIZE*BYTES_IN_SAMPLE;
+    Sint16 out;
     if (b->stop)
     {
         for (int c = 0; c < CHANNELS; c++)
@@ -88,17 +87,17 @@ void AudioW::audio_works()
         }
         b->stop = false;
     }
-    for (int p = 0; p < size; p += BYTES_IN_SAMPLE)
+    for (int p = 0; p < b->len; p += BYTES_IN_SAMPLE)
     {
         val = 0;
-        for (int c = 0; c < CHANNELS; c++)
+        for (int c = 0; c < 1; c++)
         {
             if (t->channel[c].play && t->mute[c] == false)
             {
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len)
                 {
-                    val += (t->sample[t->channel[c].sample].data[actual_pos] * AMP_LEV) * t->channel[c].amplifier;
+                    val = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
                     t->channel[c].pos += t->channel[c].pos_adv;
                     t->channel[c].pos_adv *= t->channel[c].pitch_mod;
                 } else{
@@ -106,14 +105,9 @@ void AudioW::audio_works()
                 }
             }
         }
-        clip_val = val / CHANNELS;
-        if (ENDIAN == 1)
-        {
-            b->data[p] = clip_val & 0x00ff;
-            b->data[p+1] = clip_val >> 8;
-        } else {
-            b->data[p] = clip_val >> 8;
-            b->data[p+1] = clip_val & 0x00ff;
-        }
+        out = val;
+        b->data[p] = out & 0xFF;
+        b->data[p+1] = out >> 8 & 0xFF;
+        b->pos = 0;
     }
 }

@@ -35,7 +35,7 @@ private:
     };
 
     struct Instrument{ // data for each instrument/sample
-        Uint8 *data;
+        Sint16 *data;
         Uint32 len;
         int level; // 0-128
         double tune; // 0. - 2

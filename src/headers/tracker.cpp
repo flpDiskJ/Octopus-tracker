@@ -126,33 +126,45 @@ bool Tracker::load_inst(string path, string name)
     SDL_AudioSpec inputSpec;
     Uint8 *data;
     Uint32 length;
-    SDL_AudioCVT cvt;
     if (SDL_LoadWAV(path.c_str(), &inputSpec, &data, &length) == NULL)
     {
         fprintf(stderr, "Could not open wav: %s\n", SDL_GetError());
         return false;
     }
-    // convert input format to mono S8
-    SDL_BuildAudioCVT(&cvt, inputSpec.format, inputSpec.channels, inputSpec.freq, AUDIO_S8, 1, inputSpec.freq);
-    SDL_assert(cvt.needed); // obviously, this one is always needed.
-    cvt.len = length; // length of original data
-    cvt.buf = (Uint8*)SDL_malloc(cvt.len * cvt.len_mult); // allocate buffer
-    memcpy(cvt.buf, data, length); // copy data to cvt buffer
-    SDL_ConvertAudio(&cvt); // convert
-    length = cvt.len_cvt; // new length after conversion
-    SDL_LockAudio();
-    if (sample[s_pos].len != 0)
+    // convert input format
+    if (inputSpec.format == AUDIO_S16)
     {
-        free(sample[s_pos].data);
+        SDL_LockAudio();
+        if (sample[s_pos].len != 0)
+        {
+            free(sample[s_pos].data);
+        }
+        int new_length = length / 2;
+        Sint16 val;
+        sample[s_pos].data = (Sint16*)malloc(new_length*sizeof(Sint16));
+        memset(sample[s_pos].data, 0, new_length);
+        sample[s_pos].len = new_length;
+        sample[s_pos].tune = 1; sample[s_pos].level = 128;
+        sample[s_pos].name.clear();
+        sample[s_pos].name += name;
+        printf("%d\n", inputSpec.freq);
+        if (inputSpec.channels == 1)
+        {
+            for (int x = 0, p = 0; x < length; x += 2, p++)
+            {
+                val = ((data[x+1] & 0xFF) << 8) | (data[x] & 0xFF);
+                sample[s_pos].data[p] = val;
+            }
+        } else {
+            printf("Stereo\n");
+        }
+        SDL_UnlockAudio();
+        SDL_FreeWAV(data);
+    } else {
+        printf("Invalid Audio Format!\n");
+        SDL_FreeWAV(data);
+        return false;
     }
-    sample[s_pos].data = (Uint8*)SDL_malloc(length);
-    sample[s_pos].len = length;
-    sample[s_pos].tune = 1; sample[s_pos].level = 128;
-    sample[s_pos].name.clear();
-    sample[s_pos].name += name;
-    memcpy(sample[s_pos].data, cvt.buf, length); // copy converted cvt buffer to instrument
-    SDL_UnlockAudio();
-    SDL_FreeWAV(data);
     update_info();
     return true;
 }
