@@ -13,18 +13,28 @@ const int SCREEN_HEIGHT = 720;
 void audio_callback(void* buffer, Uint8* stream, int len)
 {
     AudioBuffer *b = (AudioBuffer*)buffer;
-    memset(stream, 0, len);
-    Uint32 amount = b->len - b->back_pos;
-    if ( amount > len ) {
-        amount = len;
-    }
-    SDL_MixAudio(stream, b->data, amount, SDL_MIX_MAXVOLUME);
-    b->back_pos += amount;
-    if (b->back_pos >= b->len)
+
+    int region1size = len;
+    int region2size = 0;
+
+    if (b->read_pos + len > b->len)
     {
-        b->back_pos = 0;
+        region1size = b->len - b->read_pos;
+        region2size = len - region1size;
     }
-    //b->update = true; // tell audio_works() to fill buffer
+
+    SDL_memcpy(
+    stream,
+    (b->data + b->read_pos),
+    region1size
+    );
+    SDL_memcpy(
+    &stream[region1size],
+    b->data,
+    region2size
+    );
+
+    b->read_pos = (b->read_pos + len) % b->len;
 }
 
 int main(int argc, char* args[]) {
@@ -92,9 +102,9 @@ int main(int argc, char* args[]) {
 
     audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS;
     audio_buffer.data = new Uint8[audio_buffer.len];
-    audio_buffer.update = false;
     audio_buffer.stop = false;
-    audio_buffer.back_pos = 0;
+    audio_buffer.read_pos = 0;
+    audio_buffer.write_pos = 0;
     memset(audio_buffer.data, 0, BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS);
 
     if (SDL_OpenAudio(&mFormat, NULL) < 0)
@@ -225,7 +235,7 @@ int main(int argc, char* args[]) {
             render = false;
         }
 
-        if (audio_buffer.back_pos != aworks.front_pos)
+        if (audio_buffer.read_pos != audio_buffer.write_pos)
         {
             SDL_LockAudio();
             aworks.audio_works(); // generate audio buffer data

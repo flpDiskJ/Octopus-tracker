@@ -87,13 +87,13 @@ void AudioW::audio_works() // fills audio buffer
         }
         b->stop = false;
     }
-    while (front_pos != b->back_pos)
+    while (b->write_pos != b->read_pos)
     {
-        if (front_pos >= b->len)
+        if (b->write_pos >= b->len)
         {
-            front_pos = 0;
+            b->write_pos = 0;
         } else {
-            front_pos += BYTES_IN_SAMPLE;
+            b->write_pos += BYTES_IN_SAMPLE;
         }
         val = 0;
         for (int c = 0; c < 8; c++) // c for channel
@@ -112,8 +112,8 @@ void AudioW::audio_works() // fills audio buffer
             }
         }
         out = val / CHANNELS;
-        b->data[front_pos] = out & 0xFF;
-        b->data[front_pos+1] = out >> 8 & 0xFF;
+        b->data[b->write_pos] = out & 0xFF;
+        b->data[b->write_pos+1] = out >> 8 & 0xFF;
         //b->pos = 0;
     }
 }

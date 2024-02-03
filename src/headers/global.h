@@ -30,8 +30,8 @@ struct Pallet{
 struct AudioBuffer{
     Uint8 *data;
     Uint32 len;
-    Uint32 back_pos;
-    bool update; // if true audio_works() fills buffer
+    Uint32 read_pos;
+    Uint32 write_pos;
     bool stop;
 };
 

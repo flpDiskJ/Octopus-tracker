@@ -9,7 +9,6 @@ private:
     AudioBuffer *b;
 
 public:
-    int front_pos = 0; // front position for circular buffer
 
     AudioW(Tracker *tracker, AudioBuffer *buffer);
 
