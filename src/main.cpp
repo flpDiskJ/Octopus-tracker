@@ -14,15 +14,15 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 {
     AudioBuffer *b = (AudioBuffer*)buffer;
     memset(stream, 0, len);
-    Uint32 amount = b->len - b->pos;
+    Uint32 amount = b->len - b->back_pos;
     if ( amount > len ) {
         amount = len;
     }
     SDL_MixAudio(stream, b->data, amount, SDL_MIX_MAXVOLUME);
-    b->pos += amount;
-    if (b->pos >= b->len)
+    b->back_pos += amount;
+    if (b->back_pos >= b->len)
     {
-        b->pos = 0;
+        b->back_pos = 0;
     }
     //b->update = true; // tell audio_works() to fill buffer
 }
@@ -94,7 +94,7 @@ int main(int argc, char* args[]) {
     audio_buffer.data = new Uint8[audio_buffer.len];
     audio_buffer.update = false;
     audio_buffer.stop = false;
-    audio_buffer.pos = 0;
+    audio_buffer.back_pos = 0;
     memset(audio_buffer.data, 0, BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS);
 
     if (SDL_OpenAudio(&mFormat, NULL) < 0)
@@ -225,7 +225,7 @@ int main(int argc, char* args[]) {
             render = false;
         }
 
-        if (audio_buffer.pos != aworks.pos)
+        if (audio_buffer.back_pos != aworks.front_pos)
         {
             SDL_LockAudio();
             aworks.audio_works(); // generate audio buffer data

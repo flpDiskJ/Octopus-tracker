@@ -74,7 +74,7 @@ void AudioW::play_note(SDL_Event *e)
     }
 }
 
-void AudioW::audio_works()
+void AudioW::audio_works() // fills audio buffer
 {
     int actual_pos;
     int val;
@@ -87,16 +87,16 @@ void AudioW::audio_works()
         }
         b->stop = false;
     }
-    while (pos != b->pos)
+    while (front_pos != b->back_pos)
     {
-        if (pos >= b->len)
+        if (front_pos >= b->len)
         {
-            pos = 0;
+            front_pos = 0;
         } else {
-            pos += BYTES_IN_SAMPLE;
+            front_pos += BYTES_IN_SAMPLE;
         }
         val = 0;
-        for (int c = 0; c < 8; c++)
+        for (int c = 0; c < 8; c++) // c for channel
         {
             if (t->channel[c].play && t->mute[c] == false)
             {
@@ -112,8 +112,8 @@ void AudioW::audio_works()
             }
         }
         out = val / CHANNELS;
-        b->data[pos] = out & 0xFF;
-        b->data[pos+1] = out >> 8 & 0xFF;
+        b->data[front_pos] = out & 0xFF;
+        b->data[front_pos+1] = out >> 8 & 0xFF;
         //b->pos = 0;
     }
 }
