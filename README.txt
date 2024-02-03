@@ -15,3 +15,7 @@ sudo apt install libsdl-ttf2.0-dev
 fedora:
 sudo dmf install SDL2 SDL2-devel
 sudo dnf install SDL2_ttf SDL2_ttf-devel
+
+mac:
+brew install SDL2
+brew install SDL2_ttf
