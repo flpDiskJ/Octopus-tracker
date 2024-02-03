@@ -9,6 +9,7 @@ private:
     AudioBuffer *b;
 
 public:
+    int pos = 0;
 
     AudioW(Tracker *tracker, AudioBuffer *buffer);
 

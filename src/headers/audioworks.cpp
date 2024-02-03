@@ -87,8 +87,14 @@ void AudioW::audio_works()
         }
         b->stop = false;
     }
-    for (int p = 0; p < b->len; p += BYTES_IN_SAMPLE)
+    while (pos != b->pos)
     {
+        if (pos >= b->len)
+        {
+            pos = 0;
+        } else {
+            pos += BYTES_IN_SAMPLE;
+        }
         val = 0;
         for (int c = 0; c < 8; c++)
         {
@@ -106,8 +112,8 @@ void AudioW::audio_works()
             }
         }
         out = val / CHANNELS;
-        b->data[p] = out & 0xFF;
-        b->data[p+1] = out >> 8 & 0xFF;
-        b->pos = 0;
+        b->data[pos] = out & 0xFF;
+        b->data[pos+1] = out >> 8 & 0xFF;
+        //b->pos = 0;
     }
 }

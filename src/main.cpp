@@ -20,7 +20,11 @@ void audio_callback(void* buffer, Uint8* stream, int len)
     }
     SDL_MixAudio(stream, b->data, amount, SDL_MIX_MAXVOLUME);
     b->pos += amount;
-    b->update = true; // tell audio_works() to fill buffer
+    if (b->pos >= b->len)
+    {
+        b->pos = 0;
+    }
+    //b->update = true; // tell audio_works() to fill buffer
 }
 
 int main(int argc, char* args[]) {
@@ -86,7 +90,7 @@ int main(int argc, char* args[]) {
     mFormat.callback = audio_callback; mFormat.samples = BUFF_SIZE;
     mFormat.userdata = &audio_buffer;
 
-    audio_buffer.len = BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS;
+    audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS;
     audio_buffer.data = new Uint8[audio_buffer.len];
     audio_buffer.update = false;
     audio_buffer.stop = false;
@@ -221,12 +225,12 @@ int main(int argc, char* args[]) {
             render = false;
         }
 
-        if (audio_buffer.update)
+        if (audio_buffer.pos != aworks.pos)
         {
             SDL_LockAudio();
             aworks.audio_works(); // generate audio buffer data
             SDL_UnlockAudio();
-            audio_buffer.update = false;
+            //audio_buffer.update = false;
         }
     }
 
