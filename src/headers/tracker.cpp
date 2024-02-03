@@ -156,7 +156,7 @@ bool Tracker::load_inst(string path, string name)
                 sample[s_pos].data[p] = val;
             }
         } else {
-            printf("Stereo\n");
+            printf("Stereo not supported yet :/\n");
         }
         SDL_UnlockAudio();
         SDL_FreeWAV(data);
