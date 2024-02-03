@@ -90,14 +90,14 @@ void AudioW::audio_works()
     for (int p = 0; p < b->len; p += BYTES_IN_SAMPLE)
     {
         val = 0;
-        for (int c = 0; c < 1; c++)
+        for (int c = 0; c < 8; c++)
         {
             if (t->channel[c].play && t->mute[c] == false)
             {
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len)
                 {
-                    val = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    val += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
                     t->channel[c].pos += t->channel[c].pos_adv;
                     t->channel[c].pos_adv *= t->channel[c].pitch_mod;
                 } else{
@@ -105,7 +105,7 @@ void AudioW::audio_works()
                 }
             }
         }
-        out = val;
+        out = val / CHANNELS;
         b->data[p] = out & 0xFF;
         b->data[p+1] = out >> 8 & 0xFF;
         b->pos = 0;
