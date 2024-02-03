@@ -7,6 +7,11 @@ Due to this however, the program may seem intimidating to someone with little or
 We have included a help menu inside the program that should provide everything you need to get started.
 
 Required Libraries:
-libsdl2-ttf-dev
-libsdl-ttf2.0-dev
 
+Debian:
+sudo apt install libsdl2-ttf-dev
+sudo apt install libsdl-ttf2.0-dev
+
+fedora:
+sudo dmf install SDL2 SDL2-devel
+sudo dnf install SDL2_ttf SDL2_ttf-devel
