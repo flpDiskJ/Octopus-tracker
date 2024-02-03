@@ -105,7 +105,7 @@ int main(int argc, char* args[]) {
 
     AudioW aworks(&tracker, &audio_buffer);
 
-    tracker.load_inst("/home/jake/code/c/octapus/test_sample.wav", "Test Sample"); // used for testing only
+    tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
 
     SDL_Event e;
     bool render = true; // set to true to update screen
