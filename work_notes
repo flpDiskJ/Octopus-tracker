@@ -1,3 +1,18 @@
     :Keep note of what is being worked on here:
 
-Audio has some noise. Most notable when played at lower pitches.
+To do:
+    Implement code to run the sequencer.
+    Use some sort of interrupt to prioritize the timing of the sequencer.
+
+    Add help sub-window to provide a detailed guide on how to use the program.
+
+    Add sub-window to load samples. Use load_inst() from tracker class.
+
+    Add sub-window to edit samples.
+
+    Add sub-window to edit instrument parameters.
+
+    Find a more efficient way to render the text inside the sequencer.
+    Something other than SDL_TTF.
+
+Notes/Comments:
