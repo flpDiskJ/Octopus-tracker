@@ -25,7 +25,7 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 
     SDL_memcpy(
     stream,
-    (b->data + b->read_pos),
+    (&b->data[b->read_pos]),
     region1size
     );
     SDL_memcpy(
