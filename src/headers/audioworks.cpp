@@ -95,6 +95,12 @@ void AudioW::audio_works() // fills audio buffer
     int actual_pos;
     int val;
     Sint16 out;
+    int sig_max[CHANNELS];
+    int temp;
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        sig_max[c] = 0;
+    }
     if (b->stop)
     {
         for (int c = 0; c < CHANNELS; c++)
@@ -113,9 +119,12 @@ void AudioW::audio_works() // fills audio buffer
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len)
                 {
-                    val += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    val += temp;
                     t->channel[c].pos += t->channel[c].pos_adv;
                     t->channel[c].pos_adv *= t->channel[c].pitch_mod;
+                    if (sig_max[c] < temp)
+                    {sig_max[c] = temp;}
                 } else{
                     t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
                 }
@@ -130,5 +139,9 @@ void AudioW::audio_works() // fills audio buffer
         } else {
             b->write_pos += BYTES_IN_SAMPLE;
         }
+    }
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        t->set_trigger_bar(c, sig_max[c]);
     }
 }

@@ -66,6 +66,7 @@ private:
     SDL_Texture *skip_display_tex;
     bool edit_mode = false;
     SDL_Rect cursor; // used to display cursor
+    int trigger_bar_decay = 0;
 
     void copy_channel();
 
@@ -129,11 +130,16 @@ public:
     int octave = 3;
     bool mute[CHANNELS]; // used to mute channel
     Channel channel[CHANNELS];
+    SDL_Rect trigger_bars[CHANNELS];
 
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    void set_trigger_bar(int channel, int level); // sets trigger bar
+
+    void dec_trigger_bars(); // run in main loop to decay bars
 
     bool load_inst(string path, string name); // loads wav into instrument slot of s_pos | returns true if successful
 

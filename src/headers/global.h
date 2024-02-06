@@ -16,7 +16,7 @@ using namespace std;
 #define MAXBLOCKS 200 // max number of blocks that can be used
 #define BUFF_SIZE 512 // size of audio buffer. must be power of 2
 #define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
-#define SAMPLE_RATE 48000 // output sample rate
+#define SAMPLE_RATE 32000 // output sample rate
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
 #define AMP_LEV 15 // master level // 255 max for Signed 16bit range without clipping
 

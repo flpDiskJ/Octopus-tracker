@@ -50,6 +50,16 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     cursor.w = 39;
     cursor.h = 17;
 
+    int xLoc = 60;
+    for (int bar = 0; bar < CHANNELS; bar++)
+    {
+        trigger_bars[bar].w = 18;
+        trigger_bars[bar].h = 200;
+        trigger_bars[bar].x = xLoc;
+        trigger_bars[bar].y = 21;
+        xLoc += 156;
+    }
+
     for (int s = 0; s < MAXSAMPLES; s++)
     {
         sample[s].level = 0;
@@ -119,6 +129,30 @@ Tracker::~Tracker() {
         }
     }
     free(sequence);
+}
+
+void Tracker::set_trigger_bar(int channel, int level)
+{
+    level = level / 100;
+    if (level > 300){level = 300;}
+    else if (level < 1){level = 1;}
+    if (level > trigger_bars[channel].h)
+    {
+        trigger_bars[channel].h = level;
+    }
+}
+
+void Tracker::dec_trigger_bars()
+{
+    for (int bar = 0; bar < CHANNELS; bar++)
+    {
+        if (trigger_bars[bar].h > 2)
+        {
+            trigger_bars[bar].h -= 20;
+        } else {
+            trigger_bars[bar].h = 1;
+        }
+    }
 }
 
 bool Tracker::load_inst(string path, string name)
@@ -570,7 +604,6 @@ void Tracker::move_step(bool run_sequence) // used by timer to run tracker
             b_pos = sequence[sq_pos];
         }
     }
-    render_steps();
 }
 
 void Tracker::decpos()

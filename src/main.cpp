@@ -20,12 +20,14 @@ private:
     int amount;
     bool active = false;
     bool run_seq = false;
+    Uint64 barTime;
 public:
 
     Timing(Tracker *trk, AudioW *wrk)
     {
         t = trk;
         works = wrk;
+        barTime = SDL_GetTicks64();
     }
 
     ~Timing(){}
@@ -42,7 +44,17 @@ public:
         previous = SDL_GetTicks64();
     }
 
-    bool check()
+    void render_bars(SDL_Renderer *renderer)
+    {
+        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0xFF); // Black
+        for (int bar = 0; bar < CHANNELS; bar++)
+        {
+            SDL_RenderFillRect(renderer, &t->trigger_bars[bar]);
+        }
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
+    }
+
+    void check()
     {
         if (active)
         {
@@ -56,10 +68,8 @@ public:
                     t->move_step(run_seq);
                 }
                 previous = current;
-                return true;
             }
         }
-        return false;
     }
 
     void end()
@@ -139,7 +149,7 @@ int main(int argc, char* args[]) {
         return 2;
     }
 
-    Font = TTF_OpenFont("font.TTF", 20);
+    Font = TTF_OpenFont("font.TTF", 16);
     if (Font == NULL)
     {
         printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -159,12 +169,12 @@ int main(int argc, char* args[]) {
     mFormat.callback = audio_callback; mFormat.samples = BUFF_SIZE;
     mFormat.userdata = &audio_buffer;
 
-    audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS;
+    audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS * 3;
     audio_buffer.data = new Uint8[audio_buffer.len];
     audio_buffer.stop = false;
     audio_buffer.read_pos = 0;
     audio_buffer.write_pos = 0;
-    memset(audio_buffer.data, 0, BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS);
+    memset(audio_buffer.data, 0, audio_buffer.len);
 
     if (SDL_OpenAudio(&mFormat, NULL) < 0)
     {
@@ -179,10 +189,11 @@ int main(int argc, char* args[]) {
     tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
 
     SDL_Event e;
-    bool render = true; // set to true to update screen
     int windowID = 0; // 0 = main // 1 = utility window
     int xM, yM; // mouse cords
     bool run = true;
+    Uint64 previousTime = SDL_GetTicks64();
+    Uint64 currentTime;
     while(run)
     {
         // Event loop
@@ -209,7 +220,6 @@ int main(int argc, char* args[]) {
                             default: break;
                         }
                     }
-                    render = true;
                     if (windowID == 1)
                     {
                         util.render();
@@ -230,7 +240,6 @@ int main(int argc, char* args[]) {
                                 case 'q':
                                     util.close();
                                     windowID = 0;
-                                    render = true;
                                     break;
                                 default:
                                     break;
@@ -253,7 +262,6 @@ int main(int argc, char* args[]) {
                     }
                     switch (windowID) {
                         case 0:
-                            render = true;
                             if (SDL_GetModState() & KMOD_CTRL) // control key press
                             {
                                 if (e.key.keysym.sym == SDLK_b) // open block params
@@ -294,8 +302,12 @@ int main(int argc, char* args[]) {
             }
         }
 
-        if (render)
+        timing.check();
+
+        currentTime = SDL_GetTicks64();
+        if (currentTime - previousTime >= 40)
         {
+            previousTime = currentTime;
             // Rendering
             SDL_SetRenderDrawColor(tracker_render, 128, 128, 128, 0xFF); // Background color
             SDL_RenderClear(tracker_render);
@@ -306,11 +318,14 @@ int main(int argc, char* args[]) {
 
             tracker.render_steps();
 
+            timing.render_bars(tracker_render);
+
             SDL_RenderPresent(tracker_render); // Present image to screen
-            render = false;
+
+            tracker.dec_trigger_bars(); // apply decay to level bars
         }
 
-        render = timing.check();
+        timing.check();
 
         if (audio_buffer.read_pos != audio_buffer.write_pos)
         {
@@ -319,6 +334,9 @@ int main(int argc, char* args[]) {
             SDL_UnlockAudio();
             //audio_buffer.update = false;
         }
+
+        timing.check();
+
     }
 
     util.close_all();

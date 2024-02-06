@@ -1,8 +1,6 @@
     :Keep note of what is being worked on here:
 
 To do:
-    Implement code to run the sequencer.
-    Use some sort of interrupt to prioritize the timing of the sequencer.
 
     Add ability to toggle skip mode to round to the nearest multiple of the skip amount.
 
@@ -10,11 +8,10 @@ To do:
 
     Add sub-window to load samples. Use load_inst() from tracker class.
 
-    Add sub-window to edit samples.
-
     Add sub-window to edit instrument parameters.
 
-    Find a more efficient way to render the text inside the sequencer.
-    Something other than SDL_TTF.
+    Add sub-window to edit samples.
 
 Notes/Comments:
+
+    audio/note timing is still a little sloppy.

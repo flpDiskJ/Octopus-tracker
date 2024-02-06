@@ -24,12 +24,12 @@ Main window (tracker):
     X FUNC6-10 or CTRL+1-5 = navigate block
       SHIFT+0-9 = Paste copy buffer from edit menu
 
-      ALT+SPACE = play block
-      SHIFT+SPACE = play sequence
-      SPACE = stop all
+    X ALT+SPACE = play block
+    X SHIFT+SPACE = play sequence
+    X SPACE = stop all
 
       CTRL+O = open sequence order window
-      CTRL+H = open track properties window (bpm, speed, and such)
+    X CTRL+H = open track properties window (bpm, speed, and such)
     X CTRL+B = open block properties window (block length, speed, and such)
       CTRL+F = open file op window (load/save module)
       CTRL+E = open edit window (copy buffers)
