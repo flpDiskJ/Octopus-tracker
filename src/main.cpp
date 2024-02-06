@@ -10,6 +10,65 @@
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
+class Timing{ // handles timing for tracker
+private:
+    Tracker *t;
+    AudioW *works;
+    int time; //time delay in ms
+    Uint64 previous;
+    Uint64 current;
+    int amount;
+    bool active = false;
+    bool run_seq = false;
+public:
+
+    Timing(Tracker *trk, AudioW *wrk)
+    {
+        t = trk;
+        works = wrk;
+    }
+
+    ~Timing(){}
+
+    void start(bool run_sequence)
+    {
+        active = true;
+        run_seq = run_sequence;
+        double calc;
+        calc = t->master_tempo * t->block[t->b_pos].speed;
+        calc = calc / 60.0;
+        calc = 1000.0 / calc;
+        time = (int)calc;
+        previous = SDL_GetTicks64();
+    }
+
+    bool check()
+    {
+        if (active)
+        {
+            current = SDL_GetTicks64();
+            amount = (int)((current - previous) / time);
+            if (amount > 0)
+            {
+                for (int x = 0; x < amount; x++)
+                {
+                    works->play_step();
+                    t->move_step(run_seq);
+                }
+                previous = current;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void end()
+    {
+        active = false;
+        run_seq = false;
+    }
+};
+
 void audio_callback(void* buffer, Uint8* stream, int len)
 {
     AudioBuffer *b = (AudioBuffer*)buffer;
@@ -53,7 +112,7 @@ int main(int argc, char* args[]) {
 
     SDL_Renderer* tracker_render = NULL;
 
-    if (SDL_Init(SDL_INIT_VIDEO||SDL_INIT_AUDIO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO||SDL_INIT_AUDIO||SDL_INIT_TIMER) < 0)
     {
         printf("SDL Init Failed!\n");
         return 1;
@@ -114,6 +173,8 @@ int main(int argc, char* args[]) {
     SDL_PauseAudio(0);
 
     AudioW aworks(&tracker, &audio_buffer);
+
+    Timing timing(&tracker, &aworks);
 
     tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
 
@@ -188,20 +249,34 @@ int main(int argc, char* args[]) {
                     if (e.key.keysym.sym == SDLK_SPACE)
                     {
                         audio_buffer.stop = true;
+                        timing.end();
                     }
                     switch (windowID) {
                         case 0:
                             render = true;
-                            if (SDL_GetModState() & KMOD_CTRL)
+                            if (SDL_GetModState() & KMOD_CTRL) // control key press
                             {
-                                if (e.key.keysym.sym == SDLK_b)
+                                if (e.key.keysym.sym == SDLK_b) // open block params
                                 {
                                     util.open("Block Parameters", 1);
                                     windowID = 1;
-                                } else if (e.key.keysym.sym == SDLK_h)
+                                    break;
+                                } else if (e.key.keysym.sym == SDLK_h) // open track params
                                 {
                                     util.open("Track Parameters", 2);
                                     windowID = 1;
+                                    break;
+                                } else if (e.key.keysym.sym == SDLK_SPACE) // run tracker. Loop current block.
+                                {
+                                    timing.start(false);
+                                    break;
+                                }
+                            } else if (SDL_GetModState() & KMOD_SHIFT) // shift key press
+                            {
+                                if (e.key.keysym.sym == SDLK_SPACE) // run tracker and step through track sequence.
+                                {
+                                    timing.start(true);
+                                    break;
                                 }
                             }
                             tracker.keyboard(&e);
@@ -234,6 +309,8 @@ int main(int argc, char* args[]) {
             SDL_RenderPresent(tracker_render); // Present image to screen
             render = false;
         }
+
+        render = timing.check();
 
         if (audio_buffer.read_pos != audio_buffer.write_pos)
         {

@@ -74,6 +74,22 @@ void AudioW::play_note(SDL_Event *e)
     }
 }
 
+void AudioW::play_step()
+{
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        if (t->block[t->b_pos].channel[c][t->pos].pos_adv > 0.0)
+        {
+            t->channel[c].pos = 0;
+            t->channel[c].sample = t->block[t->b_pos].channel[c][t->pos].sample;
+            t->channel[c].pos_adv = t->block[t->b_pos].channel[c][t->pos].pos_adv;
+            t->channel[c].amplifier = 128.0 / (double)t->sample[t->channel[c].sample].level;
+            t->channel[c].pitch_mod = 1;
+            t->channel[c].play = true;
+        }
+    }
+}
+
 void AudioW::audio_works() // fills audio buffer
 {
     int actual_pos;

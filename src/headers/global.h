@@ -20,14 +20,14 @@ using namespace std;
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
 #define AMP_LEV 15 // master level // 255 max for Signed 16bit range without clipping
 
-struct Pallet{
+struct Pallet{ // global color pallet
     SDL_Color black;
     SDL_Color red;
     SDL_Color blue;
     SDL_Color green;
 };
 
-struct AudioBuffer{
+struct AudioBuffer{ // global audio output buffer
     Uint8 *data;
     Uint32 len;
     Uint32 read_pos;

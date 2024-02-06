@@ -552,6 +552,27 @@ void Tracker::incpos() // Incriment pos by amount
     }
 }
 
+void Tracker::move_step(bool run_sequence) // used by timer to run tracker
+{
+    if (pos < block[b_pos].length - 1)
+    {
+        pos++;
+    } else {
+        pos = 0;
+        if (run_sequence) // if true step to next block in the sequence else loops
+        {
+            if (sq_pos < sequence_len - 1)
+            {
+                sq_pos++;
+            } else {
+                sq_pos = 0;
+            }
+            b_pos = sequence[sq_pos];
+        }
+    }
+    render_steps();
+}
+
 void Tracker::decpos()
 {
     if ((pos - skip) >= 0)
@@ -744,7 +765,7 @@ void Tracker::get_note(SDL_Event *e)
             block[b_pos].channel[cursor_channel][pos].key = key;
             block[b_pos].channel[cursor_channel][pos].octave = oct;
             block[b_pos].channel[cursor_channel][pos].sample = s_pos;
-            block[b_pos].channel[cursor_channel][pos].pos_adv = getFreq(note, key, oct) / SAMPLE_RATE;
+            block[b_pos].channel[cursor_channel][pos].pos_adv = (double)getFreq(note, key, oct) / SAMPLE_RATE;
             incpos();
         }
     } else

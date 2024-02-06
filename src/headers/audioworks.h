@@ -16,6 +16,8 @@ public:
 
     void play_note(SDL_Event *e); // plays note from keyboard
 
+    void play_step(); // plays any valid notes in current step
+
     void audio_works(); // run in program loop // generates buffer data
 
 };

@@ -141,6 +141,8 @@ public:
 
     void incpos(); // incriment step position by amount
 
+    void move_step(bool sequence); // used by timer to run tracker
+
     void realloc_block(int size); // reallocates block at b_pos
 
     void delete_block(int blk); // deletes indicated block
