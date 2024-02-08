@@ -103,6 +103,8 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     octave_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     sample_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     skip_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
+
+    update_steps();
 }
 
 Tracker::~Tracker() {
@@ -256,6 +258,7 @@ void Tracker::paste_channel()
         block[b_pos].channel[cursor_channel][s].parameter[1] = channel_buffer.data[s].parameter[1];
         block[b_pos].channel[cursor_channel][s].pos_adv = channel_buffer.data[s].pos_adv;
     }
+    update_steps();
 }
 
 void Tracker::realloc_block(int size)
@@ -284,6 +287,7 @@ void Tracker::realloc_block(int size)
     {
         pos = size - 1;
     }
+    update_steps();
 }
 
 void Tracker::copy_block(int blk)
@@ -354,6 +358,7 @@ void Tracker::paste_block(int blk)
             block[blk].channel[c][s].pos_adv = block_buffer.channel[c][s].pos_adv;
         }
     }
+    update_steps();
 }
 
 void Tracker::create_block(bool insert)
@@ -375,6 +380,7 @@ void Tracker::create_block(bool insert)
         clear_block(b_pos);
     }
     total_blocks++;
+    update_steps();
 }
 
 void Tracker::delete_block(int blk)
@@ -394,6 +400,7 @@ void Tracker::delete_block(int blk)
     {
         b_pos = total_blocks - 1;
     }
+    update_steps();
 }
 
 void Tracker::update_info()
@@ -538,6 +545,7 @@ void Tracker::move_cursor(int position, int chn, int direction)
         case 6: cursor.x = 104 + width; cursor.w = 13; break;
         default: break;
     }
+    update_steps();
 }
 
 void Tracker::block_dec()
@@ -549,6 +557,7 @@ void Tracker::block_dec()
         b_pos = total_blocks - 1;
     }
     update_info();
+    update_steps();
 }
 
 void Tracker::block_inc()
@@ -560,6 +569,7 @@ void Tracker::block_inc()
         b_pos = 0;
     }
     update_info();
+    update_steps();
 }
 
 void Tracker::sample_inc()
@@ -610,6 +620,7 @@ void Tracker::incpos() // Incriment pos by amount
         }
         // johnny code
     }
+    update_steps();
 }
 
 void Tracker::move_step(bool run_sequence) // used by timer to run tracker
@@ -630,6 +641,7 @@ void Tracker::move_step(bool run_sequence) // used by timer to run tracker
             b_pos = sequence[sq_pos];
         }
     }
+    update_steps();
 }
 
 void Tracker::decpos()
@@ -663,6 +675,7 @@ void Tracker::decpos()
           }
         // johnny code
     }
+    update_steps();
 }
 
 void Tracker::clear_channel()
@@ -699,6 +712,7 @@ void Tracker::clear_block(int blk) // Clears indicated block
             block[blk].channel[c][s].pos_adv = 0;
         }
     }
+    update_steps();
 }
 
 void Tracker::render_info()
@@ -720,7 +734,7 @@ void Tracker::render_info()
     }
 }
 
-void Tracker::render_steps() // Renders block data to screen
+void Tracker::update_steps()
 {
     string step_data;
     int step_pos = 0;
@@ -765,8 +779,15 @@ void Tracker::render_steps() // Renders block data to screen
         }
         SDL_DestroyTexture(displaytextures[step]); // destroys old texture. If not destroyed there will be a memory leak.
         displaytextures[step] = SDL_CreateTextureFromSurface(renderer, surf); // Coverts surface to texture
-        SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
         SDL_FreeSurface(surf); // frees surface otherwise there will be a memory leak
+    }
+}
+
+void Tracker::render_steps() // Renders block data to screen
+{
+    for (int step = 0; step < DISPLAYRECTS; step++)
+    {
+        SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
     }
 }
 
@@ -920,6 +941,7 @@ void Tracker::get_note(SDL_Event *e)
             }
         }
     }
+    update_steps();
 }
 
 void Tracker::clear_step()
@@ -935,6 +957,7 @@ void Tracker::clear_step()
     block[b_pos].channel[cursor_channel][pos].pos_adv = 0;
     if (!tracker_is_running)
     {incpos();}
+    update_steps();
 }
 
 void Tracker::clear_index()
@@ -963,6 +986,7 @@ void Tracker::clear_index()
         default:
             break;
     }
+    update_steps();
 }
 
 bool Tracker::checkButton(SDL_Rect *button, int mouseX, int mouseY)
@@ -1041,6 +1065,7 @@ void Tracker::keyboard(SDL_Event *e, bool running)
             break;
         case SDLK_ESCAPE:
             if (edit_mode){edit_mode = false;} else {edit_mode = true;}
+            update_steps();
             break;
         case SDLK_TAB:
             if (SDL_GetModState() & KMOD_SHIFT)

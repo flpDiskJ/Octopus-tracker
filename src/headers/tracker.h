@@ -167,6 +167,8 @@ public:
 
     void render_info(); // render info (same stuff in update info) to the screen
 
+    void update_steps(); // re-generates step textures.
+
     void render_steps(); // creates textures and renders tracker steps to screen
 
     void keyboard(SDL_Event *e, bool running); // handles keyboard input specific to the main window

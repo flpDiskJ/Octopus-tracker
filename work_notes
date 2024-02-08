@@ -1,14 +1,10 @@
     :Keep note of what is being worked on here:
 
 New Additions:
-    - Position no longer increments when note is inserted while the tracker is running.
-    - Fixed '1' and '4' not being inserted to the command digits.
-    - Timging gets recalculated as the bpm is changed.
-
+    - separated step texture creation from rendering. Split render_steps() to render_steps() & update_steps()
+    - Added skip modes and skip toggle
 
 To do:
-
-    - Add ability to toggle skip mode to round to the nearest multiple of the skip amount.
 
     - Add command functionality.
 
@@ -20,7 +16,7 @@ To do:
 
     - Add sub-window to edit samples.
 
-    - Add sub-window to save and load moudules.
+    - Add sub-window to save and load modules.
 
 
 Notes/Comments:
