@@ -345,6 +345,7 @@ void Util::setEntry()
     speed_entry = to_string(tracker->block[tracker->b_pos].speed);
     len_entry = to_string(tracker->block[tracker->b_pos].length);
     bpm_entry = to_string(tracker->master_tempo);
+    tracker->set_timing_delay();
 }
 
 void Util::mouse(int x, int y)

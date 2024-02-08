@@ -14,14 +14,13 @@ class Timing{ // handles timing for tracker
 private:
     Tracker *t;
     AudioW *works;
-    int time; //time delay in ms
     Uint64 previous;
     Uint64 current;
     int amount;
-    bool active = false;
     bool run_seq = false;
     Uint64 barTime;
 public:
+    bool active = false;
 
     Timing(Tracker *trk, AudioW *wrk)
     {
@@ -36,11 +35,7 @@ public:
     {
         active = true;
         run_seq = run_sequence;
-        double calc;
-        calc = t->master_tempo * t->block[t->b_pos].speed;
-        calc = calc / 60.0;
-        calc = 1000.0 / calc;
-        time = (int)calc;
+        t->set_timing_delay();
         previous = SDL_GetTicks64();
     }
 
@@ -59,7 +54,7 @@ public:
         if (active)
         {
             current = SDL_GetTicks64();
-            amount = (int)((current - previous) / time);
+            amount = (int)((current - previous) / t->timing_delay);
             if (amount > 0)
             {
                 for (int x = 0; x < amount; x++)
@@ -287,7 +282,7 @@ int main(int argc, char* args[]) {
                                     break;
                                 }
                             }
-                            tracker.keyboard(&e);
+                            tracker.keyboard(&e, timing.active);
                             aworks.play_note(&e);
                             break;
                         case 1:
