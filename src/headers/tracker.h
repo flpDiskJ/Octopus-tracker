@@ -58,6 +58,7 @@ private:
     SDL_Rect block_display; // displays block position
     SDL_Rect sample_display; // displays sample position
     SDL_Rect skip_display;
+    bool round_skip = false; // if true round skip to nearest multiplier else incpos by skip amount
     SDL_Texture *sequence_display_tex;
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;
@@ -104,6 +105,8 @@ private:
 
     void get_note(SDL_Event *e); // handles keyboard notes
 
+    bool checkButton(SDL_Rect *button, int x, int y); // checks if mouse was inside button
+
 public:
 
     Block block[MAXBLOCKS]; // static array of blocks
@@ -138,6 +141,8 @@ public:
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    void mouse(int x, int y); // handles mouse input
 
     void set_timing_delay(); // calculates timing delay based on tempo and block speed
 

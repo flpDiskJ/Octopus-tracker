@@ -224,6 +224,7 @@ int main(int argc, char* args[]) {
                     SDL_GetMouseState(&xM, &yM);
                     switch (windowID) {
                         case 0:
+                            tracker.mouse(xM, yM);
                             break;
                         case 1:
                             util.mouse(xM, yM);

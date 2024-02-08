@@ -586,11 +586,24 @@ void Tracker::sample_dec()
 
 void Tracker::incpos() // Incriment pos by amount
 {
-    if ((pos + skip) < block[b_pos].length)
+    if (skip == 1)
     {
-        pos += skip;
+        if (pos < block[b_pos].length - 1)
+        {
+            pos++;
+        } else {
+            pos = 0;
+        }
+    } else if (!round_skip)
+    {
+        if ((pos + skip) < block[b_pos].length)
+        {
+            pos += skip;
+        } else {
+            pos = skip - (block[b_pos].length - pos);
+        }
     } else {
-        pos = skip - (block[b_pos].length - pos);
+        // johnny code
     }
 }
 
@@ -616,11 +629,24 @@ void Tracker::move_step(bool run_sequence) // used by timer to run tracker
 
 void Tracker::decpos()
 {
-    if ((pos - skip) >= 0)
+    if (skip == 1)
     {
-        pos -= skip;
+        if (pos > 0)
+        {
+            pos--;
+        } else {
+            pos = block[b_pos].length - 1;
+        }
+    } else if (!round_skip)
+    {
+        if ((pos - skip) >= 0)
+        {
+            pos -= skip;
+        } else {
+            pos = block[b_pos].length - (skip - pos);
+        }
     } else {
-        pos = block[b_pos].length - (skip - pos);
+        // johnny code
     }
 }
 
@@ -671,6 +697,12 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, sample_name_tex, NULL, &sample_name);
     SDL_RenderCopy(renderer, skip_display_tex, NULL, &skip_display);
     SDL_RenderDrawRect(renderer, &cursor);
+    if (round_skip)
+    {
+        SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
+        SDL_RenderDrawRect(renderer, &skip_display);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
+    }
 }
 
 void Tracker::render_steps() // Renders block data to screen
@@ -915,6 +947,23 @@ void Tracker::clear_index()
             break;
         default:
             break;
+    }
+}
+
+bool Tracker::checkButton(SDL_Rect *button, int mouseX, int mouseY)
+{
+    if (mouseX > button->x && mouseX < button->w+button->x && mouseY > button->y && mouseY < button->h+button->y)
+    {
+        return true;
+    }
+    return false;
+}
+
+void Tracker::mouse(int x, int y)
+{
+    if (checkButton(&skip_display, x, y))
+    {
+        round_skip = !round_skip;
     }
 }
 
