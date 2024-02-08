@@ -661,7 +661,6 @@ void Tracker::decpos()
                   pos = block[b_pos].length - skip;
               }
           }
-
         // johnny code
     }
 }
@@ -988,6 +987,16 @@ void Tracker::keyboard(SDL_Event *e, bool running)
     tracker_is_running = running;
     switch (e->key.keysym.sym) // Keyboard input
     {
+        case SDLK_BACKQUOTE:
+            if (skip == 1)
+            {
+                skip = skip_mem;
+            } else {
+                skip_mem = skip;
+                skip = 1;
+            }
+            update_info();
+            break;
         case SDLK_UP:
             if (SDL_GetModState() & KMOD_SHIFT)
             {

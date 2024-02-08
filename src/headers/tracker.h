@@ -59,6 +59,7 @@ private:
     SDL_Rect sample_display; // displays sample position
     SDL_Rect skip_display;
     bool round_skip = false; // if true round skip to nearest multiplier else incpos by skip amount
+    int skip_mem = 1; // stores previous skip val when toggled.
     SDL_Texture *sequence_display_tex;
     SDL_Texture *block_display_tex;
     SDL_Texture *sample_display_tex;

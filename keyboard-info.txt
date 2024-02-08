@@ -12,7 +12,12 @@ Main window (tracker):
     X Delete & Backspace = delete step
     X ESC = toggle edit mode
     X Arrows = navigation
-    X CTRL+LEFT/RIGHT = change skip amount
+
+    skip:
+        X CTRL+LEFT/RIGHT = change skip amount
+        X tilde key = toggle skip between 1 and previously set amount
+        X click on skip with mouse to toggle skip mode
+    
     X TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
     X SHIFT+UP/DOWN = change block
     X SHIFT+LEFT/RIGHT = change instrument/sample
