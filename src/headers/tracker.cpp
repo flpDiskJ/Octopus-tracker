@@ -603,6 +603,11 @@ void Tracker::incpos() // Incriment pos by amount
             pos = skip - (block[b_pos].length - pos);
         }
     } else {
+        pos = (((pos / skip)+1) * skip);
+        if (pos >= block[b_pos].length - 1)
+        {
+            pos = 0;
+        }
         // johnny code
     }
 }
@@ -646,6 +651,17 @@ void Tracker::decpos()
             pos = block[b_pos].length - (skip - pos);
         }
     } else {
+        if (pos > skip && pos < (skip*2))
+            {
+              pos = skip;
+        } else {
+              pos = (((pos / skip)-1) * skip);
+              if (pos < 0)
+              {
+                  pos = block[b_pos].length - skip;
+              }
+          }
+
         // johnny code
     }
 }
