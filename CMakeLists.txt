@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.8)
 project(octapus)
 
 find_package(SDL2 REQUIRED)
-find_package(SDL2_TTF REQUIRED)
+find_package(SDL2_ttf REQUIRED)
 
-message(${SDL2_TTF_FOUND})
+message(${SDL2_ttf_FOUND})
 message(h=${SDL2_TTF_LIBRARIES})
 
 

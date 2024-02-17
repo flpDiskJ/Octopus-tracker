@@ -19,13 +19,13 @@ private:
         int octave; // 1 thru 6 or - for blank
         int sample; // 0 - 99
         char command[2];
-        char parameter[2];
+        char parameter[2]; // parameters for command
         double pos_adv; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
 
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
-        int length;
+        int length; // number of Notes in the block
         int speed; // steps per beat
         string name;
     };
