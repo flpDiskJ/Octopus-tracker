@@ -177,6 +177,8 @@ public:
 
     void render_steps(); // creates textures and renders tracker steps to screen
 
+    void render_bars(); // renders level bars
+
     void keyboard(SDL_Event *e, bool running); // handles keyboard input specific to the main window
 };
 

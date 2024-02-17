@@ -9,6 +9,10 @@ using namespace std;
 #include <string.h>
 #include <cmath>
 #include <sstream>
+#include <thread>
+#include <iostream>
+#include <functional>
+#include <chrono>
 
 #define CHANNELS 8 // number of channels
 #define DISPLAYRECTS 40 // number of rects used to display steps

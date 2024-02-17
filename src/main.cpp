@@ -10,69 +10,22 @@
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
-class Timing{ // handles timing for tracker
-private:
-    Tracker *t;
-    AudioW *works;
-    Uint64 previous;
-    Uint64 current;
-    int amount;
-    bool run_seq = false;
-    Uint64 barTime;
-public:
-    bool active = false;
-
-    Timing(Tracker *trk, AudioW *wrk)
-    {
-        t = trk;
-        works = wrk;
-        barTime = SDL_GetTicks64();
-    }
-
-    ~Timing(){}
-
-    void start(bool run_sequence)
-    {
-        active = true;
-        run_seq = run_sequence;
-        t->set_timing_delay();
-        previous = SDL_GetTicks64();
-    }
-
-    void render_bars(SDL_Renderer *renderer)
-    {
-        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0xFF); // Black
-        for (int bar = 0; bar < CHANNELS; bar++)
+void timer_start(function<void(void)> func, unsigned int interval)
+{
+    thread([func, interval]() {
+        while (true)
         {
-            SDL_RenderFillRect(renderer, &t->trigger_bars[bar]);
+            func();
+            this_thread::sleep_for(chrono::milliseconds(interval));
         }
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
-    }
+    }).detach();
+}
 
-    void check()
-    {
-        if (active)
-        {
-            current = SDL_GetTicks64();
-            amount = (int)((current - previous) / t->timing_delay);
-            if (amount > 0)
-            {
-                for (int x = 0; x < amount; x++)
-                {
-                    works->play_step();
-                    t->move_step(run_seq);
-                }
-                previous = current;
-            }
-        }
-    }
 
-    void end()
-    {
-        active = false;
-        run_seq = false;
-    }
-};
+void timer_iqr()
+{
+    cout << "I am doing something" << endl;
+}
 
 void audio_callback(void* buffer, Uint8* stream, int len)
 {
@@ -102,6 +55,9 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 }
 
 int main(int argc, char* args[]) {
+
+    bool tracker_running = false;
+    bool run_sequence = false;
 
     Pallet pallet;
     pallet.black = {0, 0, 0};
@@ -179,7 +135,7 @@ int main(int argc, char* args[]) {
 
     AudioW aworks(&tracker, &audio_buffer);
 
-    Timing timing(&tracker, &aworks);
+    timer_start(timer_iqr, 1000);
 
     tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
 
@@ -254,7 +210,8 @@ int main(int argc, char* args[]) {
                     if (e.key.keysym.sym == SDLK_SPACE)
                     {
                         audio_buffer.stop = true;
-                        timing.end();
+                        tracker_running = false;
+                        run_sequence = false;
                     }
                     switch (windowID) {
                         case 0:
@@ -272,18 +229,20 @@ int main(int argc, char* args[]) {
                                     break;
                                 } else if (e.key.keysym.sym == SDLK_SPACE) // run tracker. Loop current block.
                                 {
-                                    timing.start(false);
+                                    tracker_running = true;
+                                    run_sequence = false;
                                     break;
                                 }
                             } else if (SDL_GetModState() & KMOD_SHIFT) // shift key press
                             {
                                 if (e.key.keysym.sym == SDLK_SPACE) // run tracker and step through track sequence.
                                 {
-                                    timing.start(true);
+                                    tracker_running = true;
+                                    run_sequence = true;
                                     break;
                                 }
                             }
-                            tracker.keyboard(&e, timing.active);
+                            tracker.keyboard(&e, tracker_running);
                             aworks.play_note(&e);
                             break;
                         case 1:
@@ -297,8 +256,6 @@ int main(int argc, char* args[]) {
                     break;
             }
         }
-
-        timing.check();
 
         currentTime = SDL_GetTicks64();
         if (currentTime - previousTime >= 40)
@@ -314,14 +271,12 @@ int main(int argc, char* args[]) {
 
             tracker.render_steps();
 
-            timing.render_bars(tracker_render);
+            tracker.render_bars();
 
             SDL_RenderPresent(tracker_render); // Present image to screen
 
             tracker.dec_trigger_bars(); // apply decay to level bars
         }
-
-        timing.check();
 
         if (audio_buffer.read_pos != audio_buffer.write_pos)
         {
@@ -330,8 +285,6 @@ int main(int argc, char* args[]) {
             SDL_UnlockAudio();
             //audio_buffer.update = false;
         }
-
-        timing.check();
 
     }
 

@@ -826,6 +826,16 @@ void Tracker::update_steps()
     }
 }
 
+void Tracker::render_bars()
+{
+    SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0xFF);
+    for (int b = 0; b < CHANNELS; b++)
+    {
+        SDL_RenderFillRect(renderer, &trigger_bars[b]);
+    }
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+}
+
 void Tracker::render_steps() // Renders block data to screen
 {
     for (int step = 0; step < DISPLAYRECTS; step++)
