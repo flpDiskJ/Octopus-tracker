@@ -687,6 +687,11 @@ void Tracker::move_step() // used by timer to run tracker
     update_steps();
 }
 
+int Tracker::get_timing_interval()
+{
+    return 1000.0 / ( ( (double)master_tempo*(double)block[b_pos].speed ) / 60.0 );
+}
+
 void Tracker::decpos()
 {
     if (skip == 1)

@@ -21,7 +21,6 @@ void timer_start(function<void(void)> func, unsigned int interval)
     }).detach();
 }
 
-
 void timer_iqr() // callback for repeating timer
 {
     cout << "Step" << endl;

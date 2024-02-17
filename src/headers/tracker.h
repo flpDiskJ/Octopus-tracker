@@ -166,6 +166,8 @@ public:
 
     void move_step(); // used by timer to run tracker
 
+    int get_timing_interval(); // gets timing interval in ms
+
     void realloc_block(int size); // reallocates block at b_pos
 
     void delete_block(int blk); // deletes indicated block
