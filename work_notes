@@ -21,6 +21,6 @@ To do:
     - Add sub-window to save and load modules.
 
 
-Notes/Comments:
+Bugs:
 
     - Timing is still a little sloppy at higher speeds or with lots of note triggers.
