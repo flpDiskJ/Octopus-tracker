@@ -666,7 +666,7 @@ void Tracker::incpos()
     update_steps();
 }
 
-void Tracker::move_step(bool run_sequence) // used by timer to run tracker
+void Tracker::move_step() // used by timer to run tracker
 {
     if (pos < block[b_pos].length - 1)
     {
@@ -928,7 +928,7 @@ void Tracker::get_note(SDL_Event *e)
             block[b_pos].channel[cursor_channel][pos].octave = oct;
             block[b_pos].channel[cursor_channel][pos].sample = s_pos;
             block[b_pos].channel[cursor_channel][pos].pos_adv = (double)getFreq(note, key, oct) / SAMPLE_RATE;
-            if (!tracker_is_running)
+            if (!tracker_running)
             {incpos();}
         }
     } else
@@ -969,27 +969,27 @@ void Tracker::get_note(SDL_Event *e)
                 else {
                     block[b_pos].channel[cursor_channel][pos].sample = i;
                 }
-                if (!tracker_is_running)
+                if (!tracker_running)
                 {incpos();}
             } else if (cursor_pos == 3)
             {
                 block[b_pos].channel[cursor_channel][pos].command[0] = k;
-                if (!tracker_is_running)
+                if (!tracker_running)
                 {incpos();}
             } else if (cursor_pos == 4)
             {
                 block[b_pos].channel[cursor_channel][pos].command[1] = k;
-                if (!tracker_is_running)
+                if (!tracker_running)
                 {incpos();}
             } else if (cursor_pos == 5)
             {
                 block[b_pos].channel[cursor_channel][pos].parameter[0] = k;
-                if (!tracker_is_running)
+                if (!tracker_running)
                 {incpos();}
             } else if (cursor_pos == 6)
             {
                 block[b_pos].channel[cursor_channel][pos].parameter[1] = k;
-                if (!tracker_is_running)
+                if (!tracker_running)
                 {incpos();}
             }
         }
@@ -1008,7 +1008,7 @@ void Tracker::clear_step()
     block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
     block[b_pos].channel[cursor_channel][pos].pos_adv = 0;
-    if (!tracker_is_running)
+    if (!tracker_running)
     {incpos();}
     update_steps();
 }
@@ -1018,22 +1018,22 @@ void Tracker::clear_index()
     switch (cursor_pos) {
         case 3:
             block[b_pos].channel[cursor_channel][pos].command[0] = '0';
-            if (!tracker_is_running)
+            if (!tracker_running)
             {incpos();}
             break;
         case 4:
             block[b_pos].channel[cursor_channel][pos].command[1] = '0';
-            if (!tracker_is_running)
+            if (!tracker_running)
             {incpos();}
             break;
         case 5:
             block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
-            if (!tracker_is_running)
+            if (!tracker_running)
             {incpos();}
             break;
         case 6:
             block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
-            if (!tracker_is_running)
+            if (!tracker_running)
             {incpos();}
             break;
         default:
@@ -1059,9 +1059,8 @@ void Tracker::mouse(int x, int y)
     }
 }
 
-void Tracker::keyboard(SDL_Event *e, bool running)
+void Tracker::keyboard(SDL_Event *e)
 {
-    tracker_is_running = running;
     switch (e->key.keysym.sym) // Keyboard input
     {
         case SDLK_BACKQUOTE:

@@ -22,9 +22,9 @@ void timer_start(function<void(void)> func, unsigned int interval)
 }
 
 
-void timer_iqr()
+void timer_iqr() // callback for repeating timer
 {
-    cout << "I am doing something" << endl;
+    cout << "Step" << endl;
 }
 
 void audio_callback(void* buffer, Uint8* stream, int len)
@@ -55,9 +55,6 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 }
 
 int main(int argc, char* args[]) {
-
-    bool tracker_running = false;
-    bool run_sequence = false;
 
     Pallet pallet;
     pallet.black = {0, 0, 0};
@@ -210,8 +207,8 @@ int main(int argc, char* args[]) {
                     if (e.key.keysym.sym == SDLK_SPACE)
                     {
                         audio_buffer.stop = true;
-                        tracker_running = false;
-                        run_sequence = false;
+                        tracker.tracker_running = false;
+                        tracker.run_sequence = false;
                     }
                     switch (windowID) {
                         case 0:
@@ -229,20 +226,20 @@ int main(int argc, char* args[]) {
                                     break;
                                 } else if (e.key.keysym.sym == SDLK_SPACE) // run tracker. Loop current block.
                                 {
-                                    tracker_running = true;
-                                    run_sequence = false;
+                                    tracker.tracker_running = true;
+                                    tracker.run_sequence = false;
                                     break;
                                 }
                             } else if (SDL_GetModState() & KMOD_SHIFT) // shift key press
                             {
                                 if (e.key.keysym.sym == SDLK_SPACE) // run tracker and step through track sequence.
                                 {
-                                    tracker_running = true;
-                                    run_sequence = true;
+                                    tracker.tracker_running = true;
+                                    tracker.run_sequence = true;
                                     break;
                                 }
                             }
-                            tracker.keyboard(&e, tracker_running);
+                            tracker.keyboard(&e);
                             aworks.play_note(&e);
                             break;
                         case 1:

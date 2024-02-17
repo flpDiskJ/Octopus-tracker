@@ -70,7 +70,6 @@ private:
     bool edit_mode = false;
     SDL_Rect cursor; // used to display cursor
     int trigger_bar_decay = 0;
-    bool tracker_is_running = false; // set by arg from keyboard()
 
     void copy_channel();
 
@@ -118,6 +117,8 @@ public:
     int total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
+    bool run_sequence = false; // if true tracker plays
+    bool tracker_running = false; // if true the sequence plays otherwise the current block loops
     int sequence_len = 0;
     SDL_Rect blkname_displayrect;
     SDL_Texture *blkname_displaytex;
@@ -163,7 +164,7 @@ public:
 
     void block_dec(); // decrement block position
 
-    void move_step(bool sequence); // used by timer to run tracker
+    void move_step(); // used by timer to run tracker
 
     void realloc_block(int size); // reallocates block at b_pos
 
@@ -179,7 +180,7 @@ public:
 
     void render_bars(); // renders level bars
 
-    void keyboard(SDL_Event *e, bool running); // handles keyboard input specific to the main window
+    void keyboard(SDL_Event *e); // handles keyboard input specific to the main window
 };
 
 #endif
