@@ -668,23 +668,26 @@ void Tracker::incpos()
 
 void Tracker::move_step() // used by timer to run tracker
 {
-    if (pos < block[b_pos].length - 1)
+    if (tracker_running)
     {
-        pos++;
-    } else {
-        pos = 0;
-        if (run_sequence) // if true step to next block in the sequence else loops
+        if (pos < block[b_pos].length - 1)
         {
-            if (sq_pos < sequence_len - 1)
+            pos++;
+        } else {
+            pos = 0;
+            if (run_sequence) // if true step to next block in the sequence else loops
             {
-                sq_pos++;
-            } else {
-                sq_pos = 0;
+                if (sq_pos < sequence_len - 1)
+                {
+                    sq_pos++;
+                } else {
+                    sq_pos = 0;
+                }
+                b_pos = sequence[sq_pos];
             }
-            b_pos = sequence[sq_pos];
         }
+        update_steps();
     }
-    update_steps();
 }
 
 int Tracker::get_timing_interval()
