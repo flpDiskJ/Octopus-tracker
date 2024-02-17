@@ -70,6 +70,19 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     sequence[0] = 0;
     sequence_len = 1;
 
+    for (int x = 0; x < 10; x++) // clear note_buffer
+    {
+        note_buffer[x].note = '-';
+        note_buffer[x].key = '-';
+        note_buffer[x].octave = '-';
+        note_buffer[x].sample = 0;
+        note_buffer[x].command[0] = '0';
+        note_buffer[x].command[1] = '0';
+        note_buffer[x].parameter[0] = '0';
+        note_buffer[x].parameter[1] = '0';
+        note_buffer[x].pos_adv = 0;
+    }
+
     block_buffer.length = 0;
     channel_buffer.length = 0;
 
@@ -211,6 +224,36 @@ bool Tracker::load_inst(string path, string name)
     }
     update_info();
     return true;
+}
+
+void Tracker::copy_note(int buff)
+{
+    note_buffer[buff].note = block[b_pos].channel[cursor_channel][pos].note;
+    note_buffer[buff].key = block[b_pos].channel[cursor_channel][pos].key;
+    note_buffer[buff].octave = block[b_pos].channel[cursor_channel][pos].octave;
+    note_buffer[buff].sample = block[b_pos].channel[cursor_channel][pos].sample;
+    note_buffer[buff].command[0] = block[b_pos].channel[cursor_channel][pos].command[0];
+    note_buffer[buff].command[1] = block[b_pos].channel[cursor_channel][pos].command[1];
+    note_buffer[buff].parameter[0] = block[b_pos].channel[cursor_channel][pos].parameter[0];
+    note_buffer[buff].parameter[1] = block[b_pos].channel[cursor_channel][pos].parameter[1];
+    note_buffer[buff].pos_adv = block[b_pos].channel[cursor_channel][pos].pos_adv;
+}
+
+void Tracker::paste_note(int buff)
+{
+    if (edit_mode)
+    {
+        block[b_pos].channel[cursor_channel][pos].note = note_buffer[buff].note;
+        block[b_pos].channel[cursor_channel][pos].key = note_buffer[buff].key;
+        block[b_pos].channel[cursor_channel][pos].octave = note_buffer[buff].octave;
+        block[b_pos].channel[cursor_channel][pos].sample = note_buffer[buff].sample;
+        block[b_pos].channel[cursor_channel][pos].command[0] = note_buffer[buff].command[0];
+        block[b_pos].channel[cursor_channel][pos].command[1] = note_buffer[buff].command[1];
+        block[b_pos].channel[cursor_channel][pos].parameter[0] = note_buffer[buff].parameter[0];
+        block[b_pos].channel[cursor_channel][pos].parameter[1] = note_buffer[buff].parameter[1];
+        block[b_pos].channel[cursor_channel][pos].pos_adv = note_buffer[buff].pos_adv;
+        update_steps();
+    }
 }
 
 void Tracker::copy_channel()
@@ -594,7 +637,7 @@ void Tracker::sample_dec()
     update_info();
 }
 
-void Tracker::incpos() // Incriment pos by amount
+void Tracker::incpos()
 {
     if (skip == 1)
     {
@@ -1169,23 +1212,58 @@ void Tracker::keyboard(SDL_Event *e, bool running)
             pos = block[b_pos].length - 1;
             break;
         case SDLK_1:
-            if (SDL_GetModState() & KMOD_CTRL){pos = 0;}else
+            if (SDL_GetModState() & KMOD_CTRL){pos = 0;}
+            else if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(0);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(0);}else
             {get_note(e);}
             break;
         case SDLK_2:
-            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length / 4;}else
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length / 4;}
+            else if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(1);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(1);}else
             {get_note(e);}
             break;
         case SDLK_3:
-            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length / 2;}else
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length / 2;}
+            else if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(2);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(2);}else
             {get_note(e);}
             break;
         case SDLK_4:
-            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length - (block[b_pos].length / 4);}else
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length - (block[b_pos].length / 4);}
+            else if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(3);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(3);}else
             {get_note(e);}
             break;
         case SDLK_5:
-            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length - 1;}else
+            if (SDL_GetModState() & KMOD_CTRL){pos = block[b_pos].length - 1;}
+            else if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(4);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(4);}else
+            {get_note(e);}
+            break;
+        case SDLK_6:
+            if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(5);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(5);}else
+            {get_note(e);}
+            break;
+        case SDLK_7:
+            if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(6);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(6);}else
+            {get_note(e);}
+            break;
+        case SDLK_8:
+            if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(7);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(7);}else
+            {get_note(e);}
+            break;
+        case SDLK_9:
+            if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(8);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(8);}else
+            {get_note(e);}
+            break;
+        case SDLK_0:
+            if (SDL_GetModState() & KMOD_SHIFT && SDL_GetModState() & KMOD_ALT){copy_note(9);}
+            else if (SDL_GetModState() & KMOD_SHIFT) {paste_note(9);}else
             {get_note(e);}
             break;
         default:

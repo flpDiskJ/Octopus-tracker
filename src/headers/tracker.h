@@ -22,6 +22,7 @@ private:
         char parameter[2];
         double pos_adv; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
+
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
         int length;
@@ -86,15 +87,11 @@ private:
     // (1, 0, 0) moves cursor left 1
     // (0, 1, 1) moves cursor to start of next channel and so on...
 
-    void block_inc(); // incriment block position
+    void sample_inc(); // increment sample position
 
-    void block_dec(); // decriment block position
+    void sample_dec(); // decrement sample position
 
-    void sample_inc(); // incriment sample position
-
-    void sample_dec(); // decriment sample position
-
-    void decpos(); // decriment step position by amount
+    void decpos(); // decrement step position
 
     void clear_step(); // clears current step
 
@@ -108,11 +105,16 @@ private:
 
     bool checkButton(SDL_Rect *button, int x, int y); // checks if mouse was inside button
 
+    void copy_note(int buff); // copy/paste note to/from note_buffer
+
+    void paste_note(int buff); // copy/paste note to/from note_buffer
+
 public:
 
     Block block[MAXBLOCKS]; // static array of blocks
     Block block_buffer; // used to copy blocks
     Buffer channel_buffer; // used to copy channels
+    Note note_buffer[10]; // used to copy notes
     int total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
@@ -155,7 +157,11 @@ public:
 
     int getFreq(char note, char key, int oct); // returns sample rate of note
 
-    void incpos(); // incriment step position by amount
+    void incpos(); // increment step position
+
+    void block_inc(); // increment block position
+
+    void block_dec(); // decrement block position
 
     void move_step(bool sequence); // used by timer to run tracker
 

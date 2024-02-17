@@ -1,6 +1,8 @@
     :Keep note of what is being worked on here:
 
 New Additions:
+    - Added ability to change block with shift+arrows inside block sub-window
+    - Added note copy/paste with shift+alt+0-9 / shift+0-9
     - separated step texture creation from rendering. Split render_steps() to render_steps() & update_steps()
     - Added skip modes and skip toggle
 
@@ -21,4 +23,4 @@ To do:
 
 Notes/Comments:
 
-    - Timing is still a little sloppy at higher speeds.
+    - Timing is still a little sloppy at higher speeds or with lots of note triggers.

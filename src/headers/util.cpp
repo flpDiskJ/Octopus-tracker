@@ -431,11 +431,15 @@ void Util::input(SDL_Event *e)
         case 1:
             if (e->key.keysym.sym == SDLK_DOWN)
             {
-                if (pos < tracker->total_blocks-5) {pos++; update();}
+                if (SDL_GetModState() & KMOD_SHIFT) {tracker->block_inc();}
+                else if (pos < tracker->total_blocks-5) {pos++;}
+                update();
             }
             else if (e->key.keysym.sym == SDLK_UP)
             {
-                if (pos > -5) {pos--; update();}
+                if (SDL_GetModState() & KMOD_SHIFT) {tracker->block_dec();}
+                else if (pos > -5) {pos--;}
+                update();
             }
             if (text_mode || speed_mode || len_mode)
             {

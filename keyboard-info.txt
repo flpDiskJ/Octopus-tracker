@@ -17,7 +17,7 @@ Main window (tracker):
         X CTRL+LEFT/RIGHT = change skip amount
         X tilde key = toggle skip between 1 and previously set amount
         X click on skip with mouse to toggle skip mode
-    
+
     X TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
     X SHIFT+UP/DOWN = change block
     X SHIFT+LEFT/RIGHT = change instrument/sample
@@ -27,7 +27,8 @@ Main window (tracker):
     X CTRL+SHIFT+C/V = Copy/Paste block
     X FUNC1-5 = change octave
     X FUNC6-10 or CTRL+1-5 = navigate block
-      SHIFT+0-9 = Paste copy buffer from edit menu
+    X SHIFT+ALT+0-9 Copy note to buffer
+    X SHIFT+0-9 = Paste note from buffer
 
     X ALT+SPACE = play block
     X SHIFT+SPACE = play sequence
@@ -42,3 +43,9 @@ Main window (tracker):
       CTRL+S = open sample edit window
 
     X CTRL+SHIFT+Q = quit
+
+Block sub-window:
+    X UP/DOWN = scroll block list
+    X SHIFT+UP/DOWN = change block
+    X click entry box with mouse to activate keyboard input
+    X hit enter/return to exit keyboard input
