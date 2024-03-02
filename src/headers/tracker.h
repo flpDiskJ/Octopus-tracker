@@ -139,7 +139,7 @@ public:
     bool mute[CHANNELS]; // used to mute channel
     Channel channel[CHANNELS];
     SDL_Rect trigger_bars[CHANNELS];
-    int timing_delay; // time delay in ms // used by the timing class // calculate using set_timing_delay()
+    int timing_delay; // time delay in ms // calculate using set_timing_delay()
 
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
@@ -165,8 +165,6 @@ public:
     void block_dec(); // decrement block position
 
     void move_step(); // used by timer to run tracker
-
-    int get_timing_interval(); // gets timing interval in ms
 
     void realloc_block(int size); // reallocates block at b_pos
 

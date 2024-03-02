@@ -10,25 +10,18 @@
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
-void timer_start(function<void(void)> func, unsigned int interval)
-{
-    thread([func, interval]() {
-        while (true)
-        {
-            func();
-            this_thread::sleep_for(chrono::milliseconds(interval));
-        }
-    }).detach();
-}
-
-void timer_iqr() // callback for repeating timer
-{
-    cout << "Step" << endl;
-}
-
 void audio_callback(void* buffer, Uint8* stream, int len)
 {
     AudioBuffer *b = (AudioBuffer*)buffer;
+
+    Tracker *t = (Tracker*)b->tracker_class; // accesses the tracker class
+
+    Uint64 current_time = SDL_GetTicks64();
+    if ( (current_time - b->previous_time) >= t->timing_delay )
+    {
+        b->previous_time = current_time;
+        t->move_step(); // steps sequencer and triggers any valid notes
+    }
 
     int region1size = len;
     int region2size = 0;
@@ -110,6 +103,8 @@ int main(int argc, char* args[]) {
     Util util(&tracker, Font, &pallet);
 
     AudioBuffer audio_buffer;
+    audio_buffer.previous_time = SDL_GetTicks64();
+    audio_buffer.tracker_class = &tracker;
 
     SDL_AudioSpec mFormat;
     mFormat.format = AUDIO_S16LSB; mFormat.freq = SAMPLE_RATE; mFormat.channels = AUDIO_CHANNELS;
@@ -130,8 +125,6 @@ int main(int argc, char* args[]) {
     SDL_PauseAudio(0);
 
     AudioW aworks(&tracker, &audio_buffer);
-
-    timer_start(timer_iqr, 1000);
 
     tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
 

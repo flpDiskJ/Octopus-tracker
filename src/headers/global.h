@@ -9,10 +9,6 @@ using namespace std;
 #include <string.h>
 #include <cmath>
 #include <sstream>
-#include <thread>
-#include <iostream>
-#include <functional>
-#include <chrono>
 
 #define CHANNELS 8 // number of channels
 #define DISPLAYRECTS 40 // number of rects used to display steps
@@ -20,7 +16,7 @@ using namespace std;
 #define MAXBLOCKS 200 // max number of blocks that can be used
 #define BUFF_SIZE 512 // size of audio buffer. must be power of 2
 #define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
-#define SAMPLE_RATE 32000 // output sample rate
+#define SAMPLE_RATE 48000 // output sample rate
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
 #define AMP_LEV 15 // master level // 255 max for Signed 16bit range without clipping
 
@@ -31,12 +27,14 @@ struct Pallet{ // global color pallet
     SDL_Color green;
 };
 
-struct AudioBuffer{ // global audio output buffer
+struct AudioBuffer{ // global audio output buffer // passed into audio callback
     Uint8 *data;
     Uint32 len;
     Uint32 read_pos;
     Uint32 write_pos;
     bool stop;
+    Uint64 previous_time;
+    void *tracker_class;
 };
 
 #endif

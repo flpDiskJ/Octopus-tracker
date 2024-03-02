@@ -1,6 +1,7 @@
     :Keep note of what is being worked on here:
 
 New Additions:
+    - Moved timing functionality inside the audio-callback
     - Added ability to change block with shift+arrows inside block sub-window
     - Added note copy/paste with shift+alt+0-9 / shift+0-9
     - separated step texture creation from rendering. Split render_steps() to render_steps() & update_steps()
@@ -22,5 +23,3 @@ To do:
 
 
 Bugs:
-
-    - Timing is still a little sloppy at higher speeds or with lots of note triggers.
