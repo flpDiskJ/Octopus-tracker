@@ -1,6 +1,7 @@
     :Keep note of what is being worked on here:
 
 New Additions:
+    - Added delay to timing to get the best timing accuracy
     - Moved timing functionality inside the audio-callback
     - Added ability to change block with shift+arrows inside block sub-window
     - Added note copy/paste with shift+alt+0-9 / shift+0-9

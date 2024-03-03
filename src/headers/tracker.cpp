@@ -154,7 +154,12 @@ void Tracker::set_timing_delay()
     calc = master_tempo * block[b_pos].speed;
     calc = calc / 60.0;
     calc = (double)SAMPLE_RATE / calc;
-    timing_delay = (int)calc;
+    int out = (int)calc;
+    if (out <= BUFF_SIZE) // prevents program crash when speed is maxed
+    {
+        out = BUFF_SIZE + 2;
+    }
+    timing_delay = out;
 }
 
 void Tracker::set_trigger_bar(int channel, int level)
