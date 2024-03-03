@@ -14,7 +14,7 @@ using namespace std;
 #define DISPLAYRECTS 40 // number of rects used to display steps
 #define MAXSAMPLES 100 // max number of samples that can be used
 #define MAXBLOCKS 200 // max number of blocks that can be used
-#define BUFF_SIZE 512 // size of audio buffer. must be power of 2
+#define BUFF_SIZE 128 // size of audio buffer. must be power of 2
 #define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
 #define SAMPLE_RATE 48000 // output sample rate
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
