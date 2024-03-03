@@ -14,15 +14,6 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 {
     AudioBuffer *b = (AudioBuffer*)buffer;
 
-    Tracker *t = (Tracker*)b->tracker_class; // accesses the tracker class
-
-    b->time += BUFF_SIZE;
-    if ( b->time >= t->timing_delay )
-    {
-        b->time = 0;
-        t->move_step(); // steps sequencer and triggers any valid notes
-    }
-
     int region1size = len;
     int region2size = 0;
 
@@ -44,6 +35,25 @@ void audio_callback(void* buffer, Uint8* stream, int len)
     );
 
     b->read_pos = (b->read_pos + len) % b->len;
+
+
+    ////////// Timing
+
+    Tracker *t = (Tracker*)b->tracker_class; // accesses the tracker class
+
+    b->time += BUFF_SIZE;
+    if ( b->time >= t->timing_delay - BUFF_SIZE )
+    {
+        int delay = b->time - t->timing_delay; // number of samples to delay
+        if (delay > 0)
+        {
+            delay = (delay*1000000) / SAMPLE_RATE; // number of microseconds to delay
+            usleep(delay);
+        }
+        b->time = 0;
+        t->move_step(); // steps sequencer and triggers any valid notes
+    }
+
 }
 
 int main(int argc, char* args[]) {
