@@ -150,6 +150,8 @@ Tracker::~Tracker() {
 
 void Tracker::set_timing_delay()
 {
+    bool run_state = tracker_running; // saves current run state
+    tracker_running = false; // stops timing to avoid crashing
     double calc;
     calc = master_tempo * block[b_pos].speed;
     calc = calc / 60.0;
@@ -160,6 +162,7 @@ void Tracker::set_timing_delay()
         out = BUFF_SIZE + 2;
     }
     timing_delay = out;
+    tracker_running = run_state;
 }
 
 void Tracker::set_trigger_bar(int channel, int level)
