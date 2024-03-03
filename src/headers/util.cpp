@@ -457,6 +457,10 @@ void Util::input(SDL_Event *e)
                             } else {
                                 tracker->block[tracker->b_pos].speed = 1;
                             }
+                            if (tracker->block[tracker->b_pos].speed > 32)
+                            {
+                                tracker->block[tracker->b_pos].speed = 32;
+                            }
                             setEntry();
                         }
                         else if (len_mode)
@@ -539,6 +543,10 @@ void Util::input(SDL_Event *e)
                             tracker->master_tempo = stoi(bpm_entry, 0, 10); // convert string to int
                         } else {
                             tracker->master_tempo = 1;
+                        }
+                        if (tracker->master_tempo > 250)
+                        {
+                            tracker->master_tempo = 250;
                         }
                         setEntry();
                     }
