@@ -48,6 +48,10 @@ void audio_callback(void* buffer, Uint8* stream, int len)
         if (delay > 0)
         {
             delay = (delay*1000000) / SAMPLE_RATE; // number of microseconds to delay
+            if (delay > 1000)
+            {
+                delay = 1000;
+            }
             usleep(delay);
         }
         b->time = 0;
