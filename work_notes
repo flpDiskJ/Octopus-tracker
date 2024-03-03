@@ -10,6 +10,8 @@ New Additions:
 
 To do:
 
+    - Add sequence order sub-window
+
     - Add command functionality.
 
     - Add help sub-window to provide a detailed guide on how to use the program.
@@ -24,3 +26,5 @@ To do:
 
 
 Bugs:
+
+    Timing jitters when util window is moved while playing.
