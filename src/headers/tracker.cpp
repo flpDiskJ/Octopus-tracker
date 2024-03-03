@@ -154,13 +154,8 @@ void Tracker::set_timing_delay()
     double calc;
     calc = master_tempo * block[b_pos].speed;
     calc = calc / 60.0;
-    calc = (double)SAMPLE_RATE / calc;
-    int out = (int)calc;
-    if (out < BUFF_SIZE) // prevents program crash when speed is maxed
-    {
-        out = BUFF_SIZE;
-    }
-    timing_delay = out;
+    calc = (double)timing_resolution / calc;
+    timing_delay = (int)calc;
     SDL_UnlockAudio();
 }
 

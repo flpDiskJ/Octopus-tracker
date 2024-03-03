@@ -10,7 +10,7 @@ New Additions:
 
 To do:
 
-    - Add sequence order sub-window
+    - Add sequence order sub-window.
 
     - Add command functionality.
 
@@ -29,6 +29,4 @@ Bugs:
 
     Timing jitters when util window is moved while playing.
 
-    Program crashing while changing master tempo and speed rate
-
-    Speed rates from 16-23 have no change to the speed until it reaches 24 (max speed)
+    Speed rates from 16-23 have no change to the speed until it reaches 24 (max speed).

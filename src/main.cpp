@@ -39,19 +39,15 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 
     ////////// Timing
 
-    Tracker *t = (Tracker*)b->tracker_class; // accesses the tracker class
+    Tracker *t = (Tracker*)b->tracker_class; // acesses the tracker class
 
-    b->time += BUFF_SIZE;
-    if (b->time >= t->timing_delay - (BUFF_SIZE/2))
+    b->time += buffer_delay;
+    int delay = b->time - t->timing_delay;
+    if (delay >= 0)
     {
-        int delay = b->time - t->timing_delay; // number of samples to delay
-        if (delay > 0 && delay < 256)
-        {
-            delay = (delay*1000000) / SAMPLE_RATE; // number of microseconds to delay
-            usleep(delay);
-        }
-        b->time = 0;
+        usleep(delay*micro_multiplier);
         t->move_step(); // steps sequencer and triggers any valid notes
+        b->time = 0;
     }
 
 }

@@ -22,6 +22,10 @@ using namespace std;
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
 #define AMP_LEV 15 // master level // 255 max for Signed 16bit range without clipping
 
+const int timing_resolution = 100000; // timing accuracy (1000 to 1000000)
+const int micro_multiplier = 1000000 / timing_resolution;
+const int buffer_delay = timing_resolution / (SAMPLE_RATE/BUFF_SIZE); // delay period in microseconds of the audio callabck frequency
+
 struct Pallet{ // global color pallet
     SDL_Color black;
     SDL_Color red;
@@ -35,7 +39,7 @@ struct AudioBuffer{ // global audio output buffer // passed into audio callback
     Uint32 read_pos;
     Uint32 write_pos;
     bool stop;
-    Uint32 time;
+    Uint64 time;
     void *tracker_class;
 };
 

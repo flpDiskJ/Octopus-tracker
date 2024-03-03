@@ -139,7 +139,7 @@ public:
     bool mute[CHANNELS]; // used to mute channel
     Channel channel[CHANNELS];
     SDL_Rect trigger_bars[CHANNELS];
-    int timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
+    Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
 
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
@@ -148,7 +148,7 @@ public:
 
     void mouse(int x, int y); // handles mouse input
 
-    void set_timing_delay(); // calculates timing delay based on tempo and block speed
+    void set_timing_delay(); // calculates timing delay based on tempo and block speed in 1/100000th of a second
 
     void set_trigger_bar(int channel, int level); // sets trigger bar
 
