@@ -28,9 +28,7 @@ To do:
 Bugs:
 
     Timing jitters when util window is moved while playing.
-    
-    Program crashing while changing master tempo and speed rates are still apparent 
-    
-    Speed rates from 16-23 have no change to the speed until it reaches 24 (max speed) 
-    
-    
+
+    Program crashing while changing master tempo and speed rate
+
+    Speed rates from 16-23 have no change to the speed until it reaches 24 (max speed)

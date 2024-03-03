@@ -117,8 +117,8 @@ public:
     int total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
-    bool run_sequence = false; // if true tracker plays
-    bool tracker_running = false; // if true the sequence plays otherwise the current block loops
+    bool run_sequence = false; // if true the song plays out otherwise the block loops
+    bool tracker_running = false; // if true the tracker runs
     int sequence_len = 0;
     SDL_Rect blkname_displayrect;
     SDL_Texture *blkname_displaytex;

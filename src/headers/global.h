@@ -10,6 +10,7 @@ using namespace std;
 #include <cmath>
 #include <sstream>
 #include <unistd.h>
+#include <iostream>
 
 #define CHANNELS 8 // number of channels
 #define DISPLAYRECTS 40 // number of rects used to display steps
