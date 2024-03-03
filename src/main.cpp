@@ -42,7 +42,7 @@ void audio_callback(void* buffer, Uint8* stream, int len)
     Tracker *t = (Tracker*)b->tracker_class; // accesses the tracker class
 
     b->time += BUFF_SIZE;
-    if (b->time >= t->timing_delay - BUFF_SIZE)
+    if (b->time >= t->timing_delay - (BUFF_SIZE/2))
     {
         int delay = b->time - t->timing_delay; // number of samples to delay
         if (delay > 0)
