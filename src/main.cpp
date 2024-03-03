@@ -16,10 +16,10 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 
     Tracker *t = (Tracker*)b->tracker_class; // accesses the tracker class
 
-    Uint64 current_time = SDL_GetTicks64();
-    if ( (current_time - b->previous_time) >= t->timing_delay )
+    b->time += BUFF_SIZE;
+    if ( b->time >= t->timing_delay )
     {
-        b->previous_time = current_time;
+        b->time = 0;
         t->move_step(); // steps sequencer and triggers any valid notes
     }
 
@@ -103,7 +103,7 @@ int main(int argc, char* args[]) {
     Util util(&tracker, Font, &pallet);
 
     AudioBuffer audio_buffer;
-    audio_buffer.previous_time = SDL_GetTicks64();
+    audio_buffer.time = 0;
     audio_buffer.tracker_class = &tracker;
 
     SDL_AudioSpec mFormat;

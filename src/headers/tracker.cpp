@@ -153,7 +153,7 @@ void Tracker::set_timing_delay()
     double calc;
     calc = master_tempo * block[b_pos].speed;
     calc = calc / 60.0;
-    calc = 1000.0 / calc;
+    calc = (double)SAMPLE_RATE / calc;
     timing_delay = (int)calc;
 }
 
