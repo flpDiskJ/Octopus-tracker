@@ -8,6 +8,8 @@ private:
     Tracker *t;
     AudioBuffer *b;
 
+    Uint32 sample_count; // used to determine timing
+
 public:
 
     AudioW(Tracker *tracker, AudioBuffer *buffer);

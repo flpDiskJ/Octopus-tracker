@@ -4,6 +4,7 @@ AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer)
 {
     t = tracker;
     b = buffer;
+    sample_count = 0;
 }
 
 AudioW::~AudioW()
@@ -95,6 +96,15 @@ void AudioW::audio_works() // fills audio buffer
     }
     while (b->write_pos != b->read_pos)
     {
+        // timing
+        if (sample_count >= t->timing_delay)
+        {
+            t->move_step();
+            sample_count = 0;
+        } else {
+            sample_count++;
+        }
+
         val = 0;
         for (int c = 0; c < 8; c++) // c for channel
         {
