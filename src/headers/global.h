@@ -25,8 +25,6 @@ using namespace std;
 
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
 
-const int samples_in_ms = SAMPLE_RATE / 1000; // number of audio samples in 1 milisecond
-
 struct Pallet{ // global color pallet
     SDL_Color black;
     SDL_Color red;
@@ -40,8 +38,6 @@ struct AudioBuffer{ // global audio output buffer // passed into audio callback
     Uint32 read_pos;
     Uint32 write_pos;
     bool stop;
-    Uint32 time;
-    void *tracker_class;
 };
 
 #endif

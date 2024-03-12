@@ -36,20 +36,6 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 
     b->read_pos = (b->read_pos + len) % b->len;
 
-
-    ////////// Timing
-
-    Tracker *t = (Tracker*)b->tracker_class; // acesses the tracker class
-
-    b->time += len;
-    int remain = t->timing_delay - b->time; // number of samples remaining in delay
-
-    if (remain <= len)
-    {
-        t->move_step();
-        b->time = 0; // reset time
-    }
-
 }
 
 int main(int argc, char* args[]) {
@@ -109,8 +95,6 @@ int main(int argc, char* args[]) {
     Util util(&tracker, Font, &pallet);
 
     AudioBuffer audio_buffer;
-    audio_buffer.time = 0;
-    audio_buffer.tracker_class = &tracker;
 
     SDL_AudioSpec mFormat;
     mFormat.format = AUDIO_S16LSB; mFormat.freq = SAMPLE_RATE; mFormat.channels = AUDIO_CHANNELS;
