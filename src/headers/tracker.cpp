@@ -152,9 +152,9 @@ void Tracker::set_timing_delay()
 {
     SDL_LockAudio();
     double calc;
-    calc = master_tempo * block[b_pos].speed;
+    calc = (double)master_tempo * (double)block[b_pos].speed;
     calc = calc / 60.0;
-    calc = (double)timing_resolution / calc;
+    calc = (double)SAMPLE_RATE / calc;
     timing_delay = (int)calc;
     SDL_UnlockAudio();
 }

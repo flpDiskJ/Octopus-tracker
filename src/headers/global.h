@@ -12,6 +12,7 @@ using namespace std;
 #include <unistd.h>
 #include <iostream>
 
+#define REFRESH_RATE 60
 #define CHANNELS 8 // number of channels
 #define DISPLAYRECTS 40 // number of rects used to display steps
 #define MAXSAMPLES 100 // max number of samples that can be used
@@ -22,9 +23,9 @@ using namespace std;
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
 #define AMP_LEV 15 // master level // 255 max for Signed 16bit range without clipping
 
-const int timing_resolution = 100000; // timing accuracy (1000 to 1000000)
-const int micro_multiplier = 1000000 / timing_resolution;
-const int buffer_delay = (double)timing_resolution / ((double)SAMPLE_RATE/(double)BUFF_SIZE); // delay period in microseconds of the audio callabck frequency
+const int refresh_delay_ms = 1000 / REFRESH_RATE;
+
+const int samples_in_ms = SAMPLE_RATE / 1000; // number of audio samples in 1 milisecond
 
 struct Pallet{ // global color pallet
     SDL_Color black;
@@ -39,7 +40,7 @@ struct AudioBuffer{ // global audio output buffer // passed into audio callback
     Uint32 read_pos;
     Uint32 write_pos;
     bool stop;
-    Uint64 time;
+    Uint32 time;
     void *tracker_class;
 };
 

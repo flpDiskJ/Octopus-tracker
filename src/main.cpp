@@ -41,13 +41,13 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 
     Tracker *t = (Tracker*)b->tracker_class; // acesses the tracker class
 
-    b->time += buffer_delay;
-    int delay = b->time - t->timing_delay;
-    if (delay >= 0)
+    b->time += len;
+    int remain = t->timing_delay - b->time; // number of samples remaining in delay
+
+    if (remain <= len)
     {
-        usleep(delay*micro_multiplier);
-        t->move_step(); // steps sequencer and triggers any valid notes
-        b->time = 0;
+        t->move_step();
+        b->time = 0; // reset time
     }
 
 }
@@ -253,7 +253,7 @@ int main(int argc, char* args[]) {
         }
 
         currentTime = SDL_GetTicks64();
-        if (currentTime - previousTime >= 40)
+        if (currentTime - previousTime >= refresh_delay_ms)
         {
             previousTime = currentTime;
             // Rendering

@@ -148,7 +148,7 @@ public:
 
     void mouse(int x, int y); // handles mouse input
 
-    void set_timing_delay(); // calculates timing delay based on tempo and block speed in 1/100000th of a second
+    void set_timing_delay(); // calculates timing delay based on tempo and block speed
 
     void set_trigger_bar(int channel, int level); // sets trigger bar
 
