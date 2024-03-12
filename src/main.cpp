@@ -66,7 +66,7 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    tracker_window = SDL_CreateWindow("Octapus V1.0   |   Code by Jake Aigner & Stephen Robinson", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+    tracker_window = SDL_CreateWindow("Octapus V1.0   |   Floppi J, Stefonzo, Johnny Too Bad", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
     SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (tracker_window == NULL)
     {

@@ -1,6 +1,7 @@
     :Keep note of what is being worked on here:
 
 New Additions:
+    - Moved the timing from the audio callback to the audioworks function
     - Added delay to timing to get the best timing accuracy
     - Moved timing functionality inside the audio-callback
     - Added ability to change block with shift+arrows inside block sub-window
@@ -9,6 +10,8 @@ New Additions:
     - Added skip modes and skip toggle
 
 To do:
+
+    - Add master speed and block length controls to track params sub-window
 
     - Add another start key-command that starts from the begining of the block
 
@@ -28,7 +31,3 @@ To do:
 
 
 Bugs:
-
-    Timing jitters when util window is moved while playing.
-
-    Speed rates from 16-23 have no change to the speed until it reaches 24 (max speed).

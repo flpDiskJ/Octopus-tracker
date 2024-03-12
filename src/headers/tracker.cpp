@@ -150,13 +150,11 @@ Tracker::~Tracker() {
 
 void Tracker::set_timing_delay()
 {
-    SDL_LockAudio();
     double calc;
     calc = (double)master_tempo * (double)block[b_pos].speed;
     calc = calc / 60.0;
     calc = (double)SAMPLE_RATE / calc;
     timing_delay = (int)calc;
-    SDL_UnlockAudio();
 }
 
 void Tracker::set_trigger_bar(int channel, int level)
