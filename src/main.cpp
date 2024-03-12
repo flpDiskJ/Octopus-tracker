@@ -1,6 +1,6 @@
-// Octapus Version 1.0 2023
-// Code by Jake Aigner & Stephen Robinson
-// Open source. Free to distribute.
+// Octapus Version 0.1 2023 - 2024
+// Created by Jake Aigner & Stephen Robinson & John Dunbar
+// Open source. Free to distribute. Please include original credits!
 
 #include "headers/tracker.h"
 #include "headers/util.h"
@@ -66,7 +66,7 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    tracker_window = SDL_CreateWindow("Octapus V1.0   |   Floppi J, Stefonzo, Johnny Too Bad", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+    tracker_window = SDL_CreateWindow("Octapus V0.1 testsing   |   Floppi J, Stefonzo, Johnny Too Bad", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
     SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (tracker_window == NULL)
     {

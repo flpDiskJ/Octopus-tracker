@@ -457,21 +457,25 @@ void Util::input(SDL_Event *e)
                             } else {
                                 tracker->block[tracker->b_pos].speed = 1;
                             }
-                            if (tracker->block[tracker->b_pos].speed > 32)
+                            if (tracker->block[tracker->b_pos].speed > 64)
                             {
-                                tracker->block[tracker->b_pos].speed = 32;
+                                tracker->block[tracker->b_pos].speed = 64;
                             }
                             setEntry();
                         }
                         else if (len_mode)
                         {
                             len_mode = false;
+                            int block_len;
                             if (len_entry != "0" && strlen(len_entry.c_str()) > 0)
                             {
-                                tracker->realloc_block(stoi(len_entry, 0, 10));
+                                block_len = stoi(len_entry, 0, 10);
                             } else {
-                                tracker->realloc_block(1);
+                                block_len = 1;
                             }
+                            if (block_len > 999){block_len = 999;}
+                            else if (block_len < 1){block_len = 1;}
+                            tracker->realloc_block(block_len);
                             setEntry();
                         }
                         break;
@@ -544,9 +548,9 @@ void Util::input(SDL_Event *e)
                         } else {
                             tracker->master_tempo = 1;
                         }
-                        if (tracker->master_tempo > 250)
+                        if (tracker->master_tempo > 999)
                         {
-                            tracker->master_tempo = 250;
+                            tracker->master_tempo = 999;
                         }
                         setEntry();
                     }

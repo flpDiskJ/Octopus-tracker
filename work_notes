@@ -1,6 +1,8 @@
     :Keep note of what is being worked on here:
 
 New Additions:
+    - Increased bpm and speed caps
+    - Added block length cap of 999
     - Moved the timing from the audio callback to the audioworks function
     - Added delay to timing to get the best timing accuracy
     - Moved timing functionality inside the audio-callback
