@@ -16,6 +16,7 @@ add_executable(octapus
 	${SRC}/headers/tracker.cpp
 	${SRC}/headers/util.cpp
 	${SRC}/headers/audioworks.cpp
+	${SRC}/headers/sequence_list.cpp
 )
 target_include_directories(
 	octapus PUBLIC

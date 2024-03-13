@@ -67,6 +67,8 @@ public:
 
     void render(); // renders everything to the screen
 
+    Uint32 get_state(); // returns sdl window state
+
     void mouse(int x, int y); // mouse stuff
 
     void input(SDL_Event *e); // handles keyboard input

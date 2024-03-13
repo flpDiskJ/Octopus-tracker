@@ -34,7 +34,7 @@ Main window (tracker):
     X SHIFT+SPACE = play sequence
     X SPACE = stop all
 
-      CTRL+O = open sequence order window
+    X CTRL+O = open sequence order window
     X CTRL+H = open track properties window (bpm, speed, and such)
     X CTRL+B = open block properties window (block length, speed, and such)
       CTRL+F = open file op window (load/save module)

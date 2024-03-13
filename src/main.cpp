@@ -4,6 +4,7 @@
 
 #include "headers/tracker.h"
 #include "headers/util.h"
+#include "headers/sequence_list.h"
 #include "headers/audioworks.h"
 
 //Screen dimension constants
@@ -66,7 +67,7 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    tracker_window = SDL_CreateWindow("Octapus V0.1 testsing   |   Floppi J, Stefonzo, Johnny Too Bad", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+    tracker_window = SDL_CreateWindow("Octapus V0.1 testing   |   Jake Aigner, Stephen Robinson, John Dunbar", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
     SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (tracker_window == NULL)
     {
@@ -91,6 +92,8 @@ int main(int argc, char* args[]) {
     Tracker tracker(tracker_render, Font, &pallet);
 
     tracker.update_info();
+
+    Sequencer sequence_list(&tracker, Font, &pallet);
 
     Util util(&tracker, Font, &pallet);
 
@@ -135,6 +138,17 @@ int main(int argc, char* args[]) {
                     run = false;
                     break;
                 case SDL_WINDOWEVENT:
+                    if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        windowID = 2;
+                        sequence_list.refresh();
+                    } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        windowID = 1;
+                        util.render();
+                    } else {
+                        windowID = 0;
+                    }
                     if (e.window.event == SDL_WINDOWEVENT_CLOSE)
                     {
                         switch (windowID)
@@ -147,12 +161,12 @@ int main(int argc, char* args[]) {
                                 util.close();
                                 windowID = 0;
                                 break;
+                            case 2:
+                                sequence_list.close();
+                                windowID = 0;
+                                break;
                             default: break;
                         }
-                    }
-                    if (windowID == 1)
-                    {
-                        util.render();
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
@@ -211,6 +225,10 @@ int main(int argc, char* args[]) {
                                     tracker.tracker_running = true;
                                     tracker.run_sequence = false;
                                     break;
+                                } else if (e.key.keysym.sym == SDLK_o)
+                                {
+                                    sequence_list.open();
+                                    windowID = 2;
                                 }
                             } else if (SDL_GetModState() & KMOD_SHIFT) // shift key press
                             {
@@ -226,6 +244,9 @@ int main(int argc, char* args[]) {
                             break;
                         case 1:
                             util.input(&e);
+                            break;
+                        case 2:
+                            sequence_list.keyboard(&e);
                             break;
                         default:
                             break;
@@ -268,6 +289,7 @@ int main(int argc, char* args[]) {
     }
 
     util.close_all();
+    sequence_list.de_init();
     free(audio_buffer.data);
     SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);

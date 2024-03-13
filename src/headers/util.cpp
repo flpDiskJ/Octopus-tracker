@@ -348,6 +348,11 @@ void Util::setEntry()
     tracker->set_timing_delay();
 }
 
+Uint32 Util::get_state()
+{
+    return SDL_GetWindowFlags(window);
+}
+
 void Util::mouse(int x, int y)
 {
     switch (mode)
