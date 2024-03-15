@@ -120,6 +120,7 @@ public:
     const int seq_size_chunk = 30;
     int sequence_size = 0; // allocated size of sequence
     int sequence_len = 0; // num of sequence slots in use
+    bool sequence_update = false; // set to true to update sequence sub-window
     bool run_sequence = false; // if true the song plays out otherwise the block loops
     bool tracker_running = false; // if true the tracker runs
     SDL_Rect blkname_displayrect;

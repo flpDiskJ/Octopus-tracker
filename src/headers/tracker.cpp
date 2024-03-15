@@ -339,8 +339,20 @@ void Tracker::sequencer(Uint8 flag)
             sequence_len--;
             break;
         case INC_SEQ:
+            if (sequence[sq_pos] < total_blocks-1)
+            {
+                sequence[sq_pos]++;
+            } else {
+                sequence[sq_pos] = 0;
+            }
             break;
         case DEC_SEQ:
+            if (sequence[sq_pos] > 0)
+            {
+                sequence[sq_pos]--;
+            } else {
+                sequence[sq_pos] = total_blocks - 1;
+            }
             break;
         default: break;
     }
@@ -732,6 +744,7 @@ void Tracker::move_step() // used by timer to run tracker
                     sq_pos = 0;
                 }
                 b_pos = sequence[sq_pos];
+                sequence_update = true;
                 update_info();
                 set_timing_delay();
             }

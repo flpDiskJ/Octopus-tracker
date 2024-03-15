@@ -148,14 +148,6 @@ int main(int argc, char* args[]) {
                         } else {
                             util.open("Quit?", 0);
                         }
-                    } else {
-                        if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
-                        {
-                            sequence_list.update_list();
-                        } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
-                        {
-                            util.update();
-                        }
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
@@ -249,6 +241,11 @@ int main(int argc, char* args[]) {
             if (util.command == 'Q')
             {
                 run = false;
+            }
+            if (tracker.sequence_update && (sequence_list.get_state() & SDL_WINDOW_SHOWN))
+            {
+                tracker.sequence_update = false;
+                sequence_list.update_list();
             }
         }
 

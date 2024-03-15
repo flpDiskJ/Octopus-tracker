@@ -452,7 +452,11 @@ void Util::input(SDL_Event *e)
                 {
                     case SDLK_ESCAPE:
                     case SDLK_RETURN:
-                        text_mode = false;
+                        if (text_mode)
+                        {
+                            tracker->sequence_update = true;
+                            text_mode = false;
+                        }
                         if (speed_mode)
                         {
                             speed_mode = false;

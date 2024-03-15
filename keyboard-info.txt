@@ -1,51 +1,64 @@
 
-X marks functional
+X marks non-functional (still needs to be implemented)
 
-Note for Stephen: Once all are functional, these need to be-
-                  -documented in the help window.
+Note for Stephen: Once all are functional, these need to be documented in the help window.
 
 
-Main window (tracker):
+Main window:
 
-    X CTRL+X = clear channel
-    X CTRL+SHIFT+X = clear block
-    X Delete & Backspace = delete step
-    X ESC = toggle edit mode
-    X Arrows = navigation
+    Navigation:
+        Arrows = navigation
+        TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
+        SHIFT+UP/DOWN = change block
+        SHIFT+LEFT/RIGHT = change instrument/sample
+        FUNC1-5 = change octave
+        FUNC6-10 or CTRL+1-5 = navigate block
+        X PGUP/PGDOWN = navigate block
 
-    skip:
-        X CTRL+LEFT/RIGHT = change skip amount
-        X tilde key = toggle skip between 1 and previously set amount
-        X click on skip with mouse to toggle skip mode
+    Playback:
+        ALT+SPACE = loop block
+        SHIFT+SPACE = play track
+        SPACE = stop all
 
-    X TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
-    X SHIFT+UP/DOWN = change block
-    X SHIFT+LEFT/RIGHT = change instrument/sample
-    X CTRL+N = append new block
-    X CTRL+SHIFT+N = insert new block
-    X CTRL+C/V = Copy/Paste channel
-    X CTRL+SHIFT+C/V = Copy/Paste block
-    X FUNC1-5 = change octave
-    X FUNC6-10 or CTRL+1-5 = navigate block
-    X SHIFT+ALT+0-9 Copy note to buffer
-    X SHIFT+0-9 = Paste note from buffer
+    Editing:
+        ESC = toggle edit mode
+        CTRL+X = clear channel
+        CTRL+SHIFT+X = clear block
+        Delete or Backspace = delete step
+        CTRL+N = append new block
+        CTRL+SHIFT+N = insert new block
+        CTRL+C/V = Copy/Paste channel
+        CTRL+SHIFT+C/V = Copy/Paste block
+        SHIFT+ALT+0-9 Copy note to buffer
+        SHIFT+0-9 = Paste note from buffer
 
-    X ALT+SPACE = play block
-    X SHIFT+SPACE = play sequence
-    X SPACE = stop all
+    Skip/Space:
+        CTRL+LEFT/RIGHT = change skip amount
+        tilde key = toggle skip between 1 and previously set amount
+        click on skip with mouse to toggle skip mode
 
-    X CTRL+O = open sequence order window
-    X CTRL+H = open track properties window (bpm, speed, and such)
-    X CTRL+B = open block properties window (block length, speed, and such)
-      CTRL+F = open file op window (load/save module)
-      CTRL+E = open edit window (copy buffers)
-      CTRL+I = open instrument window
-      CTRL+S = open sample edit window
+    Sub-Windows:
+        CTRL+O = open sequence order window
+        CTRL+H = open track properties window (bpm, speed, and such)
+        CTRL+B = open block properties window (block length, speed, and such)
+        X CTRL+F = open file op window (load/save module)
+        X CTRL+E = open edit window (copy buffers)
+        X CTRL+I = open instrument window
+        X CTRL+S = open sample edit window
 
-    X CTRL+SHIFT+Q = quit
+    Quit:
+        CTRL+SHIFT+Q = quit
 
 Block sub-window:
-    X UP/DOWN = scroll block list
-    X SHIFT+UP/DOWN = change block
-    X click entry box with mouse to activate keyboard input
-    X hit enter/return to exit keyboard input
+    UP/DOWN = scroll block list
+    SHIFT+UP/DOWN = change block
+    click entry box with mouse to activate keyboard input
+    hit enter/return to exit keyboard input
+
+Sequence Sub-window:
+    UP/DOWN = scroll sequence list
+    LEFT/RIGHT = change block number in sequence element (only effects selected element)
+    X SHIFT+UP/DOWN = change block position
+    X SHIFT+SPACE = play track and sequence
+    X CNTRL+SPACE = loop block
+    X SPACE = stop playback

@@ -240,8 +240,18 @@ void Sequencer::keyboard(SDL_Event *e)
             update_list();
             break;
         case SDLK_RIGHT:
+            if (selected)
+            {
+                t->sequencer(INC_SEQ);
+                update_list();
+            }
             break;
         case SDLK_LEFT:
+            if (selected)
+            {
+                t->sequencer(DEC_SEQ);
+                update_list();
+            }
             break;
         default: break;
     }
