@@ -33,4 +33,9 @@ To do:
 
 Bugs:
 
+    - Jitter occurs when block speed changes during sequence
+
+    - Note triggers when using key commands.
+      Ex: CNTRL+o plays the o key's coresponding note when opening the sequence sub-window.
+
     - Audio glitches when window focus changes.

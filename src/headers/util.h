@@ -46,8 +46,6 @@ private:
     SDL_Rect track_artist; SDL_Texture *track_artist_tex;
     SDL_Rect track_date; SDL_Texture *track_date_tex;
 
-    void update(); // updates textures
-
     void setEntry();
 
 public:
@@ -64,6 +62,8 @@ public:
     void open(string title, int m); // opens window for specified purpose (m for mode)
 
     void close(); // closes window (window is set to hidden)
+
+    void update(); // updates textures
 
     void render(); // renders everything to the screen
 

@@ -25,11 +25,23 @@ using namespace std;
 
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
 
+// flags for sequencer function
+const Uint8 APPEND_SEQ = 50;
+const Uint8 INSERT_SEQ = 100;
+const Uint8 DELETE_SEQ = 150;
+const Uint8 INC_SEQ = 200;
+const Uint8 DEC_SEQ = 250;
+
 struct Pallet{ // global color pallet
     SDL_Color black;
     SDL_Color red;
     SDL_Color blue;
     SDL_Color green;
+};
+
+struct Button{
+    SDL_Rect r;
+    SDL_Texture *t;
 };
 
 struct AudioBuffer{ // global audio output buffer // passed into audio callback

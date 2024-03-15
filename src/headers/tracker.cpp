@@ -66,7 +66,8 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         sample[s].len = 0;
     }
 
-    sequence = (int*)malloc(sizeof(int));
+    sequence_size = seq_size_chunk;
+    sequence = (int*)malloc(sizeof(int)*sequence_size);
     sequence[0] = 0;
     sequence_len = 1;
 
@@ -301,6 +302,47 @@ void Tracker::paste_channel()
         block[b_pos].channel[cursor_channel][s].parameter[0] = channel_buffer.data[s].parameter[0];
         block[b_pos].channel[cursor_channel][s].parameter[1] = channel_buffer.data[s].parameter[1];
         block[b_pos].channel[cursor_channel][s].pos_adv = channel_buffer.data[s].pos_adv;
+    }
+}
+
+void Tracker::sequencer(Uint8 flag)
+{
+    switch (flag)
+    {
+        case APPEND_SEQ:
+            sequence_len++;
+            if (sequence_len >= sequence_size)
+            {
+                sequence_size += seq_size_chunk;
+                sequence = (int*)realloc(sequence, sequence_size*sizeof(int));
+            }
+            sequence[sequence_len-1] = b_pos;
+            break;
+        case INSERT_SEQ:
+            sequence_len++;
+            if (sequence_len >= sequence_size)
+            {
+                sequence_size += seq_size_chunk;
+                sequence = (int*)realloc(sequence, sequence_size*sizeof(int));
+            }
+            for (int i = sequence_len-1; i > sq_pos; i--)
+            {
+                sequence[i] = sequence[i-1];
+            }
+            sequence[sq_pos] = b_pos;
+            break;
+        case DELETE_SEQ:
+            for (int i = sq_pos; i < sequence_len-1; i++)
+            {
+                sequence[i] = sequence[i+1];
+            }
+            sequence_len--;
+            break;
+        case INC_SEQ:
+            break;
+        case DEC_SEQ:
+            break;
+        default: break;
     }
 }
 
@@ -594,6 +636,7 @@ void Tracker::block_dec()
     } else {
         b_pos = total_blocks - 1;
     }
+    set_timing_delay();
     update_info();
 }
 
@@ -605,6 +648,7 @@ void Tracker::block_inc()
     } else {
         b_pos = 0;
     }
+    set_timing_delay();
     update_info();
 }
 
@@ -688,6 +732,8 @@ void Tracker::move_step() // used by timer to run tracker
                     sq_pos = 0;
                 }
                 b_pos = sequence[sq_pos];
+                update_info();
+                set_timing_delay();
             }
         }
     }

@@ -106,7 +106,7 @@ void AudioW::audio_works() // fills audio buffer
         }
 
         val = 0;
-        for (int c = 0; c < 8; c++) // c for channel
+        for (int c = 0; c < CHANNELS; c++) // c for channel
         {
             if (t->channel[c].play && t->mute[c] == false)
             {

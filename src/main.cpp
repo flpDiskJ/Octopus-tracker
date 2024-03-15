@@ -104,7 +104,7 @@ int main(int argc, char* args[]) {
     mFormat.callback = audio_callback; mFormat.samples = BUFF_SIZE;
     mFormat.userdata = &audio_buffer;
 
-    audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS * 3;
+    audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS * 4;
     audio_buffer.data = new Uint8[audio_buffer.len];
     audio_buffer.stop = false;
     audio_buffer.read_pos = 0;
@@ -141,11 +141,11 @@ int main(int argc, char* args[]) {
                     if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         windowID = 2;
-                        sequence_list.refresh();
+                        sequence_list.update_list();
                     } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         windowID = 1;
-                        util.render();
+                        util.update();
                     } else {
                         windowID = 0;
                     }
@@ -189,6 +189,9 @@ int main(int argc, char* args[]) {
                                 default:
                                     break;
                             }
+                            break;
+                        case 2:
+                            sequence_list.mouse(xM, yM);
                             break;
                         default:
                             break;

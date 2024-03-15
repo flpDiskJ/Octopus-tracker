@@ -117,9 +117,11 @@ public:
     int total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
+    const int seq_size_chunk = 30;
+    int sequence_size = 0; // allocated size of sequence
+    int sequence_len = 0; // num of sequence slots in use
     bool run_sequence = false; // if true the song plays out otherwise the block loops
     bool tracker_running = false; // if true the tracker runs
-    int sequence_len = 0;
     SDL_Rect blkname_displayrect;
     SDL_Texture *blkname_displaytex;
     int master_tempo = 120; // master bpm
@@ -165,6 +167,8 @@ public:
     void block_dec(); // decrement block position
 
     void move_step(); // used by timer to run tracker
+
+    void sequencer(Uint8 flag); // append, insert, delete, alter sequence element
 
     void realloc_block(int size); // reallocates block at b_pos
 
