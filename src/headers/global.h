@@ -12,7 +12,7 @@ using namespace std;
 #include <unistd.h>
 #include <iostream>
 
-//// Customizable
+//// Customable
 #define REFRESH_RATE 60
 #define AUDIO_LATENCY 6 // 2 or 4 for responsivness // 6 or 8 for less glitching
 #define AMP_LEV 5 // master level

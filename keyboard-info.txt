@@ -1,8 +1,15 @@
 
 X marks non-functional (still needs to be implemented)
 
-Note for Stephen: Once all are functional, these need to be documented in the help window.
+Note for Stephen: These need to be documented in the help window.
 
+Playback (global):
+    CNTRL+SPACE = loop block (resume)
+    SHIFT+SPACE = play track (resume)
+    CNTRL+ALT = loop block (restart)
+    SHIFT+ALT = play track (restart)
+    CNTRL+SHIFT+SPACE = play track from the start
+    SPACE = stop all
 
 Main window:
 
@@ -13,12 +20,7 @@ Main window:
         SHIFT+LEFT/RIGHT = change instrument/sample
         FUNC1-5 = change octave
         FUNC6-10 or CTRL+1-5 = navigate block
-        X PGUP/PGDOWN = navigate block
-
-    Playback:
-        ALT+SPACE = loop block
-        SHIFT+SPACE = play track
-        SPACE = stop all
+      X PGUP/PGDOWN = navigate block
 
     Editing:
         ESC = toggle edit mode
@@ -41,10 +43,10 @@ Main window:
         CTRL+O = open sequence order window
         CTRL+H = open track properties window (bpm, speed, and such)
         CTRL+B = open block properties window (block length, speed, and such)
-        X CTRL+F = open file op window (load/save module)
-        X CTRL+E = open edit window (copy buffers)
-        X CTRL+I = open instrument window
-        X CTRL+S = open sample edit window
+      X CTRL+F = open file op window (load/save module)
+      X CTRL+E = open edit window (copy buffers)
+      X CTRL+I = open instrument window
+      X CTRL+S = open sample edit window
 
     Quit:
         CTRL+SHIFT+Q = quit
@@ -52,13 +54,10 @@ Main window:
 Block sub-window:
     UP/DOWN = scroll block list
     SHIFT+UP/DOWN = change block
-    click entry box with mouse to activate keyboard input
-    hit enter/return to exit keyboard input
+    - Click entry box with mouse to activate keyboard input.
+      Hit enter/return to exit keyboard input.
 
 Sequence Sub-window:
     UP/DOWN = scroll sequence list
     LEFT/RIGHT = change block number in sequence element (only effects selected element)
-    X SHIFT+UP/DOWN = change block position
-    X SHIFT+SPACE = play track and sequence
-    X CNTRL+SPACE = loop block
-    X SPACE = stop playback
+    SHIFT+UP/DOWN = change block

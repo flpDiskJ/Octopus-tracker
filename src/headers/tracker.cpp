@@ -648,6 +648,7 @@ void Tracker::block_dec()
     } else {
         b_pos = total_blocks - 1;
     }
+    pos = 0;
     set_timing_delay();
     update_info();
 }
@@ -660,6 +661,7 @@ void Tracker::block_inc()
     } else {
         b_pos = 0;
     }
+    pos = 0;
     set_timing_delay();
     update_info();
 }

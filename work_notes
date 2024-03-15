@@ -4,6 +4,9 @@
 
 New Additions (Most recent on top):
 
+    - Made playback key-commands work globally.
+      Added new playback key commands.
+
     - Re-organized global variables. Got rid of windowID and started checking window flags instead.
 
     - Added features to sequencer window.
@@ -13,11 +16,9 @@ New Additions (Most recent on top):
 
 To do:
 
-    - Complete sequencer sub-window.
+    - Add (append/insert to seq) buttons to block sub-window
 
     - Add master speed and block length controls to track params sub-window.
-
-    - Add another start key-command that starts from the beginning of the block.
 
     - Add command functionality.
 
@@ -34,7 +35,7 @@ To do:
 
     - Add sub-window to save and load modules.
 
-    - Add config sub-window and move all the customizable values in global.h to the config file.
+    - Add config sub-window and move all the customable values in global.h to the config file.
 
 
 Bugs:
@@ -42,4 +43,4 @@ Bugs:
     - Jitter occurs when block speed changes during sequence playback.
 
     - Note triggers when using key commands.
-      Ex: CNTRL+o plays the o key's coresponding note when opening the sequence sub-window.
+      Ex: CNTRL+o plays the o key's corresponding note when opening the sequence sub-window.

@@ -220,6 +220,13 @@ void Sequencer::keyboard(SDL_Event *e)
     switch (e->key.keysym.sym)
     {
         case SDLK_UP:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                t->block_dec();
+                t->update_info();
+                t->block_update = true;
+                break;
+            }
             if (scroll_pos > 0)
             {
                 scroll_pos--;
@@ -230,6 +237,13 @@ void Sequencer::keyboard(SDL_Event *e)
             update_list();
             break;
         case SDLK_DOWN:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                t->block_inc();
+                t->update_info();
+                t->block_update = true;
+                break;
+            }
             if (scroll_pos < t->sequence_len-1)
             {
                 scroll_pos++;
