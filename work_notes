@@ -1,19 +1,23 @@
 
-
     :Keep note of what is being worked on here. PLEASE UPDATE BEFORE PUSHING:
 
+
 New Additions (Most recent on top):
+
+    - Re-organized global variables. Got rid of windowID and started checking window flags instead.
+
+    - Added features to sequencer window.
 
     - Added Sequencer class (sequence_list.h)
 
 
 To do:
 
+    - Complete sequencer sub-window.
+
     - Add master speed and block length controls to track params sub-window.
 
     - Add another start key-command that starts from the beginning of the block.
-
-    - Complete sequence order sub-window.
 
     - Add command functionality.
 
@@ -30,12 +34,12 @@ To do:
 
     - Add sub-window to save and load modules.
 
+    - Add config sub-window and move all the customizable values in global.h to the config file.
+
 
 Bugs:
 
-    - Jitter occurs when block speed changes during sequence
+    - Jitter occurs when block speed changes during sequence playback.
 
     - Note triggers when using key commands.
       Ex: CNTRL+o plays the o key's coresponding note when opening the sequence sub-window.
-
-    - Audio glitches when window focus changes.

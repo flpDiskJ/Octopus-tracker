@@ -104,11 +104,11 @@ int main(int argc, char* args[]) {
     mFormat.callback = audio_callback; mFormat.samples = BUFF_SIZE;
     mFormat.userdata = &audio_buffer;
 
-    audio_buffer.len = BUFF_SIZE*2*BYTES_IN_SAMPLE*AUDIO_CHANNELS * 4;
+    audio_buffer.len = BUFF_SIZE*BYTES_IN_SAMPLE*AUDIO_CHANNELS*AUDIO_LATENCY;
     audio_buffer.data = new Uint8[audio_buffer.len];
     audio_buffer.stop = false;
     audio_buffer.read_pos = 0;
-    audio_buffer.write_pos = 0;
+    audio_buffer.write_pos = audio_buffer.len / 2;
     memset(audio_buffer.data, 0, audio_buffer.len);
 
     if (SDL_OpenAudio(&mFormat, NULL) < 0)
@@ -122,7 +122,6 @@ int main(int argc, char* args[]) {
     tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
 
     SDL_Event e;
-    int windowID = 0; // 0 = main // 1 = utility window
     int xM, yM; // mouse cords
     bool run = true;
     Uint64 previousTime = SDL_GetTicks64();
@@ -138,70 +137,43 @@ int main(int argc, char* args[]) {
                     run = false;
                     break;
                 case SDL_WINDOWEVENT:
-                    if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
-                    {
-                        windowID = 2;
-                        sequence_list.update_list();
-                    } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
-                    {
-                        windowID = 1;
-                        util.update();
-                    } else {
-                        windowID = 0;
-                    }
                     if (e.window.event == SDL_WINDOWEVENT_CLOSE)
                     {
-                        switch (windowID)
+                        if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
                         {
-                            case 0:
-                                util.open("Quit?", 0);
-                                windowID = 1;
-                                break;
-                            case 1:
-                                util.close();
-                                windowID = 0;
-                                break;
-                            case 2:
-                                sequence_list.close();
-                                windowID = 0;
-                                break;
-                            default: break;
+                            sequence_list.close();
+                        } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            util.close();
+                        } else {
+                            util.open("Quit?", 0);
+                        }
+                    } else {
+                        if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            sequence_list.update_list();
+                        } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            util.update();
                         }
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     SDL_GetMouseState(&xM, &yM);
-                    switch (windowID) {
-                        case 0:
-                            tracker.mouse(xM, yM);
-                            break;
-                        case 1:
-                            util.mouse(xM, yM);
-                            switch (util.command)
-                            {
-                                case 'Q':
-                                    run = false;
-                                    break;
-                                case 'q':
-                                    util.close();
-                                    windowID = 0;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        case 2:
-                            sequence_list.mouse(xM, yM);
-                            break;
-                        default:
-                            break;
+                    if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        sequence_list.mouse(xM, yM);
+                    } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        util.mouse(xM, yM);
+                    } else {
+                        tracker.mouse(xM, yM);
                     }
                     break;
                 case SDL_KEYDOWN:
                     if (e.key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
                     {
                         util.open("Quit?", 0);
-                        windowID = 1;
                     }
                     if (e.key.keysym.sym == SDLK_SPACE)
                     {
@@ -209,50 +181,44 @@ int main(int argc, char* args[]) {
                         tracker.tracker_running = false;
                         tracker.run_sequence = false;
                     }
-                    switch (windowID) {
-                        case 0:
-                            if (SDL_GetModState() & KMOD_CTRL) // control key press
+
+                    if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        sequence_list.keyboard(&e);
+                    } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        util.input(&e);
+                    } else {
+                        if (SDL_GetModState() & KMOD_CTRL) // control key press
+                        {
+                            if (e.key.keysym.sym == SDLK_b) // open block params
                             {
-                                if (e.key.keysym.sym == SDLK_b) // open block params
-                                {
-                                    util.open("Block Parameters", 1);
-                                    windowID = 1;
-                                    break;
-                                } else if (e.key.keysym.sym == SDLK_h) // open track params
-                                {
-                                    util.open("Track Parameters", 2);
-                                    windowID = 1;
-                                    break;
-                                } else if (e.key.keysym.sym == SDLK_SPACE) // run tracker. Loop current block.
-                                {
-                                    tracker.tracker_running = true;
-                                    tracker.run_sequence = false;
-                                    break;
-                                } else if (e.key.keysym.sym == SDLK_o)
-                                {
-                                    sequence_list.open();
-                                    windowID = 2;
-                                }
-                            } else if (SDL_GetModState() & KMOD_SHIFT) // shift key press
+                                util.open("Block Parameters", 1);
+                                break;
+                            } else if (e.key.keysym.sym == SDLK_h) // open track params
                             {
-                                if (e.key.keysym.sym == SDLK_SPACE) // run tracker and step through track sequence.
-                                {
-                                    tracker.tracker_running = true;
-                                    tracker.run_sequence = true;
-                                    break;
-                                }
+                                util.open("Track Parameters", 2);
+                                break;
+                            } else if (e.key.keysym.sym == SDLK_SPACE) // run tracker. Loop current block.
+                            {
+                                tracker.tracker_running = true;
+                                tracker.run_sequence = false;
+                                break;
+                            } else if (e.key.keysym.sym == SDLK_o)
+                            {
+                                sequence_list.open();
                             }
-                            tracker.keyboard(&e);
-                            aworks.play_note(&e);
-                            break;
-                        case 1:
-                            util.input(&e);
-                            break;
-                        case 2:
-                            sequence_list.keyboard(&e);
-                            break;
-                        default:
-                            break;
+                        } else if (SDL_GetModState() & KMOD_SHIFT) // shift key press
+                        {
+                            if (e.key.keysym.sym == SDLK_SPACE) // run tracker and step through track sequence.
+                            {
+                                tracker.tracker_running = true;
+                                tracker.run_sequence = true;
+                                break;
+                            }
+                        }
+                        tracker.keyboard(&e);
+                        aworks.play_note(&e);
                     }
                     break;
                 default:
@@ -279,6 +245,11 @@ int main(int argc, char* args[]) {
             SDL_RenderPresent(tracker_render); // Present image to screen
 
             tracker.dec_trigger_bars(); // apply decay to level bars
+
+            if (util.command == 'Q')
+            {
+                run = false;
+            }
         }
 
         if (audio_buffer.read_pos != audio_buffer.write_pos)

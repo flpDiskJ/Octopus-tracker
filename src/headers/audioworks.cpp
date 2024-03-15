@@ -124,7 +124,11 @@ void AudioW::audio_works() // fills audio buffer
                 }
             }
         }
-        out = val / CHANNELS;
+        temp = val / CHANNELS;
+        temp = temp * AMP_LEV;
+        if (temp > 32766){temp = 32766;}
+        else if (temp < -32766){temp = -32766;}
+        out = temp;
         b->data[b->write_pos] = out & 0xFF;
         b->data[b->write_pos+1] = out >> 8 & 0xFF;
         if (b->write_pos >= b->len)

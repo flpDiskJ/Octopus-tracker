@@ -363,7 +363,7 @@ void Util::mouse(int x, int y)
                 command = 'Q';
             } else if (checkButton(x, y, &button.no))
             {
-                command = 'q';
+                close();
             }
             break;
         case 1:

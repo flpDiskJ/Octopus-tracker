@@ -12,17 +12,24 @@ using namespace std;
 #include <unistd.h>
 #include <iostream>
 
+//// Customizable
 #define REFRESH_RATE 60
+#define AUDIO_LATENCY 6 // 2 or 4 for responsivness // 6 or 8 for less glitching
+#define AMP_LEV 5 // master level
+#define SAMPLE_RATE 48000 // output sample rate
+#define BUFF_SIZE 1024 // size of audio stream buffer. must be pow ^ 2
+////
+
+//// Changes will not work without modifing the code
 #define CHANNELS 8 // number of channels
 #define DISPLAYRECTS 40 // number of rects used to display steps
 #define MAXSAMPLES 100 // max number of samples that can be used
 #define MAXBLOCKS 200 // max number of blocks that can be used
-#define BUFF_SIZE 512 // size of audio buffer. must be multiple of 16
 #define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
-#define SAMPLE_RATE 48000 // output sample rate
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
-#define AMP_LEV 15 // master level // 255 max for Signed 16bit range without clipping
+////
 
+//// NO TOUCHY!
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
 
 // flags for sequencer function
