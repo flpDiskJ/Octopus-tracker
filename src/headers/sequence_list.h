@@ -2,11 +2,13 @@
 #define SEQ_LIST_H
 
 #include "tracker.h"
+#include "util.h"
 
 class Sequencer{
 
 private:
     Tracker *t; // pointer to instance of the tracker class
+    Util *u; // pointer to utility class
     SDL_Window *window = NULL;
     SDL_Renderer *render = NULL;
     SDL_Surface *surf;
@@ -24,7 +26,7 @@ private:
 
 public:
 
-    Sequencer(Tracker *tracker, TTF_Font *f, Pallet *p);
+    Sequencer(Tracker *tracker, Util *util, TTF_Font *f, Pallet *p);
 
     ~Sequencer();
 

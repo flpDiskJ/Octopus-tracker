@@ -93,9 +93,9 @@ int main(int argc, char* args[]) {
 
     tracker.update_info();
 
-    Sequencer sequence_list(&tracker, Font, &pallet);
-
     Util util(&tracker, Font, &pallet);
+
+    Sequencer sequence_list(&tracker, &util, Font, &pallet);
 
     AudioBuffer audio_buffer;
 
@@ -176,11 +176,15 @@ int main(int argc, char* args[]) {
                         tracker.tracker_running = true;
                         tracker.run_sequence = false;
                         tracker.pos = 0;
+                        tracker.note_trigger();
+                        aworks.sample_count = 0;
                     } else if ((SDL_GetModState() & KMOD_SHIFT) && (SDL_GetModState() & KMOD_ALT))
                     {
                         tracker.tracker_running = true;
                         tracker.run_sequence = true;
                         tracker.pos = 0;
+                        tracker.note_trigger();
+                        aworks.sample_count = 0;
                     }
                     if (e.key.keysym.sym == SDLK_SPACE)
                     {
@@ -195,14 +199,20 @@ int main(int argc, char* args[]) {
                             tracker.update_info();
                             tracker.sequence_update = true;
                             tracker.block_update = true;
+                            tracker.note_trigger();
+                            aworks.sample_count = 0;
                         } else if (SDL_GetModState() & KMOD_CTRL)
                         {
                             tracker.tracker_running = true;
                             tracker.run_sequence = false;
+                            tracker.note_trigger();
+                            aworks.sample_count = 0;
                         } else if (SDL_GetModState() & KMOD_SHIFT)
                         {
                             tracker.tracker_running = true;
                             tracker.run_sequence = true;
+                            tracker.note_trigger();
+                            aworks.sample_count = 0;
                         } else {
                             audio_buffer.stop = true;
                             tracker.tracker_running = false;
@@ -220,7 +230,7 @@ int main(int argc, char* args[]) {
                         {
                             if (e.key.keysym.sym == SDLK_b) // open block params
                             {
-                                util.open("Block Parameters", 1);
+                                util.open("Block List", 1);
                             } else if (e.key.keysym.sym == SDLK_h) // open track params
                             {
                                 util.open("Track Parameters", 2);

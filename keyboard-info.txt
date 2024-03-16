@@ -42,7 +42,7 @@ Main window:
     Sub-Windows:
         CTRL+O = open sequence order window
         CTRL+H = open track properties window (bpm, speed, and such)
-        CTRL+B = open block properties window (block length, speed, and such)
+        CTRL+B = open block list window (block length, speed, and such)
       X CTRL+F = open file op window (load/save module)
       X CTRL+E = open edit window (copy buffers)
       X CTRL+I = open instrument window
@@ -61,3 +61,4 @@ Sequence Sub-window:
     UP/DOWN = scroll sequence list
     LEFT/RIGHT = change block number in sequence element (only effects selected element)
     SHIFT+UP/DOWN = change block
+    CNTRL+B = open block list sub-window

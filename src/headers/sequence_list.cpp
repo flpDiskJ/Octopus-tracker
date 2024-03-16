@@ -1,9 +1,10 @@
 #include "sequence_list.h"
 
-Sequencer::Sequencer(Tracker *tracker, TTF_Font *f, Pallet *p)
+Sequencer::Sequencer(Tracker *tracker, Util *util, TTF_Font *f, Pallet *p)
 {
     // get pointers from main func
     t = tracker;
+    u = util;
     font = f;
     pallet = p;
 
@@ -265,6 +266,12 @@ void Sequencer::keyboard(SDL_Event *e)
             {
                 t->sequencer(DEC_SEQ);
                 update_list();
+            }
+            break;
+        case SDLK_b:
+            if (SDL_GetModState() & KMOD_CTRL)
+            {
+                u->open("Block List", 1);
             }
             break;
         default: break;

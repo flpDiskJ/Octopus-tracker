@@ -149,6 +149,22 @@ Tracker::~Tracker() {
     free(sequence);
 }
 
+void Tracker::note_trigger()
+{
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        if (block[b_pos].channel[c][pos].pos_adv > 0.0)
+        {
+            channel[c].pos = 0;
+            channel[c].sample = block[b_pos].channel[c][pos].sample;
+            channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
+            channel[c].amplifier = 128.0 / (double)sample[channel[c].sample].level;
+            channel[c].pitch_mod = 1;
+            channel[c].play = true;
+        }
+    }
+}
+
 void Tracker::set_timing_delay()
 {
     double calc;
@@ -720,18 +736,6 @@ void Tracker::move_step() // used by timer to run tracker
 {
     if (tracker_running)
     {
-        for (int c = 0; c < CHANNELS; c++)
-        {
-            if (block[b_pos].channel[c][pos].pos_adv > 0.0)
-            {
-                channel[c].pos = 0;
-                channel[c].sample = block[b_pos].channel[c][pos].sample;
-                channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
-                channel[c].amplifier = 128.0 / (double)sample[channel[c].sample].level;
-                channel[c].pitch_mod = 1;
-                channel[c].play = true;
-            }
-        }
         if (pos < block[b_pos].length - 1)
         {
             pos++;
@@ -751,6 +755,7 @@ void Tracker::move_step() // used by timer to run tracker
                 set_timing_delay();
             }
         }
+        note_trigger();
     }
 }
 

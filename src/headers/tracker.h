@@ -150,6 +150,8 @@ public:
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
+    void note_trigger(); // triggers all valid notes in step positon
+
     void mouse(int x, int y); // handles mouse input
 
     void set_timing_delay(); // calculates timing delay based on tempo and block speed
