@@ -304,6 +304,10 @@ int main(int argc, char* args[]) {
                 tracker.block_update = false;
                 util.update();
             }
+            if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS && SDL_GetMouseState(&xM, &yM) & SDL_BUTTON_LMASK)
+            {
+                inst_prop.mouse(xM, yM);
+            }
         }
 
         if (audio_buffer.read_pos != audio_buffer.write_pos)

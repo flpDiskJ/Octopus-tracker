@@ -70,7 +70,7 @@ void AudioW::play_note(SDL_Event *e)
         t->channel[t->cursor_channel].pos = 0;
         t->channel[t->cursor_channel].sample = t->s_pos;
         t->channel[t->cursor_channel].pos_adv = (double)t->getFreq(note, key, oct) / SAMPLE_RATE * 1.0;
-        t->channel[t->cursor_channel].amplifier = 128.0 / (double)t->sample[t->s_pos].level;
+        t->channel[t->cursor_channel].amplifier = (double)t->sample[t->s_pos].level / 100.0;
         t->channel[t->cursor_channel].pitch_mod = 1;
         t->channel[t->cursor_channel].play = true;
     }

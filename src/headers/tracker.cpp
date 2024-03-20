@@ -238,7 +238,7 @@ void Tracker::note_trigger()
             channel[c].pos = 0;
             channel[c].sample = block[b_pos].channel[c][pos].sample;
             channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
-            channel[c].amplifier = (double)sample[channel[c].sample].level / 128.0;
+            channel[c].amplifier = (double)sample[channel[c].sample].level / 100.0;
             channel[c].pitch_mod = 1;
             channel[c].play = true;
         }
@@ -270,7 +270,7 @@ void Tracker::dec_trigger_bars()
 {
     for (int bar = 0; bar < CHANNELS; bar++)
     {
-        if (trigger_bars[bar].h > 2)
+        if (trigger_bars[bar].h > 20)
         {
             trigger_bars[bar].h -= 20;
         } else {

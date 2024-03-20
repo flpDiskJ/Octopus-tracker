@@ -22,45 +22,50 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
         printf("Failed to create renderer for instrument window!\n");
     }
 
-    samplename_box.x = 250; //this will need to be better implemented to show text of samplenames inside this box
-    samplename_box.y = 20;
-    samplename_box.w = 224;
-    samplename_box.h = 30;
+    samplename_entry.r.x = 250;
+    samplename_entry.r.y = 20;
+    samplename_entry.r.w = 224;
+    samplename_entry.r.h = 30;
 
     inst_name_label.r.x = 20;
     inst_name_label.r.y = 20;
     inst_name_label.r.w = 224;
     inst_name_label.r.h = 30;
-//transpose
+
     transpose_label.r.x = 243;
     transpose_label.r.y = 60;
     transpose_label.r.w = 126;
     transpose_label.r.h = 30;
 
-    transpose_sliderbox.x = 20;
-    transpose_sliderbox.y = 90;
-    transpose_sliderbox.w = 560;
-    transpose_sliderbox.h = 30;
-//finetune
+    transpose_sliderbox.slide.x = 50;
+    transpose_sliderbox.slide.y = 90;
+    transpose_sliderbox.slide.w = 500;
+    transpose_sliderbox.slide.h = 30;
+
     finetune_label.r.x = 250;
     finetune_label.r.y = 120;
     finetune_label.r.w = 112;
     finetune_label.r.h = 30;
 
-    finetune_sliderbox.x = 20;
-    finetune_sliderbox.y = 150;
-    finetune_sliderbox.w = 560;
-    finetune_sliderbox.h = 30;
-//volume
+    finetune_sliderbox.slide.x = 50;
+    finetune_sliderbox.slide.y = 150;
+    finetune_sliderbox.slide.w = 500;
+    finetune_sliderbox.slide.h = 30;
+
     volume_label.r.x = 264;
     volume_label.r.y = 180;
     volume_label.r.w = 84;
     volume_label.r.h = 30;
 
-    volume_sliderbox.x = 20;
-    volume_sliderbox.y = 210;
-    volume_sliderbox.w = 560;
-    volume_sliderbox.h = 30;
+    volume_sliderbox.slide.x = 47;
+    volume_sliderbox.slide.y = 210;
+    volume_sliderbox.slide.w = 506;
+    volume_sliderbox.slide.h = 30;
+
+    volume_sliderbox.pos.w = 5;
+    volume_sliderbox.pos.h = 28;
+    volume_sliderbox.pos.x = volume_sliderbox.slide.x + (t->sample[t->s_pos].level * volume_sliderbox.pos.w);
+    volume_sliderbox.pos.y = 211;
 
     surf = TTF_RenderText_Solid(font, "Instrument Name:", pallet->black);
     inst_name_label.t = SDL_CreateTextureFromSurface(render, surf);
@@ -94,7 +99,7 @@ void Instrument_properties::de_init()
 
 void Instrument_properties::update()
 {
-
+    volume_sliderbox.pos.x = volume_sliderbox.slide.x + (t->sample[t->s_pos].level * volume_sliderbox.pos.w);
     refresh();
 }
 
@@ -105,17 +110,18 @@ void Instrument_properties::refresh()
     SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
 
     //sample naming
-    SDL_RenderDrawRect(render, &samplename_box);
+    SDL_RenderDrawRect(render, &samplename_entry.r);
     SDL_RenderCopy(render, inst_name_label.t, NULL, &inst_name_label.r);
 
     //sample params
     SDL_SetRenderDrawColor(render, pallet->blue.r, pallet->blue.g, pallet->blue.b, 0xFF); // Blue
     SDL_RenderCopy(render, transpose_label.t, NULL, &transpose_label.r);
-    SDL_RenderDrawRect(render, &transpose_sliderbox);
+    SDL_RenderDrawRect(render, &transpose_sliderbox.slide);
     SDL_RenderCopy(render, finetune_label.t,  NULL, &finetune_label.r);
-    SDL_RenderDrawRect(render, &finetune_sliderbox);
+    SDL_RenderDrawRect(render, &finetune_sliderbox.slide);
     SDL_RenderCopy(render, volume_label.t,    NULL, &volume_label.r);
-    SDL_RenderDrawRect(render, &volume_sliderbox);
+    SDL_RenderDrawRect(render, &volume_sliderbox.slide);
+    SDL_RenderFillRect(render, &volume_sliderbox.pos);
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -133,12 +139,30 @@ void Instrument_properties::close()
     SDL_HideWindow(window);
 }
 
-void Instrument_properties::mouse(int x, int y)
-{
-    refresh();
-}
-
 Uint32 Instrument_properties::get_state()
 {
     return SDL_GetWindowFlags(window);
+}
+
+bool Instrument_properties::checkButton(int mouseX, int mouseY, SDL_Rect *button)
+{
+    if (mouseX > button->x && mouseX < button->w+button->x && mouseY > button->y && mouseY < button->h+button->y)
+    {
+        return true;
+    }
+    return false;
+}
+
+void Instrument_properties::mouse(int x, int y)
+{
+    if (checkButton(x, y, &volume_sliderbox.slide))
+    {
+        if (x < volume_sliderbox.slide.w + volume_sliderbox.slide.x - volume_sliderbox.pos.w)
+        {
+            t->sample[t->s_pos].level = (x - volume_sliderbox.slide.x) / volume_sliderbox.pos.w;
+        } else {
+            t->sample[t->s_pos].level = 100;
+        }
+    }
+    update();
 }

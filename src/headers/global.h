@@ -62,6 +62,11 @@ struct Button{
     SDL_Texture *t;
 };
 
+struct Slider{
+    SDL_Rect slide;
+    SDL_Rect pos;
+};
+
 struct AudioBuffer{ // global audio output buffer // passed into audio callback
     Uint8 *data;
     Uint32 len;
