@@ -18,6 +18,7 @@ using namespace std;
 #define AMP_LEV 1 // master level
 #define SAMPLE_RATE 48000 // output sample rate
 #define BUFF_SIZE 1024 // size of audio stream buffer. must be pow ^ 2
+const double PITCH_SLIDE_TUNE = 0.012;
 ////
 
 //// Changes will not work without modifing the code
@@ -31,6 +32,7 @@ using namespace std;
 
 //// NO TOUCHY!
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
+const int TICK_LEN = SAMPLE_RATE / 12;
 
 // flags for sequencer function
 const Uint8 APPEND_SEQ = 50;
@@ -45,6 +47,7 @@ const Uint8 COM_KILL = 1; // kills all sound in channel
 const Uint8 COM_SET_LEVEL = 2; // set channel volume
 const Uint8 COM_PITCH_UP = 3;
 const Uint8 COM_PITCH_DOWN = 4;
+const Uint8 COM_OFFSET = 5; // set sample offset
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround

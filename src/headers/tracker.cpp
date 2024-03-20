@@ -188,7 +188,11 @@ Uint8 Tracker::get_command(int c)
     channel[c].command_param[1] = hex2dec(block[b_pos].channel[c][pos].parameter[1]);
     channel[c].command_param[2] = (int)strtol(block[b_pos].channel[c][pos].parameter, NULL, 16);
 
-    if (cmd == "0C")
+    if (cmd == "00")
+    {
+        type = COM_NONE;
+        channel[c].pitch_mod = 1;
+    } else if (cmd == "0C")
     {
         type = COM_SET_LEVEL;
         channel[c].amplifier = (double)channel[c].command_param[2] / 100.0;
@@ -207,9 +211,19 @@ Uint8 Tracker::get_command(int c)
     } else if (cmd == "01")
     {
         type = COM_PITCH_UP;
+        channel[c].pitch_mod = 1.0 + ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
     } else if (cmd == "02")
     {
         type = COM_PITCH_DOWN;
+        channel[c].pitch_mod = 1.0 - ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
+    } else if (cmd == "09")
+    {
+        type = COM_OFFSET;
+        channel[c].pos = (sample[channel[c].sample].len / 255) * channel[c].command_param[2];
+    } else if (cmd == "19")
+    {
+        type = COM_OFFSET;
+        channel[c].pos = channel[c].command_param[2] * 256;
     }
 
     return type;

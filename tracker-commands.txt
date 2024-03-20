@@ -3,8 +3,12 @@ XX = parameter
 01XX = pitch up
 02XX = pitch down
 
+09XX = sample offset scaled to sample size
+
 0CXX = set level
 
 18XX = set level relative to sample level
+
+19XX = sample offset (Octamed style)
 
 0FFF = kill sound in channel

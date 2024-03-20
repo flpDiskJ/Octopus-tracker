@@ -7,6 +7,7 @@ class AudioW{
 private:
     Tracker *t;
     AudioBuffer *b;
+    Uint32 tick_count; // counts ticks for effects commands
 
 public:
     Uint32 sample_count; // used to determine timing
@@ -17,7 +18,7 @@ public:
 
     void play_note(SDL_Event *e); // plays note from keyboard
 
-    void command_handling(); // handles commands
+    void tick();
 
     void audio_works(); // run in program loop // generates buffer data
 

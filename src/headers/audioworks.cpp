@@ -5,6 +5,7 @@ AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer)
     t = tracker;
     b = buffer;
     sample_count = 0;
+    tick_count = 0;
 }
 
 AudioW::~AudioW()
@@ -75,9 +76,12 @@ void AudioW::play_note(SDL_Event *e)
     }
 }
 
-void command_handling()
+void AudioW::tick()
 {
-
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        t->channel[c].pos_adv *= t->channel[c].pitch_mod;
+    }
 }
 
 void AudioW::audio_works() // fills audio buffer
@@ -110,6 +114,15 @@ void AudioW::audio_works() // fills audio buffer
             sample_count++;
         }
 
+        // ticks
+        if (tick_count >= TICK_LEN)
+        {
+            tick();
+            tick_count = 0;
+        } else {
+            tick_count++;
+        }
+
         val = 0;
         for (int c = 0; c < CHANNELS; c++) // c for channel
         {
@@ -121,7 +134,6 @@ void AudioW::audio_works() // fills audio buffer
                     temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
                     val += temp;
                     t->channel[c].pos += t->channel[c].pos_adv;
-                    t->channel[c].pos_adv *= t->channel[c].pitch_mod;
                     if (sig_max[c] < temp)
                     {sig_max[c] = temp;}
                 } else {
