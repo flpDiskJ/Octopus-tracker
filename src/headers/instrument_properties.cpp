@@ -37,9 +37,9 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
     transpose_label.r.w = 126;
     transpose_label.r.h = 30;
 
-    transpose_sliderbox.x = 250;
-    transpose_sliderbox.y = 20;
-    transpose_sliderbox.w = 224;
+    transpose_sliderbox.x = 20;
+    transpose_sliderbox.y = 90;
+    transpose_sliderbox.w = 560;
     transpose_sliderbox.h = 30;
 //finetune
     finetune_label.r.x = 250;
@@ -47,9 +47,9 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
     finetune_label.r.w = 112;
     finetune_label.r.h = 30;
 
-    finetune_sliderbox.x = 250;
-    finetune_sliderbox.y = 20;
-    finetune_sliderbox.w = 224;
+    finetune_sliderbox.x = 20;
+    finetune_sliderbox.y = 150;
+    finetune_sliderbox.w = 560;
     finetune_sliderbox.h = 30;
 //volume
     volume_label.r.x = 264;
@@ -57,9 +57,9 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
     volume_label.r.w = 84;
     volume_label.r.h = 30;
 
-    volume_sliderbox.x = 250;
-    volume_sliderbox.y = 20;
-    volume_sliderbox.w = 224;
+    volume_sliderbox.x = 20;
+    volume_sliderbox.y = 210;
+    volume_sliderbox.w = 560;
     volume_sliderbox.h = 30;
 
     surf = TTF_RenderText_Solid(font, "Instrument Name:", pallet->black);
@@ -102,7 +102,7 @@ void Instrument_properties::refresh()
 {
     SDL_SetRenderDrawColor(render, 128, 128, 128, 0xFF); // Background color
     SDL_RenderClear(render);
-    SDL_SetRenderDrawColor(render, 0, 0, 0, 0xFF); // Black
+    SDL_SetRenderDrawColor(render, 0, 0, 180, 0xFF); // Black
 //sample naming
     SDL_RenderDrawRect(render, &samplename_box);
     SDL_RenderCopy(render, inst_name_label.t, NULL, &inst_name_label.r);
