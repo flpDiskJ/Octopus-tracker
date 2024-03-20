@@ -253,10 +253,10 @@ void Util::update()
 
 void Util::render()
 {
-    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 0xFF); // Background color
+    SDL_SetRenderDrawColor(renderer, p->bgd.r, p->bgd.g, p->bgd.b, 0xFF); // Background color
     SDL_RenderClear(renderer);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
+    SDL_SetRenderDrawColor(renderer, p->black.r, p->black.g, p->black.b, 0xFF); // Black
 
     SDL_RenderCopy(renderer, name_tex, NULL, &name_rec);
 
@@ -283,22 +283,22 @@ void Util::render()
             }
             if (text_mode)
             {
-                SDL_SetRenderDrawColor(renderer, 180, 0, 0, 0xFF); // Red
+                SDL_SetRenderDrawColor(renderer, p->red.r, p->red.g, p->red.b, 0xFF); // Red
             }
             SDL_RenderDrawRect(renderer, &block_name);
             if (tracker->b_pos >= pos && tracker->b_pos < pos + 10)
             {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
+                SDL_SetRenderDrawColor(renderer, p->blue.r, p->blue.g, p->blue.b, 0xFF); // Blue
                 SDL_RenderDrawRect(renderer, &cursor);
             }
             if (speed_mode)
             {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
+                SDL_SetRenderDrawColor(renderer, p->blue.r, p->blue.g, p->blue.b, 0xFF); // Blue
                 SDL_RenderDrawRect(renderer, &block_speed);
             }
             if (len_mode)
             {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 180, 0xFF); // Blue
+                SDL_SetRenderDrawColor(renderer, p->blue.r, p->blue.g, p->blue.b, 0xFF); // Blue
                 SDL_RenderDrawRect(renderer, &block_len);
             }
             break;

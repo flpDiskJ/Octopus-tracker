@@ -43,6 +43,7 @@ void audio_callback(void* buffer, Uint8* stream, int len)
 int main(int argc, char* args[]) {
 
     Pallet pallet;
+    pallet.bgd = {128, 128, 128};
     pallet.black = {0, 0, 0};
     pallet.red = {200, 0, 0};
     pallet.blue = {0, 0, 180};
@@ -274,10 +275,10 @@ int main(int argc, char* args[]) {
         {
             previousTime = currentTime;
             // Rendering
-            SDL_SetRenderDrawColor(tracker_render, 128, 128, 128, 0xFF); // Background color
+            SDL_SetRenderDrawColor(tracker_render, pallet.bgd.r, pallet.bgd.g, pallet.bgd.b, 0xFF); // Background color
             SDL_RenderClear(tracker_render);
 
-            SDL_SetRenderDrawColor(tracker_render, 0, 0, 0, 0xFF); // Black
+            SDL_SetRenderDrawColor(tracker_render, pallet.black.r, pallet.black.g, pallet.black.b, 0xFF); // Black
 
             tracker.render_info();
 

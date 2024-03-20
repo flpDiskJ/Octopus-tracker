@@ -47,6 +47,7 @@ const Uint8 COM_PITCH_UP = 3;
 const Uint8 COM_PITCH_DOWN = 4;
 
 struct Pallet{ // global color pallet
+    SDL_Color bgd; // backround
     SDL_Color black;
     SDL_Color red;
     SDL_Color blue;

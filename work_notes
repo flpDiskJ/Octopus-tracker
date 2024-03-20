@@ -4,6 +4,8 @@
 
 New Additions (Most recent on top):
 
+    - Made render color function use global colors instead of being hard coded.
+
     - Fixed jitter during speed change.
 
     - Made playback key-commands work globally.

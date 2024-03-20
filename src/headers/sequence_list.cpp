@@ -92,9 +92,9 @@ void Sequencer::de_init()
 
 void Sequencer::refresh()
 {
-    SDL_SetRenderDrawColor(render, 128, 128, 128, 0xFF); // Background color
+    SDL_SetRenderDrawColor(render, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b, 0xFF); // Background color
     SDL_RenderClear(render);
-    SDL_SetRenderDrawColor(render, 0, 0, 0, 0xFF); // Black
+    SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
 
     SDL_RenderDrawRect(render, &list_box);
     SDL_RenderDrawRect(render, &insert_btn.r);
@@ -109,7 +109,7 @@ void Sequencer::refresh()
         SDL_RenderCopy(render, list[i].t, NULL, &list[i].r);
     }
 
-    SDL_SetRenderDrawColor(render, 0, 0, 128, 0xFF); // Blue
+    SDL_SetRenderDrawColor(render, pallet->blue.r, pallet->blue.g, pallet->blue.b, 0xFF); // Blue
     if (selected)
     {
         SDL_RenderDrawRect(render, &list[cursor].r);

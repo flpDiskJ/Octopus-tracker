@@ -100,13 +100,16 @@ void Instrument_properties::update()
 
 void Instrument_properties::refresh()
 {
-    SDL_SetRenderDrawColor(render, 128, 128, 128, 0xFF); // Background color
+    SDL_SetRenderDrawColor(render, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b, 0xFF); // Background color
     SDL_RenderClear(render);
-    SDL_SetRenderDrawColor(render, 0, 0, 180, 0xFF); // Black
-//sample naming
+    SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
+
+    //sample naming
     SDL_RenderDrawRect(render, &samplename_box);
     SDL_RenderCopy(render, inst_name_label.t, NULL, &inst_name_label.r);
-//sample params
+
+    //sample params
+    SDL_SetRenderDrawColor(render, pallet->blue.r, pallet->blue.g, pallet->blue.b, 0xFF); // Blue
     SDL_RenderCopy(render, transpose_label.t, NULL, &transpose_label.r);
     SDL_RenderDrawRect(render, &transpose_sliderbox);
     SDL_RenderCopy(render, finetune_label.t,  NULL, &finetune_label.r);
