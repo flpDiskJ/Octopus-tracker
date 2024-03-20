@@ -198,13 +198,6 @@ int main(int argc, char* args[]) {
                         tracker.pos = 0;
                         tracker.note_trigger();
                         aworks.sample_count = 0;
-                    } else if ((SDL_GetModState() & KMOD_SHIFT) && (SDL_GetModState() & KMOD_ALT))
-                    {
-                        tracker.tracker_running = true;
-                        tracker.run_sequence = true;
-                        tracker.pos = 0;
-                        tracker.note_trigger();
-                        aworks.sample_count = 0;
                     }
                     if (e.key.keysym.sym == SDLK_SPACE)
                     {

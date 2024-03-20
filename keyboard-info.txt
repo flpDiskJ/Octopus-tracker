@@ -5,9 +5,8 @@ Note for Stephen: These need to be documented in the help window.
 
 Playback (global):
     CNTRL+SPACE = loop block (resume)
-    SHIFT+SPACE = play track (resume)
     CNTRL+ALT = loop block (restart)
-    SHIFT+ALT = play track (restart)
+    SHIFT+SPACE = play track (resume)
     CNTRL+SHIFT+SPACE = play track from the start
     SPACE = stop all
 
@@ -31,7 +30,7 @@ Main window:
         CTRL+SHIFT+N = insert new block
         CTRL+C/V = Copy/Paste channel
         CTRL+SHIFT+C/V = Copy/Paste block
-        SHIFT+ALT+0-9 Copy note to buffer
+        CTRL+SHIFT+0-9 Copy note to buffer
         SHIFT+0-9 = Paste note from buffer
 
     Skip/Space:
