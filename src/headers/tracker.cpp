@@ -75,7 +75,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     {
         note_buffer[x].note = '-';
         note_buffer[x].key = '-';
-        note_buffer[x].octave = '-';
+        note_buffer[x].octave = 0;
         note_buffer[x].sample = 0;
         note_buffer[x].command[0] = '0';
         note_buffer[x].command[1] = '0';
@@ -184,22 +184,22 @@ Uint8 Tracker::get_command(int c)
     string cmd = string(block[b_pos].channel[c][pos].command); // put command data into c++ string
 
     // convert hex params to decimal
-    int p0 = channel[c].command_param[0] = hex2dec(block[b_pos].channel[c][pos].parameter[0]);
-    int p1 = channel[c].command_param[1] = hex2dec(block[b_pos].channel[c][pos].parameter[1]);
-    int p2 = channel[c].command_param[2] = (int)strtol(block[b_pos].channel[c][pos].parameter, NULL, 16);
+    channel[c].command_param[0] = hex2dec(block[b_pos].channel[c][pos].parameter[0]);
+    channel[c].command_param[1] = hex2dec(block[b_pos].channel[c][pos].parameter[1]);
+    channel[c].command_param[2] = (int)strtol(block[b_pos].channel[c][pos].parameter, NULL, 16);
 
     if (cmd == "0C")
     {
         type = COM_SET_LEVEL;
-        channel[c].amplifier = (double)p2 / 100.0;
+        channel[c].amplifier = (double)channel[c].command_param[2] / 100.0;
     } else if (cmd == "18")
     {
         type = COM_SET_LEVEL;
-        channel[c].amplifier = (((double)p2 / 100.0) * (channel[c].amplifier * 100.0)) / 100.0;
+        channel[c].amplifier = (((double)channel[c].command_param[2] / 100.0) * (channel[c].amplifier * 100.0)) / 100.0;
     } else if (cmd == "0F")
     {
         type = COM_KILL;
-        if (p2 == 255)
+        if (channel[c].command_param[2] == 255)
         {
             channel[c].play = false;
             channel[c].pos_adv = 0;
