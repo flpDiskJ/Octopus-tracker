@@ -50,7 +50,7 @@ void Instrument_properties::update()
 
     refresh();
 }
-
+//test merge
 void Instrument_properties::refresh()
 {
     SDL_SetRenderDrawColor(render, 128, 128, 128, 0xFF); // Background color
