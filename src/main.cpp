@@ -6,6 +6,7 @@
 #include "headers/util.h"
 #include "headers/sequence_list.h"
 #include "headers/audioworks.h"
+#include "headers/instrument_properties.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
@@ -97,6 +98,8 @@ int main(int argc, char* args[]) {
 
     Sequencer sequence_list(&tracker, &util, Font, &pallet);
 
+    Instrument_properties inst_prop(&tracker, Font, &pallet);
+
     AudioBuffer audio_buffer;
 
     SDL_AudioSpec mFormat;
@@ -147,6 +150,9 @@ int main(int argc, char* args[]) {
                         } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
                         {
                             util.close();
+                        } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            inst_prop.close();
                         } else {
                             util.open("Quit?", 0);
                         }
@@ -161,6 +167,9 @@ int main(int argc, char* args[]) {
                     } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         util.mouse(xM, yM);
+                    } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        inst_prop.mouse(xM, yM);
                     } else {
                         tracker.mouse(xM, yM);
                     }
@@ -225,6 +234,9 @@ int main(int argc, char* args[]) {
                     } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         util.input(&e);
+                    } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        //keyboard input needed!!!
                     } else {
                         if (SDL_GetModState() & KMOD_CTRL) // control key press
                         {
@@ -237,6 +249,9 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_o)
                             {
                                 sequence_list.open();
+                            } else if (e.key.keysym.sym == SDLK_i)
+                            {
+                                inst_prop.open();
                             }
                         }
                         tracker.keyboard(&e);
@@ -298,6 +313,7 @@ int main(int argc, char* args[]) {
 
     util.close_all();
     sequence_list.de_init();
+    inst_prop.de_init();
     free(audio_buffer.data);
     SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);

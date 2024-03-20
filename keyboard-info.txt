@@ -45,7 +45,7 @@ Main window:
         CTRL+B = open block list window (block length, speed, and such)
       X CTRL+F = open file op window (load/save module)
       X CTRL+E = open edit window (copy buffers)
-      X CTRL+I = open instrument window
+        CTRL+I = open instrument window
       X CTRL+S = open sample edit window
 
     Quit:
