@@ -156,6 +156,17 @@ int main(int argc, char* args[]) {
                         } else {
                             util.open("Quit?", 0);
                         }
+                    } else {
+                        if (sequence_list.get_state() & SDL_WINDOW_SHOWN)
+                        {
+                            sequence_list.refresh();
+                        } else if (util.get_state() & SDL_WINDOW_SHOWN)
+                        {
+                            util.render();
+                        } else if (inst_prop.get_state() & SDL_WINDOW_SHOWN)
+                        {
+                            inst_prop.refresh();
+                        }
                     }
                     break;
 

@@ -22,13 +22,60 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
         printf("Failed to create renderer for instrument window!\n");
     }
 
+    samplename_box.x = 250; //this will need to be better implemented to show text of samplenames inside this box
+    samplename_box.y = 20;
+    samplename_box.w = 224;
+    samplename_box.h = 30;
+
     inst_name_label.r.x = 20;
     inst_name_label.r.y = 20;
     inst_name_label.r.w = 224;
     inst_name_label.r.h = 30;
+//transpose
+    transpose_label.r.x = 243;
+    transpose_label.r.y = 60;
+    transpose_label.r.w = 126;
+    transpose_label.r.h = 30;
+
+    transpose_sliderbox.x = 250;
+    transpose_sliderbox.y = 20;
+    transpose_sliderbox.w = 224;
+    transpose_sliderbox.h = 30;
+//finetune
+    finetune_label.r.x = 250;
+    finetune_label.r.y = 120;
+    finetune_label.r.w = 112;
+    finetune_label.r.h = 30;
+
+    finetune_sliderbox.x = 250;
+    finetune_sliderbox.y = 20;
+    finetune_sliderbox.w = 224;
+    finetune_sliderbox.h = 30;
+//volume
+    volume_label.r.x = 264;
+    volume_label.r.y = 180;
+    volume_label.r.w = 84;
+    volume_label.r.h = 30;
+
+    volume_sliderbox.x = 250;
+    volume_sliderbox.y = 20;
+    volume_sliderbox.w = 224;
+    volume_sliderbox.h = 30;
 
     surf = TTF_RenderText_Solid(font, "Instrument Name:", pallet->black);
     inst_name_label.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "Transpose", pallet->blue);
+    transpose_label.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "Finetune", pallet->blue);
+    finetune_label.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "Volume", pallet->blue);
+    volume_label.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
     update();
@@ -50,14 +97,23 @@ void Instrument_properties::update()
 
     refresh();
 }
-//test merge2
+
 void Instrument_properties::refresh()
 {
     SDL_SetRenderDrawColor(render, 128, 128, 128, 0xFF); // Background color
     SDL_RenderClear(render);
     SDL_SetRenderDrawColor(render, 0, 0, 0, 0xFF); // Black
-
+//sample naming
+    SDL_RenderDrawRect(render, &samplename_box);
     SDL_RenderCopy(render, inst_name_label.t, NULL, &inst_name_label.r);
+//sample params
+    SDL_RenderCopy(render, transpose_label.t, NULL, &transpose_label.r);
+    SDL_RenderDrawRect(render, &transpose_sliderbox);
+    SDL_RenderCopy(render, finetune_label.t,  NULL, &finetune_label.r);
+    SDL_RenderDrawRect(render, &finetune_sliderbox);
+    SDL_RenderCopy(render, volume_label.t,    NULL, &volume_label.r);
+    SDL_RenderDrawRect(render, &volume_sliderbox);
+
     SDL_RenderPresent(render); // Present image to screen
 }
 
