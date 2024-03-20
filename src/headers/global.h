@@ -46,6 +46,8 @@ const Uint8 COM_SET_LEVEL = 2; // set channel volume
 const Uint8 COM_PITCH_UP = 3;
 const Uint8 COM_PITCH_DOWN = 4;
 
+// fuck you johnny
+
 struct Pallet{ // global color pallet
     SDL_Color black;
     SDL_Color red;
