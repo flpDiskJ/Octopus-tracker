@@ -39,6 +39,13 @@ const Uint8 DELETE_SEQ = 150;
 const Uint8 INC_SEQ = 200;
 const Uint8 DEC_SEQ = 250;
 
+// command type flags
+const Uint8 COM_NONE = 0; // No command
+const Uint8 COM_KILL = 1; // kills all sound in channel
+const Uint8 COM_SET_LEVEL = 2; // set channel volume
+const Uint8 COM_PITCH_UP = 3;
+const Uint8 COM_PITCH_DOWN = 4;
+
 struct Pallet{ // global color pallet
     SDL_Color black;
     SDL_Color red;

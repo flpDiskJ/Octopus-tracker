@@ -75,6 +75,11 @@ void AudioW::play_note(SDL_Event *e)
     }
 }
 
+void command_handling()
+{
+    
+}
+
 void AudioW::audio_works() // fills audio buffer
 {
     int actual_pos;
@@ -119,7 +124,7 @@ void AudioW::audio_works() // fills audio buffer
                     t->channel[c].pos_adv *= t->channel[c].pitch_mod;
                     if (sig_max[c] < temp)
                     {sig_max[c] = temp;}
-                } else{
+                } else {
                     t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
                 }
             }

@@ -17,6 +17,8 @@ public:
 
     void play_note(SDL_Event *e); // plays note from keyboard
 
+    void command_handling(); // handles commands
+
     void audio_works(); // run in program loop // generates buffer data
 
 };

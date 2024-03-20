@@ -71,6 +71,10 @@ private:
     SDL_Rect cursor; // used to display cursor
     int trigger_bar_decay = 0;
 
+    Uint8 get_command_type(int channel); // returns command type flag defined in global.h
+
+    void set_command_params(int channel); // sets parameters for command
+
     void copy_channel();
 
     void paste_channel();
