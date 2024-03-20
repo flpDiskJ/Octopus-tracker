@@ -1,4 +1,4 @@
-// Octapus Version 0.1 2023 - 2024
+// Octopus Version 0.1 2023 - 2024
 // Created by Jake Aigner & Stephen Robinson & John Dunbar
 // Open source. Free to distribute. Please include original credits!
 
@@ -67,7 +67,7 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    tracker_window = SDL_CreateWindow("Octapus V0.1 testing   |   Jake Aigner, Stephen Robinson, John Dunbar", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+    tracker_window = SDL_CreateWindow("Octopus V0.1 testing   |   Jake Aigner, Stephen Robinson, John Dunbar", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
     SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (tracker_window == NULL)
     {
