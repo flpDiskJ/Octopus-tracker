@@ -79,8 +79,10 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         note_buffer[x].sample = 0;
         note_buffer[x].command[0] = '0';
         note_buffer[x].command[1] = '0';
+        note_buffer[x].command[2] = '\0';
         note_buffer[x].parameter[0] = '0';
         note_buffer[x].parameter[1] = '0';
+        note_buffer[x].parameter[2] = '\0';
         note_buffer[x].pos_adv = 0;
     }
 
@@ -95,6 +97,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         block[0].channel[c] = (Note*)malloc(64*sizeof(Note));
         mute[c] = false;
         channel[c].play = false;
+        channel[c].command_type = COM_NONE;
     }
     clear_block(0);
 
@@ -149,6 +152,69 @@ Tracker::~Tracker() {
     free(sequence);
 }
 
+int Tracker::hex2dec(char hex)
+{
+    int v;
+    switch (hex) {
+        case '1': v = 1; break;
+        case '2': v = 2; break;
+        case '3': v = 3; break;
+        case '4': v = 4; break;
+        case '5': v = 5; break;
+        case '6': v = 6; break;
+        case '7': v = 7; break;
+        case '8': v = 8; break;
+        case '9': v = 9; break;
+        case 'A': v = 10; break;
+        case 'B': v = 11; break;
+        case 'C': v = 12; break;
+        case 'D': v = 13; break;
+        case 'E': v = 14; break;
+        case 'F': v = 15; break;
+        default:
+            v = 0;
+            break;
+    }
+    return v;
+}
+
+Uint8 Tracker::get_command(int c)
+{
+    Uint8 type = COM_NONE;
+    string cmd = string(block[b_pos].channel[c][pos].command); // put command data into c++ string
+
+    // convert hex params to decimal
+    int p0 = channel[c].command_param[0] = hex2dec(block[b_pos].channel[c][pos].parameter[0]);
+    int p1 = channel[c].command_param[1] = hex2dec(block[b_pos].channel[c][pos].parameter[1]);
+    int p2 = channel[c].command_param[2] = (int)strtol(block[b_pos].channel[c][pos].parameter, NULL, 16);
+
+    if (cmd == "0C")
+    {
+        type = COM_SET_LEVEL;
+        channel[c].amplifier = (double)p2 / 100.0;
+    } else if (cmd == "18")
+    {
+        type = COM_SET_LEVEL;
+        channel[c].amplifier = (((double)p2 / 100.0) * (channel[c].amplifier * 100.0)) / 100.0;
+    } else if (cmd == "0F")
+    {
+        type = COM_KILL;
+        if (p2 == 255)
+        {
+            channel[c].play = false;
+            channel[c].pos_adv = 0;
+        }
+    } else if (cmd == "01")
+    {
+        type = COM_PITCH_UP;
+    } else if (cmd == "02")
+    {
+        type = COM_PITCH_DOWN;
+    }
+
+    return type;
+}
+
 void Tracker::note_trigger()
 {
     for (int c = 0; c < CHANNELS; c++)
@@ -158,10 +224,11 @@ void Tracker::note_trigger()
             channel[c].pos = 0;
             channel[c].sample = block[b_pos].channel[c][pos].sample;
             channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
-            channel[c].amplifier = 128.0 / (double)sample[channel[c].sample].level;
+            channel[c].amplifier = (double)sample[channel[c].sample].level / 128.0;
             channel[c].pitch_mod = 1;
             channel[c].play = true;
         }
+        channel[c].command_type = get_command(c);
     }
 }
 
@@ -221,7 +288,8 @@ bool Tracker::load_inst(string path, string name)
         sample[s_pos].data = (Sint16*)malloc(new_length*sizeof(Sint16));
         memset(sample[s_pos].data, 0, new_length);
         sample[s_pos].len = new_length;
-        sample[s_pos].tune = 1; sample[s_pos].level = 128;
+        sample[s_pos].tune = 1;
+        sample[s_pos].level = 100;
         sample[s_pos].name.clear();
         sample[s_pos].name += name;
         if (inputSpec.channels == 1)
@@ -389,8 +457,10 @@ void Tracker::realloc_block(int size)
                 block[b_pos].channel[c][s].sample = 0;
                 block[b_pos].channel[c][s].command[0] = '0';
                 block[b_pos].channel[c][s].command[1] = '0';
+                block[b_pos].channel[c][s].command[2] = '\0';
                 block[b_pos].channel[c][s].parameter[0] = '0';
                 block[b_pos].channel[c][s].parameter[1] = '0';
+                block[b_pos].channel[c][s].parameter[2] = '\0';
                 block[b_pos].channel[c][s].pos_adv = 0;
             }
         }
@@ -802,8 +872,10 @@ void Tracker::clear_channel()
         block[b_pos].channel[cursor_channel][s].sample = 0;
         block[b_pos].channel[cursor_channel][s].command[0] = '0';
         block[b_pos].channel[cursor_channel][s].command[1] = '0';
+        block[b_pos].channel[cursor_channel][s].command[2] = '\0';
         block[b_pos].channel[cursor_channel][s].parameter[0] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[1] = '0';
+        block[b_pos].channel[cursor_channel][s].parameter[2] = '\0';
         block[b_pos].channel[cursor_channel][s].pos_adv = 0;
     }
 }
@@ -821,8 +893,10 @@ void Tracker::clear_block(int blk) // Clears indicated block
             block[blk].channel[c][s].sample = 0;
             block[blk].channel[c][s].command[0] = '0';
             block[blk].channel[c][s].command[1] = '0';
+            block[blk].channel[c][s].command[2] = '\0';
             block[blk].channel[c][s].parameter[0] = '0';
             block[blk].channel[c][s].parameter[1] = '0';
+            block[blk].channel[c][s].parameter[2] = '\0';
             block[blk].channel[c][s].pos_adv = 0;
         }
     }

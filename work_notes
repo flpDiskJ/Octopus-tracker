@@ -24,6 +24,8 @@ To do:
 
     - Add command functionality.
 
+    - Add channel mute
+
 
     Note: Use the Sequencer class in sequence_list.h as a base reference for all new sub-windows.
 

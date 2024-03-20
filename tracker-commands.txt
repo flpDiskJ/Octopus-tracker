@@ -1,0 +1,10 @@
+XX = parameter
+
+01XX = pitch up
+02XX = pitch down
+
+0CXX = set level
+
+18XX = set level relative to sample level
+
+0FFF = kill sound in channel

@@ -18,8 +18,8 @@ private:
         char key; // - or #
         int octave; // 1 thru 6 or - for blank
         int sample; // 0 - 99
-        char command[2];
-        char parameter[2]; // parameters for command
+        char command[3];
+        char parameter[3]; // parameters for command
         double pos_adv; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
 
@@ -38,14 +38,16 @@ private:
     struct Instrument{ // data for each instrument/sample
         Sint16 *data;
         Uint32 len;
-        int level; // 0-128
+        int level; // 0-100
         double tune; // 0. - 2
         string name;
     };
 
     struct Channel{ // set these values when note is triggered
         bool play; // set to true to play audio
-        double amplifier; // control level. calculate: 128 / sample[s_pos].level
+        Uint8 command_type;
+        unsigned int command_param[3]; // 0 = first slot only, 1 = second slot only, 2 = combined value
+        double amplifier; // control level. calculate: desired_level / 100.0
         double pitch_mod; // control pitch. set by commands, otherwise set to 1
         int sample; // sample to play.
         double pos; // curent position of sample in channel
@@ -71,9 +73,9 @@ private:
     SDL_Rect cursor; // used to display cursor
     int trigger_bar_decay = 0;
 
-    Uint8 get_command_type(int channel); // returns command type flag defined in global.h
+    int hex2dec(char hex); // converts single hex digit to decimal
 
-    void set_command_params(int channel); // sets parameters for command
+    Uint8 get_command(int c); // returns command type flag defined in global.h
 
     void copy_channel();
 

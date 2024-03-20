@@ -77,7 +77,7 @@ void AudioW::play_note(SDL_Event *e)
 
 void command_handling()
 {
-    
+
 }
 
 void AudioW::audio_works() // fills audio buffer
