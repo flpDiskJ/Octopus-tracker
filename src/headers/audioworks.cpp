@@ -80,7 +80,25 @@ void AudioW::tick()
 {
     for (int c = 0; c < CHANNELS; c++)
     {
-        t->channel[c].pos_adv *= t->channel[c].pitch_mod;
+        switch (t->channel[c].command_type)
+        {
+            case COM_PITCH_UP:
+            case COM_PITCH_DOWN:
+                t->channel[c].pos_adv *= t->channel[c].pitch_mod;
+                break;
+            case COM_SLIDE:
+                if (t->channel[c].slide_pos > t->channel[c].slide_target)
+                {
+                    t->channel[c].slide_pos -= t->channel[c].slide_speed;
+                } else if (t->channel[c].slide_pos < t->channel[c].slide_target)
+                {
+                    t->channel[c].slide_pos += t->channel[c].slide_speed;
+                }
+                t->channel[c].pos_adv = (double)t->channel[c].slide_pos / (double)SAMPLE_RATE;
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -100,6 +118,7 @@ void AudioW::audio_works() // fills audio buffer
         for (int c = 0; c < CHANNELS; c++)
         {
             t->channel[c].play = false;
+            t->channel[c].command_type = COM_NONE;
         }
         b->stop = false;
     }

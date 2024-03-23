@@ -4,6 +4,8 @@
 
 New Additions (Most recent on top):
 
+    - Instrument properties, disk op, and command func WIP
+
     - Made render color function use global colors instead of being hard coded.
 
     - Fixed jitter during speed change.
@@ -23,8 +25,6 @@ To do:
     - Add (append/insert to seq) buttons to block sub-window
 
     - Add master speed and block length controls to track params sub-window.
-
-    - Add command functionality.
 
     - Add channel mute
 

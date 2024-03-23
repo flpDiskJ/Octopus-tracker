@@ -21,7 +21,6 @@ private:
         char command[3];
         char parameter[3]; // parameters for command
         double pos_adv; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
-        unsigned int note_rate; // sample rate of note
     };
 
     struct Block{ // holds all data for block
@@ -46,15 +45,24 @@ private:
 
     struct Channel{ // set these values when note is triggered
         bool play; // set to true to play audio
+
+        ///// command bs
         Uint8 command_type;
         unsigned int command_param[3]; // 0 = first slot only, 1 = second slot only, 2 = combined value
-        unsigned int command_data; // 1-3 used for various purposes by the commands
+
+        // 03
+        unsigned int slide_target;
+        unsigned int slide_pos;
+        unsigned int slide_speed;
+
+        // generic
         double amplifier; // control level. calculate: desired_level / 100.0
         double pitch_mod; // control pitch. set by commands, otherwise set to 1
+        //////
+
         int sample; // sample to play.
         double pos; // curent position of sample in channel
         double pos_adv; // amount to advance pos // calculate: Desired rate / SAMPLE_RATE // multiplied by pitch_mod every advance
-        unsigned int note_rate; // rate of last note triggered
     };
 
     SDL_Rect tracker_box; // only functions for design (box around tracker)
