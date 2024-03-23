@@ -9,7 +9,7 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
 
     // initialize window and renderer
     window = SDL_CreateWindow("Disk Op", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    500, 500, SDL_WINDOW_HIDDEN);
+    750, 500, SDL_WINDOW_HIDDEN);
     if (window == NULL)
     {
         printf("Disk Op window creation failed!\n");
@@ -22,16 +22,42 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
         printf("Failed to create renderer for disk op window!\n");
     }
 
-    test.r.x = 20;
-    test.r.y = 20;
-    test.r.w = 100;
-    test.r.h = 30;
+    // button intialization
+    load_inst.r.x = 0;
+    load_inst.r.y = 0;
+    load_inst.r.w = 150;
+    load_inst.r.h = 50;
 
-    string title = "test_button";
-    surf = TTF_RenderText_Solid(font, title.c_str(), pallet->green);
-    test.t = SDL_CreateTextureFromSurface(render, surf);
+    save_file.r.x = 175;
+    save_file.r.y = 0;
+    save_file.r.w = 150;
+    save_file.r.h = 50;
+
+    load_file.r.x = 350;
+    load_file.r.y = 0;
+    load_file.r.w = 150;
+    load_file.r.h = 50;
+
+    export_audio.r.x = 525;
+    export_audio.r.y = 0;
+    export_audio.r.w = 150;
+    export_audio.r.h = 50;
+
+    surf = TTF_RenderText_Solid(font, "Load Instrument", pallet->black);
+    load_inst.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
+    surf = TTF_RenderText_Solid(font, "Save File", pallet->black);
+    save_file.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "Load File", pallet->black);
+    load_file.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "Export Audio", pallet->black);
+    export_audio.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
 }
 
 DiskOp::~DiskOp()
@@ -50,9 +76,18 @@ void DiskOp::refresh()
     SDL_RenderClear(render);
     SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
 
-    // render stuff
-    SDL_RenderDrawRect(render, &test.r);
-    SDL_RenderCopy(render, test.t, NULL, &test.r);
+    // render buttons
+    SDL_RenderDrawRect(render, &load_inst.r);
+    SDL_RenderCopy(render, load_inst.t, NULL, &load_inst.r);
+
+    SDL_RenderDrawRect(render, &save_file.r);
+    SDL_RenderCopy(render, save_file.t, NULL, &save_file.r);
+
+    SDL_RenderDrawRect(render, &load_file.r);
+    SDL_RenderCopy(render, load_file.t, NULL, &load_file.r);
+
+    SDL_RenderDrawRect(render, &export_audio.r);
+    SDL_RenderCopy(render, export_audio.t, NULL, &export_audio.r);
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -81,7 +116,7 @@ bool DiskOp::checkButton(int mouseX, int mouseY, SDL_Rect *button) {
 
 void DiskOp::mouse(int x, int y)
 {
-    if (checkButton(x, y, &test.r))
+    if (checkButton(x, y, &load_inst.r))
     {
         // do something
     }
