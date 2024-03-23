@@ -152,6 +152,16 @@ Tracker::~Tracker() {
     free(sequence);
 }
 
+bool Tracker::check_command(int c, const char *command)
+{
+    if (command[0] == block[b_pos].channel[c][pos].command[0] && command[1] == block[b_pos].channel[c][pos].command[1])
+    {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 int Tracker::hex2dec(char hex)
 {
     int v;
@@ -224,6 +234,9 @@ Uint8 Tracker::get_command(int c)
     {
         type = COM_OFFSET;
         channel[c].pos = channel[c].command_param[2] * 256;
+    } else if (cmd == "03")
+    {
+
     }
 
     return type;
@@ -233,14 +246,26 @@ void Tracker::note_trigger()
 {
     for (int c = 0; c < CHANNELS; c++)
     {
-        if (block[b_pos].channel[c][pos].pos_adv > 0.0)
+        if (block[b_pos].channel[c][pos].note != '-')
         {
-            channel[c].pos = 0;
-            channel[c].sample = block[b_pos].channel[c][pos].sample;
-            channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
-            channel[c].amplifier = (double)sample[channel[c].sample].level / 100.0;
-            channel[c].pitch_mod = 1;
-            channel[c].play = true;
+            if (check_command(c, "03"))
+            {
+                // set data[1] to the rate of the target note
+                if (block[b_pos].channel[c][pos].note != '-')
+                {
+                    channel[c].command_data = getFreq(block[b_pos].channel[c][pos].note,
+                    block[b_pos].channel[c][pos].key,
+                    block[b_pos].channel[c][pos].octave);
+                }
+            } else {
+                channel[c].pos = 0;
+                channel[c].sample = block[b_pos].channel[c][pos].sample;
+                channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
+                channel[c].amplifier = (double)sample[channel[c].sample].level / 100.0;
+                channel[c].pitch_mod = 1;
+                channel[c].play = true;
+                channel[c].note_rate = block[b_pos].channel[c][pos].note_rate;
+            }
         }
         channel[c].command_type = get_command(c);
     }
@@ -1086,7 +1111,8 @@ void Tracker::get_note(SDL_Event *e)
             block[b_pos].channel[cursor_channel][pos].key = key;
             block[b_pos].channel[cursor_channel][pos].octave = oct;
             block[b_pos].channel[cursor_channel][pos].sample = s_pos;
-            block[b_pos].channel[cursor_channel][pos].pos_adv = (double)getFreq(note, key, oct) / SAMPLE_RATE;
+            block[b_pos].channel[cursor_channel][pos].note_rate = getFreq(note, key, oct);
+            block[b_pos].channel[cursor_channel][pos].pos_adv = (double)getFreq(note, key, oct) / (double)SAMPLE_RATE;
             if (!tracker_running)
             {incpos();}
         }

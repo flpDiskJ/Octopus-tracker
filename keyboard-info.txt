@@ -42,7 +42,7 @@ Main window:
         CTRL+O = open sequence order window
         CTRL+H = open track properties window (bpm, speed, and such)
         CTRL+B = open block list window (block length, speed, and such)
-      X CTRL+F = open file op window (load/save module)
+      X CTRL+F = open disk op window (load/save module)
       X CTRL+E = open edit window (copy buffers)
         CTRL+I = open instrument window
       X CTRL+S = open sample edit window
