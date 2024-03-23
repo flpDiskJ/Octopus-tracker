@@ -236,7 +236,7 @@ Uint8 Tracker::get_command(int c)
         channel[c].pos = channel[c].command_param[2] * 256;
     } else if (cmd == "03")
     {
-
+        type = COM_SLIDE;
     }
 
     return type;

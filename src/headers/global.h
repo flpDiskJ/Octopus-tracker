@@ -48,6 +48,7 @@ const Uint8 COM_SET_LEVEL = 2; // set channel volume
 const Uint8 COM_PITCH_UP = 3;
 const Uint8 COM_PITCH_DOWN = 4;
 const Uint8 COM_OFFSET = 5; // set sample offset
+const Uint8 COM_SLIDE = 6; // slide pitch to target note
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround
