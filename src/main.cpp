@@ -7,6 +7,7 @@
 #include "headers/sequence_list.h"
 #include "headers/audioworks.h"
 #include "headers/instrument_properties.h"
+#include "headers/disk_op.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
