@@ -18,6 +18,7 @@ add_executable(octopus
 	${SRC}/headers/audioworks.cpp
 	${SRC}/headers/sequence_list.cpp
 	${SRC}/headers/instrument_properties.cpp
+	${SRC}/headers/disk_op.cpp
 )
 target_include_directories(
 	octopus PUBLIC

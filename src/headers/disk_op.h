@@ -11,8 +11,9 @@ class DiskOp {
         SDL_Surface *surf;
         TTF_Font *font; // pointer to the program font
         Pallet *pallet; // pointer to the program pallet
+        Button test;
     public:
-        DiskOp(Tracker *tracker, Util *util, TTF_Font *f);
+        DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p);
 
         ~DiskOp();
 

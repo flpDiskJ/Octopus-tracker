@@ -102,6 +102,8 @@ int main(int argc, char* args[]) {
 
     Instrument_properties inst_prop(&tracker, Font, &pallet);
 
+    DiskOp disk_op(&tracker, Font, &pallet);
+
     AudioBuffer audio_buffer;
 
     SDL_AudioSpec mFormat;
@@ -155,6 +157,9 @@ int main(int argc, char* args[]) {
                         } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
                         {
                             inst_prop.close();
+                        } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            disk_op.close();
                         } else {
                             util.open("Quit?", 0);
                         }
@@ -168,6 +173,9 @@ int main(int argc, char* args[]) {
                         } else if (inst_prop.get_state() & SDL_WINDOW_SHOWN)
                         {
                             inst_prop.refresh();
+                        } else if (disk_op.get_state() & SDL_WINDOW_SHOWN)
+                        {
+                            disk_op.refresh();
                         }
                     }
                     break;
@@ -183,6 +191,9 @@ int main(int argc, char* args[]) {
                     } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         inst_prop.mouse(xM, yM);
+                    } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        disk_op.mouse(xM, yM);
                     } else {
                         tracker.mouse(xM, yM);
                     }
@@ -243,6 +254,9 @@ int main(int argc, char* args[]) {
                     } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         //keyboard input needed!!!
+                    } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        disk_op.keyboard(&e);
                     } else {
                         if (SDL_GetModState() & KMOD_CTRL) // control key press
                         {
@@ -258,6 +272,9 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_i)
                             {
                                 inst_prop.open();
+                            } else if (e.key.keysym.sym == SDLK_f)
+                            {
+                                disk_op.open();
                             }
                         }
                         tracker.keyboard(&e);
@@ -324,6 +341,7 @@ int main(int argc, char* args[]) {
     util.close_all();
     sequence_list.de_init();
     inst_prop.de_init();
+    disk_op.de_init();
     free(audio_buffer.data);
     SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);
