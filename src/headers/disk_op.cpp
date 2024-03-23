@@ -23,23 +23,23 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
     }
 
     // button intialization
-    load_inst.r.x = 0;
-    load_inst.r.y = 0;
+    load_inst.r.x = 20;
+    load_inst.r.y = 20;
     load_inst.r.w = 150;
     load_inst.r.h = 50;
 
-    save_file.r.x = 175;
-    save_file.r.y = 0;
+    save_file.r.x = 195;
+    save_file.r.y = 20;
     save_file.r.w = 150;
     save_file.r.h = 50;
 
-    load_file.r.x = 350;
-    load_file.r.y = 0;
+    load_file.r.x = 370;
+    load_file.r.y = 20;
     load_file.r.w = 150;
     load_file.r.h = 50;
 
-    export_audio.r.x = 525;
-    export_audio.r.y = 0;
+    export_audio.r.x = 545;
+    export_audio.r.y = 20;
     export_audio.r.w = 150;
     export_audio.r.h = 50;
 
@@ -58,6 +58,12 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
     surf = TTF_RenderText_Solid(font, "Export Audio", pallet->black);
     export_audio.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+
+    // file border init
+    file_border.x = 20; 
+    file_border.y = 100;
+    file_border.w = 710;
+    file_border.h = 380;
 }
 
 DiskOp::~DiskOp()
@@ -88,6 +94,8 @@ void DiskOp::refresh()
 
     SDL_RenderDrawRect(render, &export_audio.r);
     SDL_RenderCopy(render, export_audio.t, NULL, &export_audio.r);
+
+    SDL_RenderDrawRect(render, &file_border);
 
     SDL_RenderPresent(render); // Present image to screen
 }

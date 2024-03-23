@@ -13,7 +13,7 @@ class DiskOp {
         TTF_Font *font; // pointer to the program font
         Pallet *pallet; // pointer to the program pallet
         Button load_inst, save_file, load_file, export_audio; // DiskOp gui buttons
-        
+        SDL_Rect file_border;
     public:
         DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p);
 
