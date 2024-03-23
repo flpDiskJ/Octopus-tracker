@@ -18,7 +18,10 @@ using namespace std;
 #define AMP_LEV 1 // master level
 #define SAMPLE_RATE 48000 // output sample rate
 #define BUFF_SIZE 1024 // size of audio stream buffer. must be pow ^ 2
-const double PITCH_SLIDE_TUNE = 0.012;
+
+// command tweaks
+const double PITCH_SLIDE_TUNE = 0.006;
+const int TARGET_SLIDE_SENS = 30;
 ////
 
 //// Changes will not work without modifing the code
@@ -32,7 +35,7 @@ const double PITCH_SLIDE_TUNE = 0.012;
 
 //// NO TOUCHY!
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
-const int TICK_LEN = SAMPLE_RATE / 12;
+const int TICK_LEN = SAMPLE_RATE / 24;
 
 // flags for sequencer function
 const Uint8 APPEND_SEQ = 50;
