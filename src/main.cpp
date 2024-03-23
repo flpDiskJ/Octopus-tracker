@@ -316,6 +316,7 @@ int main(int argc, char* args[]) {
             {
                 tracker.sequence_update = false;
                 sequence_list.update_list();
+                util.update();
             }
             if (tracker.block_update && (util.get_state() & SDL_WINDOW_SHOWN))
             {

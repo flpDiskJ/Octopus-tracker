@@ -381,6 +381,7 @@ void Tracker::paste_note(int buff)
         block[b_pos].channel[cursor_channel][pos].parameter[0] = note_buffer[buff].parameter[0];
         block[b_pos].channel[cursor_channel][pos].parameter[1] = note_buffer[buff].parameter[1];
         block[b_pos].channel[cursor_channel][pos].pos_adv = note_buffer[buff].pos_adv;
+        incpos();
     }
 }
 
