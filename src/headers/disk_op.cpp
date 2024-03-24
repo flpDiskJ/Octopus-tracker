@@ -1,35 +1,16 @@
 #include "disk_op.h"
 
-std::string DiskOp::cat_path(std::string path1, std::string path2) {
-    return path1 + path2;
-}
-
-void DiskOp::fill_path_list(std::string parent) {
-    // clean up path vector
-    path_list.clear();
-
-    d_op_path = opendir(test_path.c_str()); // change to path from config file
-    while (dp = readdir(d_op_path)) { // if dp is null no more content to list
-        std::string full_path = cat_path(test_path, dp->d_name);
-        path_list.push_back(full_path); // append path string to path list
-    }
-    closedir(d_op_path);
-}
-
-void DiskOp::update_list_textures() {
-    
-}
-
-void DiskOp::render_path_list() {
-
-}
-
 DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
 {
     // get pointers from main func
     t = tracker;
     font = f;
     pallet = p;
+
+    // read from config eventually
+    parent[0] = "/";
+    parent[1] = "/";
+    parent[2] = "/";
 
     // initialize window and renderer
     window = SDL_CreateWindow("Disk Op", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -84,13 +65,36 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
     SDL_FreeSurface(surf);
 
     // file border init
-    file_border.x = 20; 
+    file_border.x = 20;
     file_border.y = 100;
     file_border.w = 710;
     file_border.h = 380;
 }
 
 DiskOp::~DiskOp()
+{
+
+}
+
+string DiskOp::cat_path(string path1, string path2)
+{
+    return path1 + path2;
+}
+
+void DiskOp::fill_path_list()
+{
+    // clean up path vector
+    path_list.clear();
+
+    d_op_path = opendir(parent[parent_index].c_str()); // change to path from config file
+    while (dp = readdir(d_op_path))// if dp is null no more content to list
+    {
+        path_list.push_back(dp->d_name); // append path string to path list
+    }
+    closedir(d_op_path);
+}
+
+void DiskOp::update_list_textures()
 {
 
 }
@@ -124,17 +128,20 @@ void DiskOp::refresh()
     SDL_RenderPresent(render); // Present image to screen
 }
 
-void DiskOp::open() {
+void DiskOp::open()
+{
     SDL_ShowWindow(window);
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
 }
 
-void DiskOp::close() {
+void DiskOp::close()
+{
     SDL_HideWindow(window);
 }
 
-Uint32 DiskOp::get_state() {
+Uint32 DiskOp::get_state()
+{
     return SDL_GetWindowFlags(window);
 }
 

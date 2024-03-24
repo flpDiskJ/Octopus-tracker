@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "tracker.h"
 #include <dirent.h>
@@ -14,17 +14,22 @@ class DiskOp {
         Pallet *pallet; // pointer to the program pallet
         Button load_inst, save_file, load_file, export_audio; // DiskOp gui buttons
         SDL_Rect file_border;
-        std::string test_path; // test path whose content will be displayed in the file viewer box
         struct dirent *dp; // instance of the dirent struct to get sub-directory strings
         DIR *d_op_path; // directory stream for disk op window
-        std::vector<std::string> path_list;
-        int cursor_pos;
+        vector<string> path_list;
+        enum path_type
+        {
+            module_p, sample_p, export_p
+        };
+        path_type parent_index = module_p;
+        string parent[3];
 
         // helper methods
-        std::string cat_path(std::string path1, std::string path2);
-        void fill_path_list(std::string parent);
+        string cat_path(string path1, string path2);
+
+        void fill_path_list();
+
         void update_list_textures();
-        void render_path_list();
 
 
     public:
@@ -48,4 +53,3 @@ class DiskOp {
 
         void keyboard(SDL_Event *e);
 };
-
