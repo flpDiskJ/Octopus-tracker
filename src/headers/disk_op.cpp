@@ -1,5 +1,29 @@
 #include "disk_op.h"
 
+std::string DiskOp::cat_path(std::string path1, std::string path2) {
+    return path1 + path2;
+}
+
+void DiskOp::fill_path_list(std::string parent) {
+    // clean up path vector
+    path_list.clear();
+
+    d_op_path = opendir(test_path.c_str()); // change to path from config file
+    while (dp = readdir(d_op_path)) { // if dp is null no more content to list
+        std::string full_path = cat_path(test_path, dp->d_name);
+        path_list.push_back(full_path); // append path string to path list
+    }
+    closedir(d_op_path);
+}
+
+void DiskOp::update_list_textures() {
+    
+}
+
+void DiskOp::render_path_list() {
+
+}
+
 DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
 {
     // get pointers from main func
