@@ -1,5 +1,4 @@
-#ifndef AUDIOWORKS_H
-#define AUDIOWORKS_H
+#pragma once
 
 #include "tracker.h"
 
@@ -23,5 +22,3 @@ public:
     void audio_works(); // run in program loop // generates buffer data
 
 };
-
-#endif

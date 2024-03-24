@@ -1,5 +1,4 @@
-#ifndef DISK_OP_H
-#define DISK_OP_H
+#pragma once 
 
 #include "tracker.h"
 #include <dirent.h>
@@ -14,6 +13,9 @@ class DiskOp {
         Pallet *pallet; // pointer to the program pallet
         Button load_inst, save_file, load_file, export_audio; // DiskOp gui buttons
         SDL_Rect file_border;
+        std::string test_path; // test path whose content will be displayed in the file viewer box
+        struct dirent *dp;
+        DIR *d_op_path; // directory stream for disk op window
     public:
         DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p);
 
@@ -36,4 +38,3 @@ class DiskOp {
         void keyboard(SDL_Event *e);
 };
 
-#endif
