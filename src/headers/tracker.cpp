@@ -200,8 +200,27 @@ Uint8 Tracker::get_command(int c)
 
     if (cmd == "00")
     {
-        type = COM_NONE;
-        channel[c].pitch_mod = 1;
+        if (channel[c].command_param[0] == 0 && channel[c].command_param[1] == 0)
+        {
+            type = COM_NONE;
+            channel[c].pitch_mod = 1;
+        } else {
+            type = COM_ARPEGGIO;
+            channel[c].arp_rates[0] = channel[c].slide_pos; // original pitch
+            int arp1 = channel[c].slide_pos;
+            int arp2 = arp1;
+            for (int x = 0; x < channel[c].command_param[0]; x++)
+            {
+                arp1 = (double)arp1 * SEMITONE_MULTIPLIER;
+            }
+            for (int x = 0; x < channel[c].command_param[1]; x++)
+            {
+                arp2 = (double)arp2 * SEMITONE_MULTIPLIER;
+            }
+            channel[c].arp_rates[1] = arp1;
+            channel[c].arp_rates[2] = arp2;
+            channel[c].arp_toggle = 0;
+        }
     } else if (cmd == "0C")
     {
         type = COM_SET_LEVEL;

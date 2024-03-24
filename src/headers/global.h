@@ -35,6 +35,7 @@ const int TARGET_SLIDE_SENS = 30; // 03
 //// NO TOUCHY!
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
 const int TICK_LEN = SAMPLE_RATE / 24;
+const double SEMITONE_MULTIPLIER = 1.0595555;
 
 // flags for sequencer function
 const Uint8 APPEND_SEQ = 50;
@@ -51,6 +52,7 @@ const Uint8 COM_PITCH_UP = 3;
 const Uint8 COM_PITCH_DOWN = 4;
 const Uint8 COM_OFFSET = 5; // set sample offset
 const Uint8 COM_SLIDE = 6; // slide pitch to target note
+const Uint8 COM_ARPEGGIO = 7;
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround

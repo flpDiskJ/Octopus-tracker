@@ -54,6 +54,10 @@ private:
         unsigned int slide_pos;
         unsigned int slide_speed;
 
+        // 00 Arpeggio
+        unsigned int arp_toggle;
+        unsigned int arp_rates[3];
+
         // generic
         double amplifier; // control level. calculate: desired_level / 100.0
         double pitch_mod; // control pitch. set by commands, otherwise set to 1
@@ -160,6 +164,9 @@ public:
     int octave = 3;
     bool mute[CHANNELS]; // used to mute channel
     Channel channel[CHANNELS];
+
+    //
+
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
 
