@@ -126,7 +126,7 @@ int main(int argc, char* args[]) {
 
     AudioW aworks(&tracker, &audio_buffer);
 
-    tracker.load_inst("test_sample.wav", "Test Sample"); // used for testing only
+    tracker.load_inst("test_sample.wav", "Test Sample", 0); // used for testing only
 
     SDL_Event e;
     int xM, yM; // mouse cords

@@ -326,7 +326,7 @@ void Tracker::dec_trigger_bars()
     }
 }
 
-bool Tracker::load_inst(string path, string name)
+bool Tracker::load_inst(string path, string name, int sample_slot)
 {
     SDL_AudioSpec inputSpec;
     Uint8 *data;
@@ -340,25 +340,25 @@ bool Tracker::load_inst(string path, string name)
     if (inputSpec.format == AUDIO_S16)
     {
         SDL_LockAudio();
-        if (sample[s_pos].len != 0)
+        if (sample[sample_slot].len != 0)
         {
-            free(sample[s_pos].data);
+            free(sample[sample_slot].data);
         }
         int new_length = length / 2;
         Sint16 val;
-        sample[s_pos].data = (Sint16*)malloc(new_length*sizeof(Sint16));
-        memset(sample[s_pos].data, 0, new_length);
-        sample[s_pos].len = new_length;
-        sample[s_pos].tune = 1;
-        sample[s_pos].level = 100;
-        sample[s_pos].name.clear();
-        sample[s_pos].name += name;
+        sample[sample_slot].data = (Sint16*)malloc(new_length*sizeof(Sint16));
+        memset(sample[sample_slot].data, 0, new_length);
+        sample[sample_slot].len = new_length;
+        sample[sample_slot].tune = 1;
+        sample[sample_slot].level = 100;
+        sample[sample_slot].name.clear();
+        sample[sample_slot].name += name;
         if (inputSpec.channels == 1)
         {
             for (int x = 0, p = 0; x < length; x += 2, p++)
             {
                 val = ((data[x+1] & 0xFF) << 8) | (data[x] & 0xFF);
-                sample[s_pos].data[p] = val;
+                sample[sample_slot].data[p] = val;
             }
         } else {
             printf("Stereo not supported yet :/\n");

@@ -185,7 +185,7 @@ public:
 
     void dec_trigger_bars(); // run in main loop to decay bars
 
-    bool load_inst(string path, string name); // loads wav into instrument slot of s_pos | returns true if successful
+    bool load_inst(string path, string name, int sample_slot); // loads wav into instrument slot of s_pos | returns true if successful
 
     int getFreq(char note, char key, int oct); // returns sample rate of note
 
