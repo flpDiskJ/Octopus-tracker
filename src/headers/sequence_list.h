@@ -1,5 +1,4 @@
-#ifndef SEQ_LIST_H
-#define SEQ_LIST_H
+#pragma once
 
 #include "tracker.h"
 #include "util.h"
@@ -49,5 +48,3 @@ public:
     void keyboard(SDL_Event *e);
 
 };
-
-#endif

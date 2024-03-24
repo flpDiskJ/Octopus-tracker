@@ -1,5 +1,4 @@
-#ifndef TRACKER_H
-#define TRACKER_H
+#pragma once
 
 #include "global.h"
 
@@ -216,5 +215,3 @@ public:
 
     void keyboard(SDL_Event *e); // handles keyboard input specific to the main window
 };
-
-#endif

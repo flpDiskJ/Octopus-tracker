@@ -1,5 +1,4 @@
-#ifndef INST_PROP_H
-#define INST_PROP_H
+#pragma once
 
 #include "tracker.h"
 
@@ -37,12 +36,3 @@ public:
 
     void mouse(int x, int y);
 };
-
-
-
-
-
-
-
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 #include "tracker.h"
 
@@ -74,5 +73,3 @@ public:
     void input(SDL_Event *e); // handles keyboard input
 
 };
-
-#endif

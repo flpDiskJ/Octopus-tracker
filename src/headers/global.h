@@ -1,5 +1,4 @@
-#ifndef GLOBAL
-#define GLOBAL
+#pragma once
 
 #include <stdio.h>
 using namespace std;
@@ -80,5 +79,3 @@ struct AudioBuffer{ // global audio output buffer // passed into audio callback
     Uint32 write_pos;
     bool stop;
 };
-
-#endif
