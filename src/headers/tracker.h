@@ -48,6 +48,7 @@ private:
         ///// command bs
         Uint8 command_type;
         unsigned int command_param[3]; // 0 = first slot only, 1 = second slot only, 2 = combined value
+        Uint8 octave; // octave of current note
 
         // 03
         unsigned int slide_target;
@@ -57,6 +58,13 @@ private:
         // 00 Arpeggio
         unsigned int arp_toggle;
         unsigned int arp_rates[3];
+
+        // 04 Vibrato
+        unsigned int vib_high; // high pitch limit
+        unsigned int vib_low; // low pitch limit
+        unsigned int vib_pos;
+        bool vib_up; // slide direction toggle
+        unsigned int vib_speed;
 
         // generic
         double amplifier; // control level. calculate: desired_level / 100.0

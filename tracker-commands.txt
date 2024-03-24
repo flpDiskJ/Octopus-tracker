@@ -1,7 +1,10 @@
 XX = parameter
 
+00XX = arpeggio
 01XX = pitch up
 02XX = pitch down
+03XX = portamento
+04XX = vibrato
 
 09XX = sample offset scaled to sample size
 

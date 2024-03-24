@@ -105,6 +105,25 @@ void AudioW::tick()
                 }
                 t->channel[c].pos_adv = (double)t->channel[c].arp_rates[t->channel[c].arp_toggle] / (double)SAMPLE_RATE;
                 break;
+            case COM_VIBRATO:
+                if (t->channel[c].vib_up)
+                {
+                    if (t->channel[c].vib_pos < t->channel[c].vib_high)
+                    {
+                        t->channel[c].vib_pos += t->channel[c].vib_speed;
+                    } else {
+                        t->channel[c].vib_up = false;
+                    }
+                } else {
+                    if (t->channel[c].vib_pos > t->channel[c].vib_low)
+                    {
+                        t->channel[c].vib_pos -= t->channel[c].vib_speed;
+                    } else {
+                        t->channel[c].vib_up = true;
+                    }
+                }
+                t->channel[c].pos_adv = (double)t->channel[c].vib_pos / (double)SAMPLE_RATE;
+                break;
             default:
                 break;
         }

@@ -98,6 +98,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         mute[c] = false;
         channel[c].play = false;
         channel[c].command_type = COM_NONE;
+        channel[c].vib_up = true;
     }
     clear_block(0);
 
@@ -260,6 +261,17 @@ Uint8 Tracker::get_command(int c)
         {
             channel[c].slide_speed = channel[c].command_param[2] * TARGET_SLIDE_SENS;
         }
+    } else if (cmd == "04")
+    {
+        type = COM_VIBRATO;
+        channel[c].vib_speed = channel[c].command_param[0] * (400 * channel[c].octave);
+        channel[c].vib_high = channel[c].slide_pos; // set to original pitch
+        channel[c].vib_low = channel[c].slide_pos; // set to original pitch
+        for (int x = 0; x < channel[c].command_param[1]; x++)
+        {
+            channel[c].vib_high = (double)channel[c].vib_high * HALF_SEMITONE_MULTIPLIER;
+            channel[c].vib_low = (double)channel[c].vib_low / HALF_SEMITONE_MULTIPLIER;
+        }
     }
 
     return type;
@@ -284,9 +296,12 @@ void Tracker::note_trigger()
                 channel[c].amplifier = (double)sample[channel[c].sample].level / 100.0;
                 channel[c].pitch_mod = 1;
                 channel[c].play = true;
+                // note: slide_pos can be referenced as the original note's sample rate if the 03 command is not in use
                 channel[c].slide_pos = getFreq(block[b_pos].channel[c][pos].note,
                 block[b_pos].channel[c][pos].key,
                 block[b_pos].channel[c][pos].octave);
+                channel[c].vib_pos = channel[c].slide_pos;
+                channel[c].octave = block[b_pos].channel[c][pos].octave;
             }
         }
         channel[c].command_type = get_command(c);
