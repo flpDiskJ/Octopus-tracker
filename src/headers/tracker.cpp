@@ -50,6 +50,10 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     cursor.w = 39;
     cursor.h = 17;
 
+    default_pitch.note = 'C';
+    default_pitch.key = '-';
+    default_pitch.octave = 3;
+
     int xLoc = 60;
     for (int bar = 0; bar < CHANNELS; bar++)
     {
@@ -192,86 +196,93 @@ int Tracker::hex2dec(char hex)
 Uint8 Tracker::get_command(int c)
 {
     Uint8 type = COM_NONE;
-    string cmd = string(block[b_pos].channel[c][pos].command); // put command data into c++ string
+    int cmd = (int)strtol(block[b_pos].channel[c][pos].command, NULL, 16); // convert hex command to decimal
 
     // convert hex params to decimal
     channel[c].command_param[0] = hex2dec(block[b_pos].channel[c][pos].parameter[0]);
     channel[c].command_param[1] = hex2dec(block[b_pos].channel[c][pos].parameter[1]);
     channel[c].command_param[2] = (int)strtol(block[b_pos].channel[c][pos].parameter, NULL, 16);
 
-    if (cmd == "00")
+    switch (cmd)
     {
-        if (channel[c].command_param[0] == 0 && channel[c].command_param[1] == 0)
-        {
-            type = COM_NONE;
-            channel[c].pitch_mod = 1;
-        } else {
-            type = COM_ARPEGGIO;
-            channel[c].arp_rates[0] = channel[c].slide_pos; // original pitch
-            int arp1 = channel[c].slide_pos;
-            int arp2 = arp1;
-            for (int x = 0; x < channel[c].command_param[0]; x++)
+        case 0:
+            if (channel[c].command_param[0] == 0 && channel[c].command_param[1] == 0)
             {
-                arp1 = (double)arp1 * SEMITONE_MULTIPLIER;
+                type = COM_NONE;
+                channel[c].pitch_mod = 1;
+            } else {
+                type = COM_ARPEGGIO;
+                channel[c].arp_rates[0] = channel[c].slide_pos; // original pitch
+                int arp1 = channel[c].slide_pos;
+                int arp2 = arp1;
+                for (int x = 0; x < channel[c].command_param[0]; x++)
+                {
+                    arp1 = (double)arp1 * SEMITONE_MULTIPLIER;
+                }
+                for (int x = 0; x < channel[c].command_param[1]; x++)
+                {
+                    arp2 = (double)arp2 * SEMITONE_MULTIPLIER;
+                }
+                channel[c].arp_rates[1] = arp1;
+                channel[c].arp_rates[2] = arp2;
+                channel[c].arp_toggle = 0;
             }
+            break;
+        case 12: // 0C
+            type = COM_SET_LEVEL;
+            channel[c].amplifier = (double)channel[c].command_param[2] / 100.0;
+            break;
+        case 24: // 18
+            type = COM_SET_LEVEL;
+            channel[c].amplifier = (((double)channel[c].command_param[2] / 100.0) * (channel[c].amplifier * 100.0)) / 100.0;
+            break;
+        case 15: // 0F
+            type = COM_KILL;
+            if (channel[c].command_param[2] == 255)
+            {
+                channel[c].play = false;
+                channel[c].pos_adv = 0;
+            }
+            break;
+        case 1:
+            type = COM_PITCH_UP;
+            channel[c].pitch_mod = 1.0 + ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
+            break;
+        case 2:
+            type = COM_PITCH_DOWN;
+            channel[c].pitch_mod = 1.0 - ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
+            break;
+        case 9:
+            type = COM_OFFSET;
+            channel[c].pos = (sample[channel[c].sample].len / 255) * channel[c].command_param[2];
+            break;
+        case 25: // 19
+            type = COM_OFFSET;
+            channel[c].pos = channel[c].command_param[2] * 256;
+            break;
+        case 3:
+            type = COM_SLIDE;
+            if (channel[c].command_param[2] != 0)
+            {
+                channel[c].slide_speed = channel[c].command_param[2] * TARGET_SLIDE_SENS;
+            }
+            break;
+        case 4:
+            type = COM_VIBRATO;
+            channel[c].vib_speed = channel[c].command_param[0] * (400 * channel[c].octave);
+            channel[c].vib_high = channel[c].slide_pos; // set to original pitch
+            channel[c].vib_low = channel[c].slide_pos; // set to original pitch
             for (int x = 0; x < channel[c].command_param[1]; x++)
             {
-                arp2 = (double)arp2 * SEMITONE_MULTIPLIER;
+                channel[c].vib_high = (double)channel[c].vib_high * HALF_SEMITONE_MULTIPLIER;
+                channel[c].vib_low = (double)channel[c].vib_low / HALF_SEMITONE_MULTIPLIER;
             }
-            channel[c].arp_rates[1] = arp1;
-            channel[c].arp_rates[2] = arp2;
-            channel[c].arp_toggle = 0;
-        }
-    } else if (cmd == "0C")
-    {
-        type = COM_SET_LEVEL;
-        channel[c].amplifier = (double)channel[c].command_param[2] / 100.0;
-    } else if (cmd == "18")
-    {
-        type = COM_SET_LEVEL;
-        channel[c].amplifier = (((double)channel[c].command_param[2] / 100.0) * (channel[c].amplifier * 100.0)) / 100.0;
-    } else if (cmd == "0F")
-    {
-        type = COM_KILL;
-        if (channel[c].command_param[2] == 255)
-        {
-            channel[c].play = false;
-            channel[c].pos_adv = 0;
-        }
-    } else if (cmd == "01")
-    {
-        type = COM_PITCH_UP;
-        channel[c].pitch_mod = 1.0 + ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
-    } else if (cmd == "02")
-    {
-        type = COM_PITCH_DOWN;
-        channel[c].pitch_mod = 1.0 - ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
-    } else if (cmd == "09")
-    {
-        type = COM_OFFSET;
-        channel[c].pos = (sample[channel[c].sample].len / 255) * channel[c].command_param[2];
-    } else if (cmd == "19")
-    {
-        type = COM_OFFSET;
-        channel[c].pos = channel[c].command_param[2] * 256;
-    } else if (cmd == "03")
-    {
-        type = COM_SLIDE;
-        if (channel[c].command_param[2] != 0)
-        {
-            channel[c].slide_speed = channel[c].command_param[2] * TARGET_SLIDE_SENS;
-        }
-    } else if (cmd == "04")
-    {
-        type = COM_VIBRATO;
-        channel[c].vib_speed = channel[c].command_param[0] * (400 * channel[c].octave);
-        channel[c].vib_high = channel[c].slide_pos; // set to original pitch
-        channel[c].vib_low = channel[c].slide_pos; // set to original pitch
-        for (int x = 0; x < channel[c].command_param[1]; x++)
-        {
-            channel[c].vib_high = (double)channel[c].vib_high * HALF_SEMITONE_MULTIPLIER;
-            channel[c].vib_low = (double)channel[c].vib_low / HALF_SEMITONE_MULTIPLIER;
-        }
+            break;
+        case 5:
+            type = COM_SLIDE_FADE;
+            break;
+        default:
+            break;
     }
 
     return type;
@@ -341,6 +352,45 @@ void Tracker::dec_trigger_bars()
     }
 }
 
+void Tracker::low_pass(int sample_slot, int cutoff)
+{
+    long double x = tanf(M_PI * cutoff / sample[sample_slot].sample_rate);
+    long double output = 0;
+    Sint16 out;
+    Sint16 input;
+    for (int p = 0; p < sample[sample_slot].len; p++)
+    {
+        input = sample[sample_slot].data[p];
+        output = x * input + x * output - (x-1) * output;
+        output /= (x+1);
+        out = (Sint16)output;
+        sample[sample_slot].data[p] = out;
+    }
+}
+
+void Tracker::resample(int sample_slot, int new_rate)
+{
+    Sint16 *buffer = (Sint16*)malloc(sample[sample_slot].len*sizeof(Sint16));
+    memset(buffer, 0, sample[sample_slot].len*sizeof(Sint16));
+    low_pass(sample_slot, new_rate/2);
+    double pos_adv = (double)sample[sample_slot].sample_rate / (double)new_rate;
+    double pos = 0;
+    int actual_pos = 0;
+    int output_pos = 0;
+    while (actual_pos < sample[sample_slot].len)
+    {
+        buffer[output_pos] = sample[sample_slot].data[actual_pos];
+        output_pos++;
+        pos += pos_adv;
+        actual_pos = (int)pos;
+    }
+    sample[sample_slot].data = (Sint16*)realloc(sample[sample_slot].data, (output_pos+1)*sizeof(Sint16));
+    sample[sample_slot].len = output_pos;
+    memcpy(sample[sample_slot].data, buffer, output_pos*sizeof(Sint16));
+    sample[sample_slot].sample_rate = new_rate;
+    free(buffer);
+}
+
 bool Tracker::load_inst(string path, string name, int sample_slot)
 {
     SDL_AudioSpec inputSpec;
@@ -368,6 +418,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         sample[sample_slot].level = 100;
         sample[sample_slot].name.clear();
         sample[sample_slot].name += name;
+        sample[sample_slot].sample_rate = inputSpec.freq;
         if (inputSpec.channels == 1)
         {
             for (int x = 0, p = 0; x < length; x += 2, p++)
@@ -376,7 +427,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
                 sample[sample_slot].data[p] = val;
             }
         } else {
-            printf("Stereo not supported yet :/\n");
+            printf("Stereo not supported :/\n");
         }
         SDL_UnlockAudio();
         SDL_FreeWAV(data);
@@ -385,6 +436,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         SDL_FreeWAV(data);
         return false;
     }
+    resample(sample_slot, getFreq(default_pitch.note, default_pitch.key, default_pitch.octave));
     update_info();
     return true;
 }

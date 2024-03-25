@@ -4,6 +4,17 @@
 #include <dirent.h>
 #include <vector>
 
+/**
+NOTE FROM JAKE
+
+    Add a way for the user to change t->default_pitch (by default it is set to 'C-3')
+
+    when t->load_inst() is called it will now resample the audio to the pitch specified in default_pitch
+
+    only the note, key, and octave elemnts from default_pitch are used (check Note struct in tracker.h)
+
+**/
+
 class DiskOp {
     private:
         Tracker *t; // pointer to instance of the tracker class

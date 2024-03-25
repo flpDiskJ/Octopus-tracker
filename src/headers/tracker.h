@@ -40,6 +40,7 @@ private:
         int level; // 0-100
         double tune; // 0. - 2
         string name;
+        int sample_rate;
     };
 
     struct Channel{ // set these values when note is triggered
@@ -146,6 +147,7 @@ public:
     Note note_buffer[10]; // used to copy notes
     int total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
+    Note default_pitch; // only use note, key, and octave (default is C-3)
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
     const int seq_size_chunk = 30;
     int sequence_size = 0; // allocated size of sequence
@@ -169,7 +171,7 @@ public:
     int s_pos = 0; //sample position
     int cursor_channel = 0; // the channel that the cursor is inside
     int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
-    int octave = 3;
+    int octave = 2;
     bool mute[CHANNELS]; // used to mute channel
     Channel channel[CHANNELS];
 
@@ -192,6 +194,10 @@ public:
     void set_trigger_bar(int channel, int level); // sets trigger bar
 
     void dec_trigger_bars(); // run in main loop to decay bars
+
+    void low_pass(int sample_slot, int cutoff); // low pass filter
+
+    void resample(int sample_slot, int new_rate);
 
     bool load_inst(string path, string name, int sample_slot); // loads wav into instrument slot of s_pos | returns true if successful
 

@@ -55,6 +55,7 @@ const Uint8 COM_OFFSET = 5; // set sample offset
 const Uint8 COM_SLIDE = 6; // slide pitch to target note
 const Uint8 COM_ARPEGGIO = 7;
 const Uint8 COM_VIBRATO = 8;
+const Uint8 COM_SLIDE_FADE = 9; // 03 and 0D combined
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround
