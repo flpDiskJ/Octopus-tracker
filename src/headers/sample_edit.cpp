@@ -9,7 +9,7 @@ Sample_edit::Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p)
 
     // initialize window and renderer
     window = SDL_CreateWindow("Sample_edit", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    800, 200, SDL_WINDOW_HIDDEN);
+    800, 600, SDL_WINDOW_HIDDEN);
     if (window == NULL)
     {
         printf("Sample Editor window creation failed!\n");

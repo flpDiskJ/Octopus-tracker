@@ -372,7 +372,7 @@ void Tracker::resample(int sample_slot, int new_rate)
 {
     Sint16 *buffer = (Sint16*)malloc(sample[sample_slot].len*sizeof(Sint16));
     memset(buffer, 0, sample[sample_slot].len*sizeof(Sint16));
-    low_pass(sample_slot, new_rate/2);
+    low_pass(sample_slot, new_rate/1.5);
     double pos_adv = (double)sample[sample_slot].sample_rate / (double)new_rate;
     double pos = 0;
     int actual_pos = 0;

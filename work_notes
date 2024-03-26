@@ -5,7 +5,7 @@
 New Additions (Most recent on top):
 
     - Added resample and low pass functions.
-      Added default_pitch in tracker class
+      Added default_pitch in tracker class.
 
     - Instrument properties, disk op, and command func WIP
 
