@@ -19,6 +19,7 @@ add_executable(octopus
 	${SRC}/headers/sequence_list.cpp
 	${SRC}/headers/instrument_properties.cpp
 	${SRC}/headers/disk_op.cpp
+	${SRC}/headers/sample_edit.cpp
 )
 target_include_directories(
 	octopus PUBLIC

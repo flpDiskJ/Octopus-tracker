@@ -8,6 +8,7 @@
 #include "headers/audioworks.h"
 #include "headers/instrument_properties.h"
 #include "headers/disk_op.h"
+#include "headers/sample_edit.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
@@ -104,6 +105,8 @@ int main(int argc, char* args[]) {
 
     DiskOp disk_op(&tracker, Font, &pallet);
 
+    Sample_edit sample_editor(&tracker, Font, &pallet);
+
     AudioBuffer audio_buffer;
 
     SDL_AudioSpec mFormat;
@@ -160,6 +163,9 @@ int main(int argc, char* args[]) {
                         } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                         {
                             disk_op.close();
+                        } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            sample_editor.close();
                         } else {
                             util.open("Quit?", 0);
                         }
@@ -176,6 +182,9 @@ int main(int argc, char* args[]) {
                         } else if (disk_op.get_state() & SDL_WINDOW_SHOWN)
                         {
                             disk_op.refresh();
+                        } else if (sample_editor.get_state() & SDL_WINDOW_SHOWN)
+                        {
+                            sample_editor.refresh();
                         }
                     }
                     break;
@@ -194,6 +203,9 @@ int main(int argc, char* args[]) {
                     } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         disk_op.mouse(xM, yM);
+                    } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        sample_editor.mouse(xM, yM);
                     } else {
                         tracker.mouse(xM, yM);
                     }
@@ -275,6 +287,9 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_f)
                             {
                                 disk_op.open();
+                            } else if (e.key.keysym.sym == SDLK_e)
+                            {
+                                sample_editor.open();
                             }
                         }
                         tracker.keyboard(&e);
@@ -343,6 +358,7 @@ int main(int argc, char* args[]) {
     sequence_list.de_init();
     inst_prop.de_init();
     disk_op.de_init();
+    sample_editor.de_init();
     free(audio_buffer.data);
     SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);
