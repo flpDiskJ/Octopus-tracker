@@ -51,14 +51,15 @@ private:
         unsigned int command_param[3]; // 0 = first slot only, 1 = second slot only, 2 = combined value
         Uint8 octave; // octave of current note
 
-        // 03
-        unsigned int slide_target;
-        unsigned int slide_pos;
-        unsigned int slide_speed;
-
         // 00 Arpeggio
         unsigned int arp_toggle;
         unsigned int arp_rates[3];
+
+        // 01 02 03
+        unsigned int slide_pos; // sample rate of pitch
+        unsigned int slide_speed;
+        // 03
+        unsigned int slide_target; // target sample rate
 
         // 04 Vibrato
         unsigned int vib_high; // high pitch limit
@@ -70,9 +71,7 @@ private:
         // 0A
         bool reverse;
 
-        // generic
         double amplifier; // control level. calculate: desired_level / 100.0
-        double pitch_mod; // control pitch. set by commands, otherwise set to 1
         //////
 
         int sample; // sample to play.

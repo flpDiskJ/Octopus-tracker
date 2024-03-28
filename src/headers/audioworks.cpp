@@ -71,7 +71,6 @@ void AudioW::play_note(SDL_Event *e)
         t->channel[t->cursor_channel].sample = t->s_pos;
         t->channel[t->cursor_channel].pos_adv = (double)t->getFreq(note, key, oct) / (double)SAMPLE_RATE;
         t->channel[t->cursor_channel].amplifier = (double)t->sample[t->s_pos].level / 100.0;
-        t->channel[t->cursor_channel].pitch_mod = 1;
         t->channel[t->cursor_channel].play = true;
         t->channel[t->cursor_channel].reverse = false;
     }
@@ -84,8 +83,15 @@ void AudioW::tick()
         switch (t->channel[c].command_type)
         {
             case COM_PITCH_UP:
+                t->channel[c].slide_pos += t->channel[c].slide_speed;
+                t->channel[c].pos_adv = (double)t->channel[c].slide_pos / (double)SAMPLE_RATE;
+                break;
             case COM_PITCH_DOWN:
-                t->channel[c].pos_adv *= t->channel[c].pitch_mod;
+                if (t->channel[c].slide_pos > 0)
+                {
+                    t->channel[c].slide_pos -= t->channel[c].slide_speed;
+                }
+                t->channel[c].pos_adv = (double)t->channel[c].slide_pos / (double)SAMPLE_RATE;
                 break;
             case COM_SLIDE:
                 if (t->channel[c].slide_pos > t->channel[c].slide_target)

@@ -19,9 +19,8 @@ using namespace std;
 #define BUFF_SIZE 1024 // size of audio stream buffer. must be pow ^ 2
 
 // command tweaks
-const double PITCH_SLIDE_TUNE = 0.006; // 01 02
-const int TARGET_SLIDE_SENS = 30; // 03
-const double VOLUME_SLIDE_AMOUNT = 0.01; // bigger slides faster
+const int PITCH_SLIDE_AMOUNT = 30; // 01 & 02 & 03
+const double VOLUME_SLIDE_AMOUNT = 0.01; // 0D
 ////
 
 //// Changes will not work without modifing the code

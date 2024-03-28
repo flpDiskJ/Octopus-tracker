@@ -210,7 +210,6 @@ Uint8 Tracker::get_command(int c)
             if (channel[c].command_param[0] == 0 && channel[c].command_param[1] == 0)
             {
                 type = COM_NONE;
-                channel[c].pitch_mod = 1;
             } else {
                 type = COM_ARPEGGIO;
                 channel[c].arp_rates[0] = channel[c].slide_pos; // original pitch
@@ -247,11 +246,11 @@ Uint8 Tracker::get_command(int c)
             break;
         case 1:
             type = COM_PITCH_UP;
-            channel[c].pitch_mod = 1.0 + ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
+            channel[c].slide_speed = channel[c].command_param[2] * PITCH_SLIDE_AMOUNT;
             break;
         case 2:
             type = COM_PITCH_DOWN;
-            channel[c].pitch_mod = 1.0 - ((double)channel[c].command_param[2] * PITCH_SLIDE_TUNE);
+            channel[c].slide_speed = channel[c].command_param[2] * PITCH_SLIDE_AMOUNT;
             break;
         case 9:
             type = COM_OFFSET;
@@ -265,7 +264,7 @@ Uint8 Tracker::get_command(int c)
             type = COM_SLIDE;
             if (channel[c].command_param[2] != 0)
             {
-                channel[c].slide_speed = channel[c].command_param[2] * TARGET_SLIDE_SENS;
+                channel[c].slide_speed = channel[c].command_param[2] * PITCH_SLIDE_AMOUNT;
             }
             break;
         case 4:
@@ -308,13 +307,11 @@ void Tracker::note_trigger()
                 channel[c].slide_target = getFreq(block[b_pos].channel[c][pos].note,
                 block[b_pos].channel[c][pos].key,
                 block[b_pos].channel[c][pos].octave);
-                channel[c].pitch_mod = 1;
             } else {
                 channel[c].pos = 0;
                 channel[c].sample = block[b_pos].channel[c][pos].sample;
                 channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
                 channel[c].amplifier = (double)sample[channel[c].sample].level / 100.0;
-                channel[c].pitch_mod = 1;
                 channel[c].play = true;
                 // note: slide_pos can be referenced as the original note's sample rate if the 03 command is not in use
                 channel[c].slide_pos = getFreq(block[b_pos].channel[c][pos].note,
