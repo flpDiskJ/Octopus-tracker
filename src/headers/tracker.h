@@ -67,6 +67,9 @@ private:
         bool vib_up; // slide direction toggle
         unsigned int vib_speed;
 
+        // 0A
+        bool reverse;
+
         // generic
         double amplifier; // control level. calculate: desired_level / 100.0
         double pitch_mod; // control pitch. set by commands, otherwise set to 1

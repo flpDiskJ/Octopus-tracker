@@ -73,6 +73,7 @@ void AudioW::play_note(SDL_Event *e)
         t->channel[t->cursor_channel].amplifier = (double)t->sample[t->s_pos].level / 100.0;
         t->channel[t->cursor_channel].pitch_mod = 1;
         t->channel[t->cursor_channel].play = true;
+        t->channel[t->cursor_channel].reverse = false;
     }
 }
 
@@ -123,6 +124,21 @@ void AudioW::tick()
                     }
                 }
                 t->channel[c].pos_adv = (double)t->channel[c].vib_pos / (double)SAMPLE_RATE;
+                break;
+            case COM_LEVEL_FADE:
+                if (t->channel[c].command_param[0] > 0)
+                {
+                    if (t->channel[c].amplifier < 2.0)
+                    {
+                        t->channel[c].amplifier += (double)t->channel[c].command_param[0] * VOLUME_SLIDE_AMOUNT;
+                    }
+                } else if (t->channel[c].command_param[1] > 0)
+                {
+                    if (t->channel[c].amplifier > 0.0)
+                    {
+                        t->channel[c].amplifier -= (double)t->channel[c].command_param[1] * VOLUME_SLIDE_AMOUNT;
+                    }
+                }
                 break;
             default:
                 break;
@@ -176,11 +192,16 @@ void AudioW::audio_works() // fills audio buffer
             if (t->channel[c].play && t->mute[c] == false)
             {
                 actual_pos = (int)t->channel[c].pos;
-                if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len)
+                if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
                     temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
                     val += temp;
-                    t->channel[c].pos += t->channel[c].pos_adv;
+                    if (t->channel[c].reverse)
+                    {
+                        t->channel[c].pos -= t->channel[c].pos_adv;
+                    } else {
+                        t->channel[c].pos += t->channel[c].pos_adv;
+                    }
                     if (sig_max[c] < temp)
                     {sig_max[c] = temp;}
                 } else {

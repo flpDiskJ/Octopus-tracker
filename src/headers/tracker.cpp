@@ -103,6 +103,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         channel[c].play = false;
         channel[c].command_type = COM_NONE;
         channel[c].vib_up = true;
+        channel[c].reverse = false;
     }
     clear_block(0);
 
@@ -278,8 +279,16 @@ Uint8 Tracker::get_command(int c)
                 channel[c].vib_low = (double)channel[c].vib_low / HALF_SEMITONE_MULTIPLIER;
             }
             break;
-        case 5:
-            type = COM_SLIDE_FADE;
+        case 13: // 0D
+            type = COM_LEVEL_FADE;
+            break;
+        case 10: // 0A
+            type = COM_REVERSE;
+            channel[c].reverse = true;
+            if (channel[c].command_param[2] > 0)
+            {
+                channel[c].pos = (sample[channel[c].sample].len / 255) * channel[c].command_param[2];
+            }
             break;
         default:
             break;
@@ -313,6 +322,7 @@ void Tracker::note_trigger()
                 block[b_pos].channel[c][pos].octave);
                 channel[c].vib_pos = channel[c].slide_pos;
                 channel[c].octave = block[b_pos].channel[c][pos].octave;
+                channel[c].reverse = false;
             }
         }
         channel[c].command_type = get_command(c);

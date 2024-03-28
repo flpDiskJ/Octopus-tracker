@@ -21,6 +21,7 @@ using namespace std;
 // command tweaks
 const double PITCH_SLIDE_TUNE = 0.006; // 01 02
 const int TARGET_SLIDE_SENS = 30; // 03
+const double VOLUME_SLIDE_AMOUNT = 0.01; // bigger slides faster
 ////
 
 //// Changes will not work without modifing the code
@@ -55,7 +56,8 @@ const Uint8 COM_OFFSET = 5; // set sample offset
 const Uint8 COM_SLIDE = 6; // slide pitch to target note
 const Uint8 COM_ARPEGGIO = 7;
 const Uint8 COM_VIBRATO = 8;
-const Uint8 COM_SLIDE_FADE = 9; // 03 and 0D combined
+const Uint8 COM_LEVEL_FADE = 9; // 0D
+const Uint8 COM_REVERSE = 10; // 0A
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround

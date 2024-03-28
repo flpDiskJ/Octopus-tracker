@@ -6,11 +6,14 @@ XX = parameter
 03XX = portamento
 04XX = vibrato
 
-09XX = sample offset scaled to sample size
+09XX = sample offset (scaled to sample size)
 
-0CXX = set level
+0AXX = reverse playback with sample offset
 
-18XX = set level relative to sample level
+0CXX = set volume
+0DXX = volume slide (param 1 = increase, param 2 = decrease)
+
+18XX = set volume (relative to sample volume)
 
 19XX = sample offset (Octamed style)
 
