@@ -7,11 +7,10 @@ XX = parameter
 04XX = vibrato
 
 07XX = Tremolo
-
+08XX = Hold and Decay
 09XX = sample offset (scaled to sample size)
-
 0AXX = reverse playback with sample offset
-
+0BXX = playing sequence position jump
 0CXX = set volume
 0DXX = volume slide (param 1 = increase, param 2 = decrease)
 

@@ -272,6 +272,7 @@ int main(int argc, char* args[]) {
                     } else {
                         if (SDL_GetModState() & KMOD_CTRL) // control key press
                         {
+                            tracker.edit_mode = false;
                             if (e.key.keysym.sym == SDLK_b) // open block params
                             {
                                 util.open("Block List", 1);
@@ -291,14 +292,13 @@ int main(int argc, char* args[]) {
                             {
                                 sample_editor.open();
                             }
-                        } else {
-                            tracker.keyboard(&e);
-                            if (SDL_GetModState() & KMOD_ALT)
-                            {
-                                break;
-                            }
-                            aworks.play_note(&e);
                         }
+                        tracker.keyboard(&e);
+                        if (SDL_GetModState() & KMOD_ALT || SDL_GetModState() & KMOD_CTRL)
+                        {
+                            break;
+                        }
+                        aworks.play_note(&e);
                     }
                     break;
 

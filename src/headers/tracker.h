@@ -75,6 +75,11 @@ private:
         unsigned int trem_speed;
         bool trem_up;
 
+        // 08 hold and decay (uses trem_current to keep current volume)
+        bool hold_and_decay;
+        unsigned int hold;
+        unsigned int decay;
+
         // 0A
         bool reverse;
 
@@ -101,7 +106,6 @@ private:
     SDL_Texture *octave_display_tex;
     SDL_Texture *sample_name_tex;
     SDL_Texture *skip_display_tex;
-    bool edit_mode = false;
     SDL_Rect cursor; // used to display cursor
     int trigger_bar_decay = 0;
 
@@ -150,6 +154,7 @@ private:
 
 public:
 
+    bool edit_mode = false;
     Block block[MAXBLOCKS]; // static array of blocks
     Block block_buffer; // used to copy blocks
     Buffer channel_buffer; // used to copy channels

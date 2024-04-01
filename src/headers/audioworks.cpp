@@ -80,6 +80,18 @@ void AudioW::tick()
 {
     for (int c = 0; c < CHANNELS; c++)
     {
+        if (t->channel[c].hold_and_decay) // 08
+        {
+            if (t->channel[c].hold > 0)
+            {
+                t->channel[c].hold--;
+            } else if (t->channel[c].trem_current > t->channel[c].decay) {
+                t->channel[c].trem_current -= t->channel[c].decay;
+                t->channel[c].amplifier = (double)t->channel[c].trem_current / 100.0;
+            } else {
+                t->channel[c].play = false;
+            }
+        }
         switch (t->channel[c].command_type)
         {
             case COM_PITCH_UP:

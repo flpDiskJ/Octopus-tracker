@@ -294,6 +294,24 @@ Uint8 Tracker::get_command(int c)
             channel[c].trem_speed = channel[c].command_param[0];
             channel[c].trem_depth = 100 - ((double)channel[c].command_param[1] * 6.6);
             break;
+        case 8:
+            type = COM_HOLD_AND_DECAY;
+            channel[c].hold = channel[c].command_param[1] * 4;
+            channel[c].decay = channel[c].command_param[0];
+            channel[c].hold_and_decay = true;
+            break;
+        case 11: // 0B
+            type = COM_NONE;
+            sq_pos = channel[c].command_param[2];
+            if (sq_pos > sequence_len - 1)
+            {
+                sq_pos = sequence_len - 1;
+            }
+            b_pos = sequence[sq_pos];
+            pos = 0;
+            sequence_update = true;
+            block_update = true;
+            break;
         default:
             break;
     }
@@ -328,6 +346,7 @@ void Tracker::note_trigger()
                 channel[c].trem_start = sample[channel[c].sample].level;
                 channel[c].trem_current = channel[c].trem_start;
                 channel[c].trem_up = false;
+                channel[c].hold_and_decay = false;
             }
         }
         channel[c].command_type = get_command(c);
