@@ -146,6 +146,25 @@ void AudioW::tick()
                     }
                 }
                 break;
+            case COM_TREMOLO:
+                if (t->channel[c].trem_up)
+                {
+                    if (t->channel[c].trem_current < t->channel[c].trem_start - t->channel[c].trem_speed)
+                    {
+                        t->channel[c].trem_current += t->channel[c].trem_speed;
+                    } else {
+                        t->channel[c].trem_up = false;
+                    }
+                } else {
+                    if (t->channel[c].trem_current > t->channel[c].trem_depth + t->channel[c].trem_speed)
+                    {
+                        t->channel[c].trem_current -= t->channel[c].trem_speed;
+                    } else {
+                        t->channel[c].trem_up = true;
+                    }
+                }
+                t->channel[c].amplifier = (double)t->channel[c].trem_current / 100.0;
+                break;
             default:
                 break;
         }

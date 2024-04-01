@@ -289,6 +289,11 @@ Uint8 Tracker::get_command(int c)
                 channel[c].pos = (sample[channel[c].sample].len / 255) * channel[c].command_param[2];
             }
             break;
+        case 7:
+            type = COM_TREMOLO;
+            channel[c].trem_speed = channel[c].command_param[0];
+            channel[c].trem_depth = 100 - ((double)channel[c].command_param[1] * 6.6);
+            break;
         default:
             break;
     }
@@ -320,6 +325,9 @@ void Tracker::note_trigger()
                 channel[c].vib_pos = channel[c].slide_pos;
                 channel[c].octave = block[b_pos].channel[c][pos].octave;
                 channel[c].reverse = false;
+                channel[c].trem_start = sample[channel[c].sample].level;
+                channel[c].trem_current = channel[c].trem_start;
+                channel[c].trem_up = false;
             }
         }
         channel[c].command_type = get_command(c);
@@ -552,11 +560,16 @@ void Tracker::sequencer(Uint8 flag)
             sequence[sq_pos] = b_pos;
             break;
         case DELETE_SEQ:
-            for (int i = sq_pos; i < sequence_len-1; i++)
+            if (sequence_len > 1)
             {
-                sequence[i] = sequence[i+1];
+                for (int i = sq_pos; i < sequence_len-1; i++)
+                {
+                    sequence[i] = sequence[i+1];
+                }
+                sequence_len--;
+            } else {
+                sequence[0] = 0;
             }
-            sequence_len--;
             break;
         case INC_SEQ:
             if (sequence[sq_pos] < total_blocks-1)
@@ -689,6 +702,14 @@ void Tracker::create_block(bool insert)
     clear_block(total_blocks);
     if (insert) // copy all blocks ahead of b_pos down and clear current block
     {
+        for (int s = 0; s < sequence_len; s++)
+        {
+            if (sequence[s] >= b_pos)
+            {
+                sequence[s]++;
+            }
+        }
+        sequence_update = true;
         for (int b = total_blocks; b > b_pos; b--)
         {
             copy_block(b-1);
@@ -697,6 +718,7 @@ void Tracker::create_block(bool insert)
         clear_block(b_pos);
     }
     total_blocks++;
+    block_update = true;
 }
 
 void Tracker::delete_block(int blk)
@@ -711,11 +733,20 @@ void Tracker::delete_block(int blk)
         copy_block(b+1);
         paste_block(b);
     }
+    for (int s = 0; s < sequence_len; s++)
+    {
+        if (sequence[s] >= blk)
+        {
+            sequence[s]--;
+        }
+    }
     total_blocks--;
     if (b_pos >= total_blocks)
     {
         b_pos = total_blocks - 1;
     }
+    sequence_update = true;
+    block_update = true;
 }
 
 void Tracker::update_info()

@@ -68,6 +68,13 @@ private:
         bool vib_up; // slide direction toggle
         unsigned int vib_speed;
 
+        // 07 Tremolo
+        unsigned int trem_start; // Note: can be used to reference current volume
+        unsigned int trem_depth;
+        unsigned int trem_current;
+        unsigned int trem_speed;
+        bool trem_up;
+
         // 0A
         bool reverse;
 
@@ -176,9 +183,6 @@ public:
     int octave = 2;
     bool mute[CHANNELS]; // used to mute channel
     Channel channel[CHANNELS];
-
-    //
-
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
 

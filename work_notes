@@ -4,6 +4,8 @@
 
 New Additions (Most recent on top):
 
+    - Fixed bugs
+
     - Added resample and low pass functions.
       Added default_pitch in tracker class.
 
@@ -17,10 +19,6 @@ New Additions (Most recent on top):
       Added new playback key commands.
 
     - Re-organized global variables. Got rid of windowID and started checking window flags instead.
-
-    - Added features to sequencer window.
-
-    - Added Sequencer class (sequence_list.h)
 
 
 To do:
@@ -48,8 +46,3 @@ To do:
 
 
 Bugs:
-
-    - Sequence list doesn't update when inserting new block.
-
-    - Note triggers when using key commands.
-      Ex: CNTRL+o plays the o key's corresponding note when opening the sequence sub-window.

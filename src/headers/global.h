@@ -34,7 +34,7 @@ const double VOLUME_SLIDE_AMOUNT = 0.01; // 0D
 
 //// NO TOUCHY!
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
-const int TICK_LEN = SAMPLE_RATE / 24;
+const int TICK_LEN = SAMPLE_RATE / 32;
 const double SEMITONE_MULTIPLIER = 1.0595555;
 const double HALF_SEMITONE_MULTIPLIER = 1.02977775;
 
@@ -57,6 +57,7 @@ const Uint8 COM_ARPEGGIO = 7;
 const Uint8 COM_VIBRATO = 8;
 const Uint8 COM_LEVEL_FADE = 9; // 0D
 const Uint8 COM_REVERSE = 10; // 0A
+const Uint8 COM_TREMOLO = 11; // 07
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround

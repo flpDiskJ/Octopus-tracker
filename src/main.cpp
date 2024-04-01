@@ -291,9 +291,14 @@ int main(int argc, char* args[]) {
                             {
                                 sample_editor.open();
                             }
+                        } else {
+                            tracker.keyboard(&e);
+                            if (SDL_GetModState() & KMOD_ALT)
+                            {
+                                break;
+                            }
+                            aworks.play_note(&e);
                         }
-                        tracker.keyboard(&e);
-                        aworks.play_note(&e);
                     }
                     break;
 

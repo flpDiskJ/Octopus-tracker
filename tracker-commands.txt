@@ -6,6 +6,8 @@ XX = parameter
 03XX = portamento
 04XX = vibrato
 
+07XX = Tremolo
+
 09XX = sample offset (scaled to sample size)
 
 0AXX = reverse playback with sample offset
