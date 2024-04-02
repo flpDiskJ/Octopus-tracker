@@ -323,7 +323,7 @@ Uint8 Tracker::get_command(int c)
         case 6:
             type = COM_RETRIG;
             channel[c].retrig_freq = 0;
-            channel[c].retriggers = channel[c].command_param[2];
+            channel[c].retriggers = channel[c].command_param[2] + 1;
             if (channel[c].retriggers > 8)
             {
                 channel[c].retriggers = 8;
