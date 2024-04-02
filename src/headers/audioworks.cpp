@@ -92,7 +92,7 @@ void AudioW::tick()
                 t->channel[c].play = false;
             }
         }
-        if (t->channel[c].retriggers > 0)
+        if (t->channel[c].retriggers > 0 && t->channel[c].retrig_freq > 0)
         {
             if (t->channel[c].retrig_count >= t->channel[c].retrig_freq)
             {
@@ -238,6 +238,19 @@ void AudioW::audio_works() // fills audio buffer
         val = 0;
         for (int c = 0; c < CHANNELS; c++) // c for channel
         {
+            // retrigger
+            if (t->channel[c].retriggers > 0 && t->channel[c].retrig_freq == 0)
+            {
+                if (t->channel[c].retrig_count >= t->channel[c].total_triggers)
+                {
+                    t->channel[c].retrig_count = 0;
+                    t->channel[c].retriggers--;
+                    t->channel[c].pos = (double)t->channel[c].trigger_pos;
+                } else {
+                    t->channel[c].retrig_count++;
+                }
+            }
+
             if (t->channel[c].play && t->mute[c] == false)
             {
                 actual_pos = (int)t->channel[c].pos;
