@@ -5,7 +5,7 @@ XX = parameter
 02XX = pitch down
 03XX = portamento
 04XX = vibrato
-
+(05 delay, 06 retrigger)
 07XX = Tremolo
 08XX = Hold and Decay
 09XX = sample offset (scaled to sample size)

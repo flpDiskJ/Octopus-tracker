@@ -92,6 +92,18 @@ void AudioW::tick()
                 t->channel[c].play = false;
             }
         }
+        if (t->channel[c].retriggers > 0)
+        {
+            if (t->channel[c].retrig_count >= t->channel[c].retrig_freq)
+            {
+                t->channel[c].retrig_count = 0;
+                t->channel[c].retriggers--;
+                t->channel[c].pos = (double)t->channel[c].trigger_pos;
+                t->channel[c].amplifier -= 1.0 / (double)t->channel[c].total_triggers;
+            } else {
+                t->channel[c].retrig_count++;
+            }
+        }
         switch (t->channel[c].command_type)
         {
             case COM_PITCH_UP:

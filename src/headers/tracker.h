@@ -80,6 +80,13 @@ private:
         unsigned int hold;
         unsigned int decay;
 
+        // 05 delay
+        unsigned int trigger_pos;
+        unsigned int total_triggers;
+        unsigned int retriggers; // set to zero by default
+        unsigned int retrig_freq;
+        unsigned int retrig_count;
+
         // 0A
         bool reverse;
 

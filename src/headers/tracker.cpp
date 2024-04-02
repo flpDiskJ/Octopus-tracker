@@ -312,6 +312,14 @@ Uint8 Tracker::get_command(int c)
             sequence_update = true;
             block_update = true;
             break;
+        case 5:
+            type = COM_DELAY;
+            channel[c].retriggers = channel[c].command_param[0];
+            channel[c].retrig_freq = channel[c].command_param[1] * 2;
+            channel[c].retrig_count = 0;
+            channel[c].total_triggers = channel[c].retriggers;
+            channel[c].trigger_pos = (int)channel[c].pos;
+            break;
         default:
             break;
     }
@@ -347,6 +355,7 @@ void Tracker::note_trigger()
                 channel[c].trem_current = channel[c].trem_start;
                 channel[c].trem_up = false;
                 channel[c].hold_and_decay = false;
+                channel[c].retriggers = 0;
             }
         }
         channel[c].command_type = get_command(c);

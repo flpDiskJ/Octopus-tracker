@@ -59,6 +59,7 @@ const Uint8 COM_LEVEL_FADE = 9; // 0D
 const Uint8 COM_REVERSE = 10; // 0A
 const Uint8 COM_TREMOLO = 11; // 07
 const Uint8 COM_HOLD_AND_DECAY = 12; // 08
+const Uint8 COM_DELAY = 13; // 05
 
 struct Pallet{ // global color pallet
     SDL_Color bgd; // backround
