@@ -315,7 +315,7 @@ Uint8 Tracker::get_command(int c)
         case 5:
             type = COM_DELAY;
             channel[c].retriggers = channel[c].command_param[0];
-            channel[c].retrig_freq = channel[c].command_param[1] * 2;
+            channel[c].retrig_freq = channel[c].command_param[1];
             channel[c].retrig_count = 0;
             channel[c].total_triggers = channel[c].retriggers;
             channel[c].trigger_pos = (int)channel[c].pos;
