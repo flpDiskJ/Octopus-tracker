@@ -46,3 +46,7 @@ To do:
 
 
 Bugs:
+
+    - One of the commands is causing the following error after the program quits:
+      double free or corruption (!prev)
+      Aborted
