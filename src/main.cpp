@@ -1,4 +1,4 @@
-// Octopus Version 0.1 2023 - 2024
+// Octopus Version 0.1 2024
 // Created by Jake Aigner & Stephen Robinson & John Dunbar
 // Open source. Free to distribute. Please include original credits!
 

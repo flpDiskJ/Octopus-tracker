@@ -1,0 +1,5 @@
+This program (Octopus), and any 3rd party variation, shall remain free and open source.
+Custom/Modified versions of Octopus may be distrubuted under a different name-
+-as long as the following credits are included.
+
+~ Octopus code by Jake Aigner, Stephen Robinson, and John Dunbar 2024 ~
