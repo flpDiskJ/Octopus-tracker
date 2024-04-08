@@ -427,7 +427,7 @@ void Tracker::resample(int sample_slot, int new_rate)
 {
     Sint16 *buffer = (Sint16*)malloc(sample[sample_slot].len*sizeof(Sint16));
     memset(buffer, 0, sample[sample_slot].len*sizeof(Sint16));
-    low_pass(sample_slot, new_rate/1.5);
+    low_pass(sample_slot, new_rate/2);
     double pos_adv = (double)sample[sample_slot].sample_rate / (double)new_rate;
     double pos = 0;
     int actual_pos = 0;
@@ -479,7 +479,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
             for (int x = 0, p = 0; x < length; x += 2, p++)
             {
                 val = ((data[x+1] & 0xFF) << 8) | (data[x] & 0xFF);
-                sample[sample_slot].data[p] = val;
+                sample[sample_slot].data[p] = val / BIT_REDUCT;
             }
         } else {
             printf("Stereo not supported :/\n");

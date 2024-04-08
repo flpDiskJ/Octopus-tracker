@@ -10,7 +10,6 @@ message(h=${SDL2_TTF_LIBRARIES})
 
 set(SRC ${CMAKE_SOURCE_DIR}/src)
 
-
 add_executable(octopus
 	${SRC}/main.cpp
 	${SRC}/headers/tracker.cpp

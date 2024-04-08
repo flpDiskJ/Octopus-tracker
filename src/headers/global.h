@@ -13,30 +13,32 @@ using namespace std;
 
 //// Customable
 #define REFRESH_RATE 60
-#define AUDIO_LATENCY 6 // 2 or 4 for responsivness // 6 or 8 for less glitching
+#define AUDIO_LATENCY 2 // 2 or 4 for responsivness // 6 or 8 for less glitching
 #define AMP_LEV 2 // master level
 #define SAMPLE_RATE 48000 // output sample rate
-#define BUFF_SIZE 1024 // size of audio stream buffer. must be pow ^ 2
+#define BUFF_SIZE 1024 // size of audio stream buffer
 
 // command tweaks
 const int PITCH_SLIDE_AMOUNT = 30; // 01 & 02 & 03
 const double VOLUME_SLIDE_AMOUNT = 0.01; // 0D
 ////
 
-//// Changes will not work without modifing the code
+//// NO TOUCHY!
 #define CHANNELS 8 // number of channels
 #define DISPLAYRECTS 40 // number of rects used to display steps
 #define MAXSAMPLES 100 // max number of samples that can be used
 #define MAXBLOCKS 200 // max number of blocks that can be used
 #define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
-////
 
-//// NO TOUCHY!
+const int BIT_REDUCT = 16;
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
 const int TICK_LEN = SAMPLE_RATE / 32;
 const double SEMITONE_MULTIPLIER = 1.0595555;
 const double HALF_SEMITONE_MULTIPLIER = 1.02977775;
+const int AUDIO_PEAK = 32760;
+const int AUDIO_PEAK_LOW = -32760;
+const int SAMPLE_PEAK = AUDIO_PEAK / BIT_REDUCT;
 
 // flags for sequencer function
 const Uint8 APPEND_SEQ = 50;

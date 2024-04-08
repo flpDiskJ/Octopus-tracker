@@ -4,6 +4,8 @@
 
 New Additions (Most recent on top):
 
+    - Added waveform display to sample editor
+
     - Fixed bugs
 
     - Added resample and low pass functions.
@@ -47,6 +49,6 @@ To do:
 
 Bugs:
 
-    - One of the commands is causing the following error after the program quits:
+    - Something caused the following error after the program was quit:
       double free or corruption (!prev)
       Aborted

@@ -11,9 +11,22 @@ private:
     SDL_Surface *surf;
     TTF_Font *font; // pointer to the program font
     Pallet *pallet; // pointer to the program pallet
-    Button samplename_entry;
-    Slider transpose_sliderbox, finetune_sliderbox, volume_sliderbox;
-    Button inst_name_label, transpose_label, finetune_label, volume_label;
+    Button waveform;
+
+    struct Selector{
+        unsigned int front;
+        unsigned int back;
+    };
+
+    Selector selection; // selected area of sample
+    double wave_zoom; // number of samples to skip over when drawing waveform
+    int wave_offset; // start position offset
+    double wave_scale; // amplitude scale
+
+    void setup_new_sample(); // sets inital values for zoom and selection
+
+    void draw_wave();
+
 public:
 
     Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p);
@@ -35,4 +48,6 @@ public:
     bool checkButton(int mouseX, int mouseY, SDL_Rect *button);
 
     void mouse(int x, int y);
+
+    void keyboard(SDL_Event *e);
 };

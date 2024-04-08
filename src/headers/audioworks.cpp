@@ -264,17 +264,17 @@ void AudioW::audio_works() // fills audio buffer
                     } else {
                         t->channel[c].pos += t->channel[c].pos_adv;
                     }
-                    if (sig_max[c] < temp)
-                    {sig_max[c] = temp;}
+                    if (sig_max[c] < temp * BIT_REDUCT)
+                    {sig_max[c] = temp * BIT_REDUCT;}
                 } else {
                     t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
                 }
             }
         }
         temp = val / CHANNELS;
-        temp = temp * AMP_LEV;
-        if (temp > 32766){temp = 32766;}
-        else if (temp < -32766){temp = -32766;}
+        temp = temp * AMP_LEV * BIT_REDUCT;
+        if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
+        else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
         out = temp;
         b->data[b->write_pos] = out & 0xFF;
         b->data[b->write_pos+1] = out >> 8 & 0xFF;

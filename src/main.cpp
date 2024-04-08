@@ -263,9 +263,9 @@ int main(int argc, char* args[]) {
                     } else if (util.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         util.input(&e);
-                    } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
-                        //keyboard input needed!!!
+                        sample_editor.keyboard(&e);
                     } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         disk_op.keyboard(&e);

@@ -137,10 +137,6 @@ private:
     // (1, 0, 0) moves cursor left 1
     // (0, 1, 1) moves cursor to start of next channel and so on...
 
-    void sample_inc(); // increment sample position
-
-    void sample_dec(); // decrement sample position
-
     void decpos(); // decrement step position
 
     void clear_step(); // clears current step
@@ -226,6 +222,10 @@ public:
     void block_inc(); // increment block position
 
     void block_dec(); // decrement block position
+
+    void sample_inc(); // increment sample position
+
+    void sample_dec(); // decrement sample position
 
     void move_step(); // used by timer to run tracker
 
