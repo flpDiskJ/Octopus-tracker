@@ -26,13 +26,25 @@ Sample_edit::Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p)
     waveform.r.y = 20;
     waveform.r.w = 960;
     waveform.r.h = 200;
-
     wave_scale = (SAMPLE_PEAK * 2) / waveform.r.h;
-
     waveform.t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, waveform.r.w, waveform.r.h);;
 
+    selection_front_entry.r.x = 20;
+    selection_front_entry.r.y = 20 + waveform.r.h + 2;
+    selection_front_entry.r.w = 12 * 6;
+    selection_front_entry.r.h = 20;
+
+    selection_back_entry.r.y = 20 + waveform.r.h + 2;
+    selection_back_entry.r.w = 12 * 6;
+    selection_back_entry.r.h = 20;
+    selection_back_entry.r.x = 20 + selection_front_entry.r.w + 2;
+
+    sample_len_display.r.x = 20 + selection_back_entry.r.w + selection_front_entry.r.w + 4;
+    sample_len_display.r.y = 20 + waveform.r.h + 2;
+    sample_len_display.r.w = 12 * 6;
+    sample_len_display.r.h = 20;
+
     setup_new_sample();
-    update();
 }
 
 Sample_edit::~Sample_edit()
@@ -46,6 +58,17 @@ void Sample_edit::setup_new_sample()
     reset_selection();
     wave_offset = 0;
     draw_wave();
+
+    // set sample length display
+    if (sample_len_display.t != NULL)
+    {
+        SDL_DestroyTexture(sample_len_display.t);
+    }
+    string length = to_string(t->sample[t->s_pos].len);
+    length = blank_fill(length, 6, '0');
+    surf = TTF_RenderText_Solid(font, length.c_str(), pallet->black);
+    sample_len_display.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
 }
 
 void Sample_edit::draw_wave()
@@ -86,9 +109,9 @@ void Sample_edit::draw_wave()
             if (amp_high < 0){amp_high = 0;}
             else if (amp_high >= waveform.r.h){amp_high = waveform.r.h - 1;}
         } else {
-            amp_low = waveform.r.h / 2;
-            amp_high = waveform.r.h / 2;
-            amp = waveform.r.h / 2;
+            amp_low = 0;
+            amp_high = 0;
+            amp = 0;
         }
 
         // increment sample data postion
@@ -130,7 +153,6 @@ void Sample_edit::draw_wave()
 
     SDL_UnlockTexture(waveform.t);
     SDL_FreeFormat(fmt);
-    refresh();
 }
 
 void Sample_edit::reset_selection()
@@ -139,15 +161,34 @@ void Sample_edit::reset_selection()
     selection.back = 0;
 }
 
+void Sample_edit::get_sample_postions()
+{
+    selection.sample_front = (double)(selection.front * wave_zoom) + wave_offset;
+    selection.sample_back = (double)(selection.back * wave_zoom) + wave_offset;
+}
+
+void Sample_edit::get_positions()
+{
+    selection.front = (selection.sample_front - wave_offset) / wave_zoom;
+    selection.back = (selection.sample_back - wave_offset) / wave_zoom;
+}
+
+string Sample_edit::blank_fill(string input, int len, char fill_char)
+{
+    string out;
+    int fill = len - strlen(input.c_str());
+    for (int i = 0; i < fill; i++)
+    {
+        out += fill_char;
+    }
+    out += input;
+    return out;
+}
+
 void Sample_edit::de_init()
 {
     SDL_DestroyRenderer(render);
     SDL_DestroyWindow(window);
-}
-
-void Sample_edit::update()
-{
-    refresh();
 }
 
 void Sample_edit::refresh()
@@ -159,6 +200,11 @@ void Sample_edit::refresh()
     SDL_RenderCopy(render, waveform.t, NULL, &waveform.r);
     SDL_RenderDrawRect(render, &waveform.r);
 
+    SDL_RenderDrawRect(render, &selection_front_entry.r);
+    SDL_RenderDrawRect(render, &selection_back_entry.r);
+    SDL_RenderDrawRect(render, &sample_len_display.r);
+    SDL_RenderCopy(render, sample_len_display.t, NULL, &sample_len_display.r);
+
     SDL_RenderPresent(render); // Present image to screen
 }
 
@@ -168,7 +214,6 @@ void Sample_edit::open()
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
     setup_new_sample();
-    refresh();
 }
 
 void Sample_edit::close()
@@ -202,6 +247,7 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
                 {
                     selection.back = selection.front;
                 }
+                get_sample_postions();
                 draw_wave();
                 break;
             case SDL_BUTTON_RIGHT:
@@ -210,6 +256,7 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
                 {
                     selection.front = selection.back;
                 }
+                get_sample_postions();
                 draw_wave();
                 break;
             default:
@@ -220,23 +267,30 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
 
 void Sample_edit::mouse_wheel(SDL_Event *e)
 {
-    if(e->wheel.y > 0) // scroll up
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    if (checkButton(x, y, &waveform.r))
     {
-         if (wave_zoom < 200)
-         {
-             wave_zoom *= 1.5;
-             reset_selection();
-         }
-         draw_wave();
-    }
-    else if(e->wheel.y < 0) // scroll down
-    {
-         if (wave_zoom > 0.1)
-         {
-             wave_zoom /= 1.5;
-             reset_selection();
-         }
-         draw_wave();
+        if(e->wheel.y > 0) // scroll up
+        {
+             if (wave_zoom < 20000)
+             {
+                 wave_zoom *= 1.5;
+                 wave_offset = ((selection.sample_front+selection.sample_back)/2)-((waveform.r.w/2)*wave_zoom);
+                 get_positions();
+             }
+             draw_wave();
+        }
+        else if(e->wheel.y < 0) // scroll down
+        {
+             if (wave_zoom > 0.1)
+             {
+                 wave_zoom /= 1.5;
+                 wave_offset = ((selection.sample_front+selection.sample_back)/2)-((waveform.r.w/2)*wave_zoom);
+                 get_positions();
+             }
+             draw_wave();
+        }
     }
 }
 
@@ -250,13 +304,8 @@ void Sample_edit::keyboard(SDL_Event *e)
                 t->sample_inc();
                 setup_new_sample();
             } else {
-                if (wave_offset < t->sample[t->s_pos].len)
-                {
-                    wave_offset += wave_zoom * (double)waveform_zoom_sensitivity;
-                } else {
-                    wave_offset = t->sample[t->s_pos].len;
-                }
-                reset_selection();
+                wave_offset += wave_zoom * (double)waveform_zoom_sensitivity;
+                get_positions();
                 draw_wave();
             }
             break;
@@ -266,18 +315,12 @@ void Sample_edit::keyboard(SDL_Event *e)
                 t->sample_dec();
                 setup_new_sample();
             } else {
-                if (wave_offset > wave_zoom)
-                {
-                    wave_offset -= wave_zoom * (double)waveform_zoom_sensitivity;
-                } else {
-                    wave_offset = 0;
-                }
-                reset_selection();
+                wave_offset -= wave_zoom * (double)waveform_zoom_sensitivity;
+                get_positions();
                 draw_wave();
             }
             break;
         default:
             break;
     }
-    update();
 }

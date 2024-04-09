@@ -13,8 +13,10 @@ private:
     Pallet *pallet; // pointer to the program pallet
 
     struct Selector{
-        unsigned int front;
+        unsigned int front; // positon relative to the display rect
         unsigned int back;
+        unsigned int sample_front; // actual sample position
+        unsigned int sample_back;
     };
 
     Button waveform;
@@ -23,11 +25,21 @@ private:
     int wave_offset; // start position offset
     double wave_scale; // amplitude scale
 
+    Entry selection_front_entry;
+    Entry selection_back_entry;
+    Button sample_len_display;
+
     void setup_new_sample(); // sets inital values for zoom and selection
 
     void draw_wave();
 
     void reset_selection();
+
+    void get_sample_postions(); // calculates sample positions for selection
+
+    void get_positions(); // does the opposite of get_sample_postions()
+
+    string blank_fill(string input, int len, char fill_char); // fills string with 'fill_char' to get desired length
 
 public:
 
@@ -38,8 +50,6 @@ public:
     ~Sample_edit();
 
     void de_init();  // call before SDL_Quit in main
-
-    void update();
 
     void refresh(); // render everything to the window
 

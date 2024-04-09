@@ -78,6 +78,13 @@ struct Button{
     SDL_Texture *t;
 };
 
+struct Entry{
+    SDL_Rect r;
+    SDL_Texture *t = NULL;
+    bool active = false;
+    string text;
+};
+
 struct Slider{
     SDL_Rect slide;
     SDL_Rect pos;

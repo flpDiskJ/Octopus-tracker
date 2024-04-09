@@ -355,6 +355,10 @@ int main(int argc, char* args[]) {
             {
                 inst_prop.mouse(xM, yM);
             }
+            if (sample_editor.get_state() & SDL_WINDOW_SHOWN)
+            {
+                sample_editor.refresh();
+            }
         }
 
         if (audio_buffer.read_pos != audio_buffer.write_pos)
