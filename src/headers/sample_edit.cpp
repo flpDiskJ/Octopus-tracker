@@ -30,17 +30,17 @@ Sample_edit::Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p)
     waveform.t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, waveform.r.w, waveform.r.h);;
 
     selection_front_entry.r.x = 20;
-    selection_front_entry.r.y = 20 + waveform.r.h + 2;
+    selection_front_entry.r.y = 20 + waveform.r.h + 4;
     selection_front_entry.r.w = 12 * 6;
     selection_front_entry.r.h = 20;
 
-    selection_back_entry.r.y = 20 + waveform.r.h + 2;
+    selection_back_entry.r.y = 20 + waveform.r.h + 4;
     selection_back_entry.r.w = 12 * 6;
     selection_back_entry.r.h = 20;
-    selection_back_entry.r.x = 20 + selection_front_entry.r.w + 2;
+    selection_back_entry.r.x = 20 + selection_front_entry.r.w + 8;
 
-    sample_len_display.r.x = 20 + selection_back_entry.r.w + selection_front_entry.r.w + 4;
-    sample_len_display.r.y = 20 + waveform.r.h + 2;
+    sample_len_display.r.x = 20 + selection_back_entry.r.w + selection_front_entry.r.w + 16;
+    sample_len_display.r.y = 20 + waveform.r.h + 4;
     sample_len_display.r.w = 12 * 6;
     sample_len_display.r.h = 20;
 
@@ -55,7 +55,8 @@ Sample_edit::~Sample_edit()
 void Sample_edit::setup_new_sample()
 {
     wave_zoom = (double)t->sample[t->s_pos].len / (double)waveform.r.w;
-    reset_selection();
+    selection.front = 0;
+    selection.back = 0;
     wave_offset = 0;
     draw_wave();
 
@@ -69,6 +70,7 @@ void Sample_edit::setup_new_sample()
     surf = TTF_RenderText_Solid(font, length.c_str(), pallet->black);
     sample_len_display.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+    get_sample_postions();
 }
 
 void Sample_edit::draw_wave()
@@ -128,7 +130,7 @@ void Sample_edit::draw_wave()
                 {
                     ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.r, pallet->black.g, pallet->black.b);
                 } else {
-                    if (x >= selection.front && x <= selection.back)
+                    if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
                     {
                         ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.r, pallet->white.g, pallet->white.b);
                     } else {
@@ -140,7 +142,7 @@ void Sample_edit::draw_wave()
                 {
                     ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.r, pallet->black.g, pallet->black.b);
                 } else {
-                    if (x >= selection.front && x <= selection.back)
+                    if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
                     {
                         ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.r, pallet->white.g, pallet->white.b);
                     } else {
@@ -155,16 +157,43 @@ void Sample_edit::draw_wave()
     SDL_FreeFormat(fmt);
 }
 
-void Sample_edit::reset_selection()
-{
-    selection.front = 0;
-    selection.back = 0;
-}
-
 void Sample_edit::get_sample_postions()
 {
     selection.sample_front = (double)(selection.front * wave_zoom) + wave_offset;
     selection.sample_back = (double)(selection.back * wave_zoom) + wave_offset;
+
+    if (selection.sample_front > t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len;
+        get_positions();
+    }
+    if (selection.sample_back > t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len;
+        get_positions();
+    }
+
+    if (selection_front_entry.t != NULL)
+    {
+        SDL_DestroyTexture(selection_front_entry.t);
+    }
+
+    if (selection_back_entry.t != NULL)
+    {
+        SDL_DestroyTexture(selection_back_entry.t);
+    }
+
+    string data = to_string(selection.sample_front);
+    data = blank_fill(data, 6, '0');
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    data = to_string(selection.sample_back);
+    data = blank_fill(data, 6, '0');
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
 }
 
 void Sample_edit::get_positions()
@@ -183,6 +212,17 @@ string Sample_edit::blank_fill(string input, int len, char fill_char)
     }
     out += input;
     return out;
+}
+
+void Sample_edit::bound_offset()
+{
+    if (wave_offset < 0)
+    {
+        wave_offset = 0;
+    } else if (wave_offset >= t->sample[t->s_pos].len)
+    {
+        wave_offset = t->sample[t->s_pos].len - 1;
+    }
 }
 
 void Sample_edit::de_init()
@@ -204,6 +244,8 @@ void Sample_edit::refresh()
     SDL_RenderDrawRect(render, &selection_back_entry.r);
     SDL_RenderDrawRect(render, &sample_len_display.r);
     SDL_RenderCopy(render, sample_len_display.t, NULL, &sample_len_display.r);
+    SDL_RenderCopy(render, selection_front_entry.t, NULL, &selection_front_entry.r);
+    SDL_RenderCopy(render, selection_back_entry.t, NULL, &selection_back_entry.r);
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -259,6 +301,12 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
                 get_sample_postions();
                 draw_wave();
                 break;
+            case SDL_BUTTON_MIDDLE:
+                selection.front = x - waveform.r.x;
+                selection.back = x - waveform.r.x;
+                get_sample_postions();
+                draw_wave();
+                break;
             default:
                 break;
         }
@@ -271,22 +319,24 @@ void Sample_edit::mouse_wheel(SDL_Event *e)
     SDL_GetMouseState(&x, &y);
     if (checkButton(x, y, &waveform.r))
     {
-        if(e->wheel.y > 0) // scroll up
+        if(e->wheel.y < 0) // scroll down
         {
-             if (wave_zoom < 20000)
+             if (wave_zoom < t->sample[t->s_pos].len / waveform.r.w)
              {
                  wave_zoom *= 1.5;
                  wave_offset = ((selection.sample_front+selection.sample_back)/2)-((waveform.r.w/2)*wave_zoom);
+                 bound_offset();
                  get_positions();
              }
              draw_wave();
         }
-        else if(e->wheel.y < 0) // scroll down
+        else if(e->wheel.y > 0) // scroll up
         {
              if (wave_zoom > 0.1)
              {
                  wave_zoom /= 1.5;
                  wave_offset = ((selection.sample_front+selection.sample_back)/2)-((waveform.r.w/2)*wave_zoom);
+                 bound_offset();
                  get_positions();
              }
              draw_wave();
@@ -305,6 +355,7 @@ void Sample_edit::keyboard(SDL_Event *e)
                 setup_new_sample();
             } else {
                 wave_offset += wave_zoom * (double)waveform_zoom_sensitivity;
+                bound_offset();
                 get_positions();
                 draw_wave();
             }
@@ -316,6 +367,7 @@ void Sample_edit::keyboard(SDL_Event *e)
                 setup_new_sample();
             } else {
                 wave_offset -= wave_zoom * (double)waveform_zoom_sensitivity;
+                bound_offset();
                 get_positions();
                 draw_wave();
             }

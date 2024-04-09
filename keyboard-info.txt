@@ -64,5 +64,5 @@ Sequence Sub-window:
 Sample Editor Sub-window:
     LEFT/RIGHT = move waveform
     MOUSE SCROLL = zoom waveform
-    LEFT/RIGHT MOUSE BUTTONS = set waveform selection
+    LEFT/RIGHT/MIDDLE MOUSE BUTTONS = set waveform selection
     SHIFT+LEFT/RIGHT = change sample/instrument

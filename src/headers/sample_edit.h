@@ -33,13 +33,13 @@ private:
 
     void draw_wave();
 
-    void reset_selection();
-
     void get_sample_postions(); // calculates sample positions for selection
 
     void get_positions(); // does the opposite of get_sample_postions()
 
     string blank_fill(string input, int len, char fill_char); // fills string with 'fill_char' to get desired length
+
+    void bound_offset(); // ensures wave_offset is within bounds
 
 public:
 
