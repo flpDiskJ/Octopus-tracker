@@ -50,6 +50,7 @@ int main(int argc, char* args[]) {
     pallet.red = {200, 0, 0};
     pallet.blue = {0, 0, 180};
     pallet.green = {0, 100, 0};
+    pallet.white = {255, 255, 255};
 
     TTF_Font* Font = NULL;
 
@@ -189,6 +190,13 @@ int main(int argc, char* args[]) {
                     }
                     break;
 
+                case SDL_MOUSEWHEEL:
+                    if (sample_editor.get_state() & SDL_WINDOW_SHOWN)
+                    {
+                        sample_editor.mouse_wheel(&e);
+                    }
+                    break;
+
                 case SDL_MOUSEBUTTONDOWN:
                     SDL_GetMouseState(&xM, &yM);
                     if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
@@ -205,7 +213,7 @@ int main(int argc, char* args[]) {
                         disk_op.mouse(xM, yM);
                     } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
-                        sample_editor.mouse(xM, yM);
+                        sample_editor.mouse(xM, yM, &e);
                     } else {
                         tracker.mouse(xM, yM);
                     }

@@ -43,8 +43,7 @@ Sample_edit::~Sample_edit()
 void Sample_edit::setup_new_sample()
 {
     wave_zoom = (double)t->sample[t->s_pos].len / (double)waveform.r.w;
-    selection.front = 0;
-    selection.back = 0;
+    reset_selection();
     wave_offset = 0;
     draw_wave();
 }
@@ -67,28 +66,25 @@ void Sample_edit::draw_wave()
         // keep position within sample bounds
         if (actual_pos < t->sample[t->s_pos].len && actual_pos >= 0 && previous_pos >= 0 && previous_pos < t->sample[t->s_pos].len)
         {
-            if (actual_pos - previous_pos > 0)
+            amp_low = amp_high = 0;
+            for (int skim = previous_pos; skim < actual_pos; skim++) // find max value in sample range
             {
-                amp_low = amp_high = 0;
-                for (int skim = previous_pos; skim < actual_pos; skim++) // find max value in sample range
+                if (amp_high < t->sample[t->s_pos].data[skim])
                 {
-                    if (amp_high < t->sample[t->s_pos].data[skim])
-                    {
-                        amp_high = t->sample[t->s_pos].data[skim];
-                    }
-                    if (amp_low > t->sample[t->s_pos].data[skim])
-                    {
-                        amp_low = t->sample[t->s_pos].data[skim];
-                    }
+                    amp_high = t->sample[t->s_pos].data[skim];
                 }
-                amp = ((double)(t->sample[t->s_pos].data[actual_pos] + SAMPLE_PEAK)) / wave_scale;
-                amp_low = ((double)(amp_low + SAMPLE_PEAK)) / wave_scale;
-                amp_high = ((double)(amp_high + SAMPLE_PEAK)) / wave_scale;
-                if (amp_low < 0){amp_low = 0;}
-                else if (amp_low >= waveform.r.h){amp_low = waveform.r.h - 1;}
-                if (amp_high < 0){amp_high = 0;}
-                else if (amp_high >= waveform.r.h){amp_high = waveform.r.h - 1;}
+                if (amp_low > t->sample[t->s_pos].data[skim])
+                {
+                    amp_low = t->sample[t->s_pos].data[skim];
+                }
             }
+            amp = ((double)(t->sample[t->s_pos].data[actual_pos] + SAMPLE_PEAK)) / wave_scale;
+            amp_low = ((double)(amp_low + SAMPLE_PEAK)) / wave_scale;
+            amp_high = ((double)(amp_high + SAMPLE_PEAK)) / wave_scale;
+            if (amp_low < 0){amp_low = 0;}
+            else if (amp_low >= waveform.r.h){amp_low = waveform.r.h - 1;}
+            if (amp_high < 0){amp_high = 0;}
+            else if (amp_high >= waveform.r.h){amp_high = waveform.r.h - 1;}
         } else {
             amp_low = waveform.r.h / 2;
             amp_high = waveform.r.h / 2;
@@ -109,14 +105,24 @@ void Sample_edit::draw_wave()
                 {
                     ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.r, pallet->black.g, pallet->black.b);
                 } else {
-                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b);
+                    if (x >= selection.front && x <= selection.back)
+                    {
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.r, pallet->white.g, pallet->white.b);
+                    } else {
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b);
+                    }
                 }
             } else {
                 if (y >= amp_low && y <= amp_high)
                 {
                     ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.r, pallet->black.g, pallet->black.b);
                 } else {
-                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b);
+                    if (x >= selection.front && x <= selection.back)
+                    {
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.r, pallet->white.g, pallet->white.b);
+                    } else {
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b);
+                    }
                 }
             }
         }
@@ -125,6 +131,12 @@ void Sample_edit::draw_wave()
     SDL_UnlockTexture(waveform.t);
     SDL_FreeFormat(fmt);
     refresh();
+}
+
+void Sample_edit::reset_selection()
+{
+    selection.front = 0;
+    selection.back = 0;
 }
 
 void Sample_edit::de_init()
@@ -178,10 +190,54 @@ bool Sample_edit::checkButton(int mouseX, int mouseY, SDL_Rect *button)
     return false;
 }
 
-void Sample_edit::mouse(int x, int y)
+void Sample_edit::mouse(int x, int y, SDL_Event *e)
 {
+    if (checkButton(x, y, &waveform.r))
+    {
+        switch (e->button.button)
+        {
+            case SDL_BUTTON_LEFT:
+                selection.front = x - waveform.r.x;
+                if (selection.back < selection.front)
+                {
+                    selection.back = selection.front;
+                }
+                draw_wave();
+                break;
+            case SDL_BUTTON_RIGHT:
+                selection.back = x - waveform.r.x;
+                if (selection.front > selection.back)
+                {
+                    selection.front = selection.back;
+                }
+                draw_wave();
+                break;
+            default:
+                break;
+        }
+    }
+}
 
-    update();
+void Sample_edit::mouse_wheel(SDL_Event *e)
+{
+    if(e->wheel.y > 0) // scroll up
+    {
+         if (wave_zoom < 200)
+         {
+             wave_zoom *= 1.5;
+             reset_selection();
+         }
+         draw_wave();
+    }
+    else if(e->wheel.y < 0) // scroll down
+    {
+         if (wave_zoom > 0.1)
+         {
+             wave_zoom /= 1.5;
+             reset_selection();
+         }
+         draw_wave();
+    }
 }
 
 void Sample_edit::keyboard(SDL_Event *e)
@@ -193,6 +249,15 @@ void Sample_edit::keyboard(SDL_Event *e)
             {
                 t->sample_inc();
                 setup_new_sample();
+            } else {
+                if (wave_offset < t->sample[t->s_pos].len)
+                {
+                    wave_offset += wave_zoom * (double)waveform_zoom_sensitivity;
+                } else {
+                    wave_offset = t->sample[t->s_pos].len;
+                }
+                reset_selection();
+                draw_wave();
             }
             break;
         case SDLK_LEFT:
@@ -200,6 +265,15 @@ void Sample_edit::keyboard(SDL_Event *e)
             {
                 t->sample_dec();
                 setup_new_sample();
+            } else {
+                if (wave_offset > wave_zoom)
+                {
+                    wave_offset -= wave_zoom * (double)waveform_zoom_sensitivity;
+                } else {
+                    wave_offset = 0;
+                }
+                reset_selection();
+                draw_wave();
             }
             break;
         default:

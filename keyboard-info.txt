@@ -60,3 +60,9 @@ Sequence Sub-window:
     LEFT/RIGHT = change block number in sequence element (only effects selected element)
     SHIFT+UP/DOWN = change block
     CNTRL+B = open block list sub-window
+
+Sample Editor Sub-window:
+    LEFT/RIGHT = move waveform
+    MOUSE SCROLL = zoom waveform
+    LEFT/RIGHT MOUSE BUTTONS = set waveform selection
+    SHIFT+LEFT/RIGHT = change sample/instrument

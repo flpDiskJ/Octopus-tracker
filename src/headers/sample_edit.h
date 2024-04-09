@@ -11,13 +11,13 @@ private:
     SDL_Surface *surf;
     TTF_Font *font; // pointer to the program font
     Pallet *pallet; // pointer to the program pallet
-    Button waveform;
 
     struct Selector{
         unsigned int front;
         unsigned int back;
     };
 
+    Button waveform;
     Selector selection; // selected area of sample
     double wave_zoom; // number of samples to skip over when drawing waveform
     int wave_offset; // start position offset
@@ -27,7 +27,11 @@ private:
 
     void draw_wave();
 
+    void reset_selection();
+
 public:
+
+    int waveform_zoom_sensitivity = 25;
 
     Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p);
 
@@ -47,7 +51,9 @@ public:
 
     bool checkButton(int mouseX, int mouseY, SDL_Rect *button);
 
-    void mouse(int x, int y);
+    void mouse(int x, int y, SDL_Event *e);
+
+    void mouse_wheel(SDL_Event *e);
 
     void keyboard(SDL_Event *e);
 };
