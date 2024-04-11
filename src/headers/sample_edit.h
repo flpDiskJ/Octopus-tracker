@@ -1,10 +1,12 @@
 #pragma once
 
 #include "tracker.h"
+#include "audioworks.h"
 
 class Sample_edit{
 
 private:
+    AudioW *audioworks;
     Tracker *t;
     SDL_Window *window = NULL;
     SDL_Renderer *render = NULL;
@@ -45,7 +47,7 @@ public:
 
     int waveform_zoom_sensitivity = 25;
 
-    Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p);
+    Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p);
 
     ~Sample_edit();
 

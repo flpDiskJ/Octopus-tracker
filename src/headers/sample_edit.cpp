@@ -1,8 +1,9 @@
 #include "sample_edit.h"
 
-Sample_edit::Sample_edit(Tracker *tracker, TTF_Font *f, Pallet *p)
+Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p)
 {
     // get pointers from main func
+    audioworks = audio;
     t = tracker;
     font = f;
     pallet = p;
@@ -128,25 +129,29 @@ void Sample_edit::draw_wave()
             {
                 if (y == amp)
                 {
-                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.r, pallet->black.g, pallet->black.b);
+                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.b, pallet->black.g, pallet->black.r);
+                } else if (y == 101) {
+                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->red.b, pallet->red.g, pallet->red.r);
                 } else {
                     if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
                     {
-                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.r, pallet->white.g, pallet->white.b);
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.b, pallet->white.g, pallet->white.r);
                     } else {
-                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b);
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r);
                     }
                 }
             } else {
                 if (y >= amp_low && y <= amp_high)
                 {
-                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.r, pallet->black.g, pallet->black.b);
+                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->black.b, pallet->black.g, pallet->black.r);
+                } else if (y == 101) {
+                    ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->red.b, pallet->red.g, pallet->red.r);
                 } else {
                     if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
                     {
-                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.r, pallet->white.g, pallet->white.b);
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.b, pallet->white.g, pallet->white.r);
                     } else {
-                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b);
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r);
                     }
                 }
             }
@@ -233,9 +238,9 @@ void Sample_edit::de_init()
 
 void Sample_edit::refresh()
 {
-    SDL_SetRenderDrawColor(render, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b, 0xFF); // Background color
+    SDL_SetRenderDrawColor(render, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r, 0xFF); // Background color
     SDL_RenderClear(render);
-    SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
+    SDL_SetRenderDrawColor(render, pallet->black.b, pallet->black.g, pallet->black.r, 0xFF); // Black
 
     SDL_RenderCopy(render, waveform.t, NULL, &waveform.r);
     SDL_RenderDrawRect(render, &waveform.r);
@@ -246,6 +251,17 @@ void Sample_edit::refresh()
     SDL_RenderCopy(render, sample_len_display.t, NULL, &sample_len_display.r);
     SDL_RenderCopy(render, selection_front_entry.t, NULL, &selection_front_entry.r);
     SDL_RenderCopy(render, selection_back_entry.t, NULL, &selection_back_entry.r);
+
+    if (t->channel[0].play)
+    {
+        SDL_SetRenderDrawColor(render, pallet->green.b, pallet->green.g, pallet->green.r, 0xFF);
+        int pos = (int)t->channel[0].pos;
+        if (pos > wave_offset && pos < wave_offset + (waveform.r.w * wave_zoom))
+        {
+            int x = waveform.r.x + ((pos - wave_offset) / wave_zoom);
+            SDL_RenderDrawLine(render, x, waveform.r.y + 1, x, waveform.r.y + waveform.r.h - 2);
+        }
+    }
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -373,6 +389,10 @@ void Sample_edit::keyboard(SDL_Event *e)
             }
             break;
         default:
+            if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+            {
+                audioworks->play_sample(e, t->s_pos);
+            }
             break;
     }
 }

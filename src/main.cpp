@@ -106,8 +106,6 @@ int main(int argc, char* args[]) {
 
     DiskOp disk_op(&tracker, Font, &pallet);
 
-    Sample_edit sample_editor(&tracker, Font, &pallet);
-
     AudioBuffer audio_buffer;
 
     SDL_AudioSpec mFormat;
@@ -129,6 +127,8 @@ int main(int argc, char* args[]) {
     SDL_PauseAudio(0);
 
     AudioW aworks(&tracker, &audio_buffer);
+
+    Sample_edit sample_editor(&aworks, &tracker, Font, &pallet);
 
     tracker.load_inst("test_sample.wav", "Test Sample", 0); // used for testing only
 
