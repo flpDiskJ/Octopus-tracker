@@ -15,8 +15,6 @@ private:
     Pallet *pallet; // pointer to the program pallet
 
     struct Selector{
-        unsigned int front; // positon relative to the display rect
-        unsigned int back;
         unsigned long int sample_front; // actual sample position
         unsigned long int sample_back;
     };
@@ -39,8 +37,6 @@ private:
     void draw_wave();
 
     void get_sample_postions(int x, bool front); // calculates sample positions for selection
-
-    void get_positions(); // does the opposite of get_sample_postions()
 
     string blank_fill(string input, int len, char fill_char); // fills string with 'fill_char' to get desired length
 
