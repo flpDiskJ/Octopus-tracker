@@ -67,6 +67,15 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
 
     zoom_offset = 0;
 
+    range_all.r.w = 14 * 9;
+    range_all.r.h = 20;
+    range_all.r.x = zoom_to_end.r.x + zoom_to_end.r.w + 8;
+    range_all.r.y = zoom_to_end.r.y;
+
+    surf = TTF_RenderText_Solid(font, "Range All", pallet->black);
+    range_all.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     setup_new_sample();
 }
 
@@ -79,6 +88,7 @@ void Sample_edit::setup_new_sample()
 {
     wave_zoom = (double)t->sample[t->s_pos].len / (double)waveform.r.w;
     wave_offset = 0;
+    select_all();
     draw_wave();
 
     // set sample length display
@@ -91,8 +101,26 @@ void Sample_edit::setup_new_sample()
     surf = TTF_RenderText_Solid(font, length.c_str(), pallet->black);
     sample_len_display.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
-    get_sample_postions(0, true);
-    get_sample_postions(0, false);
+
+    if (selection_front_entry.t != NULL)
+    {
+        SDL_DestroyTexture(selection_front_entry.t);
+    }
+    string data = to_string(selection.sample_front);
+    data = blank_fill(data, 6, '0');
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    if (selection_back_entry.t != NULL)
+    {
+        SDL_DestroyTexture(selection_back_entry.t);
+    }
+    data = to_string(selection.sample_back);
+    data = blank_fill(data, 6, '0');
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
 }
 
 void Sample_edit::draw_wave()
@@ -186,7 +214,6 @@ void Sample_edit::draw_wave()
 void Sample_edit::get_sample_postions(int x, bool front)
 {
     x = x - waveform.r.x;
-    string data;
     if (front)
     {
         selection.sample_front = ((double)x * wave_zoom) + wave_offset;
@@ -194,17 +221,6 @@ void Sample_edit::get_sample_postions(int x, bool front)
         {
             selection.sample_front = t->sample[t->s_pos].len;
         }
-
-        if (selection_front_entry.t != NULL)
-        {
-            SDL_DestroyTexture(selection_front_entry.t);
-        }
-        data = to_string(selection.sample_front);
-        data = blank_fill(data, 6, '0');
-        surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
-        selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
-        SDL_FreeSurface(surf);
-
     } else {
 
         selection.sample_back = ((double)x * wave_zoom) + wave_offset;
@@ -212,18 +228,8 @@ void Sample_edit::get_sample_postions(int x, bool front)
         {
             selection.sample_back = t->sample[t->s_pos].len;
         }
-
-        if (selection_back_entry.t != NULL)
-        {
-            SDL_DestroyTexture(selection_back_entry.t);
-        }
-        data = to_string(selection.sample_back);
-        data = blank_fill(data, 6, '0');
-        surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
-        selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
-        SDL_FreeSurface(surf);
-
     }
+    update_selection_index();
 }
 
 string Sample_edit::blank_fill(string input, int len, char fill_char)
@@ -259,6 +265,50 @@ void Sample_edit::get_zoom_offset()
     }
 }
 
+void Sample_edit::select_all()
+{
+    selection.sample_front = 0;
+    selection.sample_back = t->sample[t->s_pos].len - 1;
+}
+
+void Sample_edit::render_struct(SDL_Renderer *r, Button *b, Entry *e)
+{
+    if (b != NULL)
+    {
+        SDL_RenderDrawRect(r, &b->r);
+        SDL_RenderCopy(r, b->t, NULL, &b->r);
+    }
+    if (e != NULL)
+    {
+        SDL_RenderDrawRect(r, &e->r);
+        SDL_RenderCopy(r, e->t, NULL, &e->r);
+    }
+}
+
+void Sample_edit::update_selection_index()
+{
+    string data;
+    if (selection_front_entry.t != NULL)
+    {
+        SDL_DestroyTexture(selection_front_entry.t);
+    }
+    data = to_string(selection.sample_front);
+    data = blank_fill(data, 6, '0');
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    if (selection_back_entry.t != NULL)
+    {
+        SDL_DestroyTexture(selection_back_entry.t);
+    }
+    data = to_string(selection.sample_back);
+    data = blank_fill(data, 6, '0');
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+}
+
 void Sample_edit::de_init()
 {
     SDL_DestroyRenderer(render);
@@ -274,12 +324,9 @@ void Sample_edit::refresh()
     SDL_RenderCopy(render, waveform.t, NULL, &waveform.r);
     SDL_RenderDrawRect(render, &waveform.r);
 
-    SDL_RenderDrawRect(render, &selection_front_entry.r);
-    SDL_RenderDrawRect(render, &selection_back_entry.r);
-    SDL_RenderDrawRect(render, &sample_len_display.r);
-    SDL_RenderCopy(render, sample_len_display.t, NULL, &sample_len_display.r);
-    SDL_RenderCopy(render, selection_front_entry.t, NULL, &selection_front_entry.r);
-    SDL_RenderCopy(render, selection_back_entry.t, NULL, &selection_back_entry.r);
+    render_struct(render, NULL, &selection_front_entry);
+    render_struct(render, NULL, &selection_back_entry);
+    render_struct(render, &sample_len_display, NULL);
 
     if (zoom_to_start.active)
     {
@@ -295,6 +342,8 @@ void Sample_edit::refresh()
     }
     SDL_RenderCopy(render, zoom_to_start.t, NULL, &zoom_to_start.r);
     SDL_RenderCopy(render, zoom_to_end.t, NULL, &zoom_to_end.r);
+
+    render_struct(render, &range_all, NULL);
 
     if (t->channel[0].play)
     {
@@ -355,8 +404,12 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         wave_offset = zoom_offset-((waveform.r.w/2)*wave_zoom);
         bound_offset();
         draw_wave();
-    }
-    else if (checkButton(x, y, &waveform.r))
+    } else if (checkButton(x, y, &range_all.r))
+    {
+        select_all();
+        draw_wave();
+        update_selection_index();
+    } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
         {

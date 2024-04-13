@@ -19,6 +19,8 @@ private:
 
     void update_instname();
 
+    string blank_fill(string input, int len, char fill_char);
+
 public:
 
     Instrument_properties(Tracker *tracker, AudioW *a, TTF_Font *f, Pallet *p);

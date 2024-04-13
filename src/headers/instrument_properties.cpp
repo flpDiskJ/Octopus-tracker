@@ -25,13 +25,13 @@ Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Fo
 
     samplename_entry.r.x = 250;
     samplename_entry.r.y = 20;
-    samplename_entry.r.w = 224;
+    samplename_entry.r.w = 15 * 18;
     samplename_entry.r.h = 30;
 
     inst_name_label.r.x = 20;
-    inst_name_label.r.y = 20;
-    inst_name_label.r.w = 224;
-    inst_name_label.r.h = 30;
+    inst_name_label.r.y = 21;
+    inst_name_label.r.w = 16 * 15;
+    inst_name_label.r.h = 28;
 
     transpose_label.r.x = 243;
     transpose_label.r.y = 60;
@@ -94,7 +94,12 @@ void Instrument_properties::update_instname()
     {
         SDL_DestroyTexture(samplename_entry.t);
     }
-    surf = TTF_RenderText_Solid(font, t->sample[t->s_pos].name.c_str(), pallet->black);
+    string temp = t->sample[t->s_pos].name;
+    for (int f = strlen(temp.c_str()); f < 15; f++)
+    {
+        temp += ' ';
+    }
+    surf = TTF_RenderText_Solid(font, temp.c_str(), pallet->black);
     samplename_entry.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
@@ -102,12 +107,26 @@ void Instrument_properties::update_instname()
     {
         SDL_DestroyTexture(inst_name_label.t);
     }
-    string samplenumber = to_string(t->s_pos);
-    surf = TTF_RenderText_Solid(font, samplenumber.c_str(), pallet->black);
+    temp = "Instrument ";
+    temp += blank_fill(to_string(t->s_pos), 2, ' ');
+    temp += ": ";
+    surf = TTF_RenderText_Solid(font, temp.c_str(), pallet->black);
     inst_name_label.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
     refresh();
+}
+
+string Instrument_properties::blank_fill(string input, int len, char fill_char)
+{
+    string out;
+    int fill = len - strlen(input.c_str());
+    for (int i = 0; i < fill; i++)
+    {
+        out += fill_char;
+    }
+    out += input;
+    return out;
 }
 
 void Instrument_properties::de_init()

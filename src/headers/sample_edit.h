@@ -29,8 +29,8 @@ private:
     Entry selection_front_entry;
     Entry selection_back_entry;
     Button sample_len_display;
-
     Entry zoom_to_start, zoom_to_end;
+    Button range_all;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -43,6 +43,12 @@ private:
     void bound_offset(); // ensures wave_offset is within bounds
 
     void get_zoom_offset(); // call after changing selection or zoom type
+
+    void select_all(); // selects entire sample
+
+    void render_struct(SDL_Renderer *r, Button *b, Entry *e); // renders button and/or entry
+
+    void update_selection_index();
 
 public:
 
