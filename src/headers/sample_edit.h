@@ -17,15 +17,15 @@ private:
     struct Selector{
         unsigned int front; // positon relative to the display rect
         unsigned int back;
-        unsigned int sample_front; // actual sample position
-        unsigned int sample_back;
+        unsigned long int sample_front; // actual sample position
+        unsigned long int sample_back;
     };
 
     Button waveform;
     Selector selection; // selected area of sample
     double wave_zoom; // number of samples to skip over when drawing waveform
-    int zoom_offset; // used to calculate offset based on zoom to start/end
-    int wave_offset; // start position offset
+    long int zoom_offset; // used to calculate offset based on zoom to start/end
+    long int wave_offset; // start position offset
     double wave_scale; // amplitude scale
 
     Entry selection_front_entry;
@@ -38,7 +38,7 @@ private:
 
     void draw_wave();
 
-    void get_sample_postions(); // calculates sample positions for selection
+    void get_sample_postions(int x, bool front); // calculates sample positions for selection
 
     void get_positions(); // does the opposite of get_sample_postions()
 

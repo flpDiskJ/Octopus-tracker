@@ -93,7 +93,8 @@ void Sample_edit::setup_new_sample()
     surf = TTF_RenderText_Solid(font, length.c_str(), pallet->black);
     sample_len_display.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
-    get_sample_postions();
+    get_sample_postions(0, true);
+    get_sample_postions(0, false);
 }
 
 void Sample_edit::draw_wave()
@@ -184,54 +185,55 @@ void Sample_edit::draw_wave()
     SDL_FreeFormat(fmt);
 }
 
-void Sample_edit::get_sample_postions()
+void Sample_edit::get_sample_postions(int x, bool front)
 {
-    selection.sample_front = (double)(selection.front * wave_zoom) + wave_offset;
-    selection.sample_back = (double)(selection.back * wave_zoom) + wave_offset;
-
-    if (selection.sample_front > selection.sample_back)
+    x = x - waveform.r.x;
+    string data;
+    if (front)
     {
-        selection.sample_front = selection.sample_back;
-    }
+        selection.sample_front = ((double)x * wave_zoom) + wave_offset;
+        if (selection.sample_front > t->sample[t->s_pos].len)
+        {
+            selection.sample_front = t->sample[t->s_pos].len;
+            get_positions();
+        }
 
-    if (selection.sample_front > t->sample[t->s_pos].len)
-    {
-        selection.sample_front = t->sample[t->s_pos].len;
-        get_positions();
-    }
-    if (selection.sample_back > t->sample[t->s_pos].len)
-    {
-        selection.sample_back = t->sample[t->s_pos].len;
-        get_positions();
-    }
+        if (selection_front_entry.t != NULL)
+        {
+            SDL_DestroyTexture(selection_front_entry.t);
+        }
+        data = to_string(selection.sample_front);
+        data = blank_fill(data, 6, '0');
+        surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+        selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
+        SDL_FreeSurface(surf);
 
-    if (selection_front_entry.t != NULL)
-    {
-        SDL_DestroyTexture(selection_front_entry.t);
+    } else {
+
+        selection.sample_back = ((double)x * wave_zoom) + wave_offset;
+        if (selection.sample_back > t->sample[t->s_pos].len)
+        {
+            selection.sample_back = t->sample[t->s_pos].len;
+            get_positions();
+        }
+
+        if (selection_back_entry.t != NULL)
+        {
+            SDL_DestroyTexture(selection_back_entry.t);
+        }
+        data = to_string(selection.sample_back);
+        data = blank_fill(data, 6, '0');
+        surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+        selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
+        SDL_FreeSurface(surf);
+
     }
-
-    if (selection_back_entry.t != NULL)
-    {
-        SDL_DestroyTexture(selection_back_entry.t);
-    }
-
-    string data = to_string(selection.sample_front);
-    data = blank_fill(data, 6, '0');
-    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
-    selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
-
-    data = to_string(selection.sample_back);
-    data = blank_fill(data, 6, '0');
-    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
-    selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
 }
 
 void Sample_edit::get_positions()
 {
-    selection.front = (selection.sample_front - wave_offset) / wave_zoom;
-    selection.back = (selection.sample_back - wave_offset) / wave_zoom;
+    selection.front = (double)(selection.sample_front - wave_offset) / wave_zoom;
+    selection.back = (double)(selection.sample_back - wave_offset) / wave_zoom;
 }
 
 string Sample_edit::blank_fill(string input, int len, char fill_char)
@@ -371,19 +373,18 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         switch (e->button.button)
         {
             case SDL_BUTTON_LEFT:
-                selection.front = x - waveform.r.x;
-                get_sample_postions();
+                get_sample_postions(x, true);
                 draw_wave();
                 break;
             case SDL_BUTTON_RIGHT:
-                selection.back = x - waveform.r.x;
-                get_sample_postions();
+                get_sample_postions(x, false);
                 draw_wave();
                 break;
             case SDL_BUTTON_MIDDLE:
                 selection.front = x - waveform.r.x;
                 selection.back = x - waveform.r.x;
-                get_sample_postions();
+                get_sample_postions(x, true);
+                get_sample_postions(x, false);
                 draw_wave();
                 break;
             default:
