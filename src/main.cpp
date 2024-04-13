@@ -102,8 +102,6 @@ int main(int argc, char* args[]) {
 
     Sequencer sequence_list(&tracker, &util, Font, &pallet);
 
-    Instrument_properties inst_prop(&tracker, Font, &pallet);
-
     DiskOp disk_op(&tracker, Font, &pallet);
 
     AudioBuffer audio_buffer;
@@ -127,6 +125,8 @@ int main(int argc, char* args[]) {
     SDL_PauseAudio(0);
 
     AudioW aworks(&tracker, &audio_buffer);
+
+    Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
 
     Sample_edit sample_editor(&aworks, &tracker, Font, &pallet);
 
@@ -277,6 +277,9 @@ int main(int argc, char* args[]) {
                     } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         disk_op.keyboard(&e);
+                    } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        inst_prop.keyboard(&e);
                     } else {
                         if (SDL_GetModState() & KMOD_CTRL) // control key press
                         {

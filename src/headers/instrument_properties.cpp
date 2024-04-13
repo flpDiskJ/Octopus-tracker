@@ -1,9 +1,10 @@
 #include "instrument_properties.h"
 
-Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pallet *p)
+Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Font *f, Pallet *p)
 {
     // get pointers from main func
     t = tracker;
+    audioworks = a;
     font = f;
     pallet = p;
 
@@ -67,10 +68,6 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
     volume_sliderbox.pos.x = volume_sliderbox.slide.x + (t->sample[t->s_pos].level * volume_sliderbox.pos.w);
     volume_sliderbox.pos.y = 211;
 
-    surf = TTF_RenderText_Solid(font, "Instrument Name:", pallet->black);
-    inst_name_label.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
-
     surf = TTF_RenderText_Solid(font, "Transpose", pallet->blue);
     transpose_label.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
@@ -89,6 +86,28 @@ Instrument_properties::Instrument_properties(Tracker *tracker, TTF_Font *f, Pall
 Instrument_properties::~Instrument_properties()
 {
 
+}
+
+void Instrument_properties::update_instname()
+{
+    if (samplename_entry.t != NULL)
+    {
+        SDL_DestroyTexture(samplename_entry.t);
+    }
+    surf = TTF_RenderText_Solid(font, t->sample[t->s_pos].name.c_str(), pallet->black);
+    samplename_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    if (inst_name_label.t != NULL)
+    {
+        SDL_DestroyTexture(inst_name_label.t);
+    }
+    string samplenumber = to_string(t->s_pos);
+    surf = TTF_RenderText_Solid(font, samplenumber.c_str(), pallet->black);
+    inst_name_label.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    refresh();
 }
 
 void Instrument_properties::de_init()
@@ -111,6 +130,7 @@ void Instrument_properties::refresh()
 
     //sample naming
     SDL_RenderDrawRect(render, &samplename_entry.r);
+    SDL_RenderCopy(render, samplename_entry.t, NULL, &samplename_entry.r);
     SDL_RenderCopy(render, inst_name_label.t, NULL, &inst_name_label.r);
 
     //sample params
@@ -132,6 +152,7 @@ void Instrument_properties::open()
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
     update();
+    update_instname();
 }
 
 void Instrument_properties::close()
@@ -165,4 +186,36 @@ void Instrument_properties::mouse(int x, int y)
         }
     }
     update();
+}
+
+void Instrument_properties::keyboard(SDL_Event *e)
+{
+    switch (e->key.keysym.sym)
+    {
+        case SDLK_RIGHT:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                t->sample_inc();
+                update_instname();
+                update();
+            }
+            break;
+        case SDLK_LEFT:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                t->sample_dec();
+                update_instname();
+                update();
+            }
+            break;
+        default:
+            if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+            {
+                audioworks->play_sample(e, t->s_pos);
+            }
+            break;
+    }
+
+
+
 }

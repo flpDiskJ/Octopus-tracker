@@ -1,22 +1,27 @@
 #pragma once
 
 #include "tracker.h"
+#include "audioworks.h"
 
 class Instrument_properties{
 
 private:
     Tracker *t;
+    AudioW *audioworks;
     SDL_Window *window = NULL;
     SDL_Renderer *render = NULL;
     SDL_Surface *surf;
     TTF_Font *font; // pointer to the program font
     Pallet *pallet; // pointer to the program pallet
-    Button samplename_entry;
     Slider transpose_sliderbox, finetune_sliderbox, volume_sliderbox;
     Button inst_name_label, transpose_label, finetune_label, volume_label;
+    Entry samplename_entry;
+
+    void update_instname();
+
 public:
 
-    Instrument_properties(Tracker *tracker, TTF_Font *f, Pallet *p);
+    Instrument_properties(Tracker *tracker, AudioW *a, TTF_Font *f, Pallet *p);
 
     ~Instrument_properties();
 
@@ -35,4 +40,6 @@ public:
     bool checkButton(int mouseX, int mouseY, SDL_Rect *button);
 
     void mouse(int x, int y);
+
+    void keyboard(SDL_Event *e);
 };
