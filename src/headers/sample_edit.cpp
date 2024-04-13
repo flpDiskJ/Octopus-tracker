@@ -45,6 +45,28 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     sample_len_display.r.w = 12 * 6;
     sample_len_display.r.h = 20;
 
+    zoom_to_start.r.w = 14 * 5;
+    zoom_to_start.r.h = 20;
+    zoom_to_start.r.x = sample_len_display.r.x + sample_len_display.r.w + 8;
+    zoom_to_start.r.y = 20 + waveform.r.h + 4;
+
+    zoom_to_end.r.w = 14 * 5;
+    zoom_to_end.r.h = 20;
+    zoom_to_end.r.x = zoom_to_start.r.x + zoom_to_start.r.w + 8;
+    zoom_to_end.r.y = 20 + waveform.r.h + 4;
+
+    zoom_to_start.active = true;
+
+    surf = TTF_RenderText_Solid(font, " <-- ", pallet->blue);
+    zoom_to_start.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, " --> ", pallet->blue);
+    zoom_to_end.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    zoom_offset = 0;
+
     setup_new_sample();
 }
 
@@ -167,6 +189,11 @@ void Sample_edit::get_sample_postions()
     selection.sample_front = (double)(selection.front * wave_zoom) + wave_offset;
     selection.sample_back = (double)(selection.back * wave_zoom) + wave_offset;
 
+    if (selection.sample_front > selection.sample_back)
+    {
+        selection.sample_front = selection.sample_back;
+    }
+
     if (selection.sample_front > t->sample[t->s_pos].len)
     {
         selection.sample_front = t->sample[t->s_pos].len;
@@ -230,6 +257,16 @@ void Sample_edit::bound_offset()
     }
 }
 
+void Sample_edit::get_zoom_offset()
+{
+    if (zoom_to_start.active)
+    {
+        zoom_offset = selection.sample_front;
+    } else {
+        zoom_offset = selection.sample_back;
+    }
+}
+
 void Sample_edit::de_init()
 {
     SDL_DestroyRenderer(render);
@@ -251,6 +288,21 @@ void Sample_edit::refresh()
     SDL_RenderCopy(render, sample_len_display.t, NULL, &sample_len_display.r);
     SDL_RenderCopy(render, selection_front_entry.t, NULL, &selection_front_entry.r);
     SDL_RenderCopy(render, selection_back_entry.t, NULL, &selection_back_entry.r);
+
+    if (zoom_to_start.active)
+    {
+        SDL_RenderFillRect(render, &zoom_to_start.r);
+    } else {
+        SDL_RenderDrawRect(render, &zoom_to_start.r);
+    }
+    if (zoom_to_end.active)
+    {
+        SDL_RenderFillRect(render, &zoom_to_end.r);
+    } else {
+        SDL_RenderDrawRect(render, &zoom_to_end.r);
+    }
+    SDL_RenderCopy(render, zoom_to_start.t, NULL, &zoom_to_start.r);
+    SDL_RenderCopy(render, zoom_to_end.t, NULL, &zoom_to_end.r);
 
     if (t->channel[0].play)
     {
@@ -295,25 +347,36 @@ bool Sample_edit::checkButton(int mouseX, int mouseY, SDL_Rect *button)
 
 void Sample_edit::mouse(int x, int y, SDL_Event *e)
 {
-    if (checkButton(x, y, &waveform.r))
+    if (checkButton(x, y, &zoom_to_start.r))
+    {
+        zoom_to_start.active = true;
+        zoom_to_end.active = false;
+        get_zoom_offset();
+        wave_offset = zoom_offset-((waveform.r.w/2)*wave_zoom);
+        bound_offset();
+        get_positions();
+        draw_wave();
+    } else if (checkButton(x, y, &zoom_to_end.r))
+    {
+        zoom_to_start.active = false;
+        zoom_to_end.active = true;
+        get_zoom_offset();
+        wave_offset = zoom_offset-((waveform.r.w/2)*wave_zoom);
+        bound_offset();
+        get_positions();
+        draw_wave();
+    }
+    else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
         {
             case SDL_BUTTON_LEFT:
                 selection.front = x - waveform.r.x;
-                if (selection.back < selection.front)
-                {
-                    selection.back = selection.front;
-                }
                 get_sample_postions();
                 draw_wave();
                 break;
             case SDL_BUTTON_RIGHT:
                 selection.back = x - waveform.r.x;
-                if (selection.front > selection.back)
-                {
-                    selection.front = selection.back;
-                }
                 get_sample_postions();
                 draw_wave();
                 break;
@@ -326,6 +389,7 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
             default:
                 break;
         }
+        get_zoom_offset();
     }
 }
 
@@ -340,7 +404,7 @@ void Sample_edit::mouse_wheel(SDL_Event *e)
              if (wave_zoom < t->sample[t->s_pos].len / waveform.r.w)
              {
                  wave_zoom *= 1.5;
-                 wave_offset = ((selection.sample_front+selection.sample_back)/2)-((waveform.r.w/2)*wave_zoom);
+                 wave_offset = zoom_offset-((waveform.r.w/2)*wave_zoom);
                  bound_offset();
                  get_positions();
              }
@@ -351,7 +415,7 @@ void Sample_edit::mouse_wheel(SDL_Event *e)
              if (wave_zoom > 0.1)
              {
                  wave_zoom /= 1.5;
-                 wave_offset = ((selection.sample_front+selection.sample_back)/2)-((waveform.r.w/2)*wave_zoom);
+                 wave_offset = zoom_offset-((waveform.r.w/2)*wave_zoom);
                  bound_offset();
                  get_positions();
              }

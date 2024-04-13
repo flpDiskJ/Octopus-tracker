@@ -24,12 +24,15 @@ private:
     Button waveform;
     Selector selection; // selected area of sample
     double wave_zoom; // number of samples to skip over when drawing waveform
+    int zoom_offset; // used to calculate offset based on zoom to start/end
     int wave_offset; // start position offset
     double wave_scale; // amplitude scale
 
     Entry selection_front_entry;
     Entry selection_back_entry;
     Button sample_len_display;
+
+    Entry zoom_to_start, zoom_to_end;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -42,6 +45,8 @@ private:
     string blank_fill(string input, int len, char fill_char); // fills string with 'fill_char' to get desired length
 
     void bound_offset(); // ensures wave_offset is within bounds
+
+    void get_zoom_offset(); // call after changing selection or zoom type
 
 public:
 
