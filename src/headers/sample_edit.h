@@ -35,6 +35,7 @@ private:
     Sint16 *copy_buffer = NULL;
     long int copy_buffer_size = 0;
     long int paste_size = 0;
+    Button slice_b;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -59,6 +60,8 @@ private:
     void copy_selection();
 
     void paste_buffer();
+
+    void slice_selection();
 
 public:
 
