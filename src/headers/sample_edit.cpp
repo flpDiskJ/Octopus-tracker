@@ -76,12 +76,42 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     range_all.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
+    cut_b.r.w = 14 * 3;
+    cut_b.r.h = 20;
+    cut_b.r.x = range_all.r.x + range_all.r.w + 8;
+    cut_b.r.y = range_all.r.y;
+
+    surf = TTF_RenderText_Solid(font, "Cut", pallet->black);
+    cut_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    copy_b.r.w = 14 * 4;
+    copy_b.r.h = 20;
+    copy_b.r.x = cut_b.r.x + cut_b.r.w + 8;
+    copy_b.r.y = cut_b.r.y;
+
+    surf = TTF_RenderText_Solid(font, "Copy", pallet->black);
+    copy_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    paste_b.r.w = 14 * 5;
+    paste_b.r.h = 20;
+    paste_b.r.x = copy_b.r.x + copy_b.r.w + 8;
+    paste_b.r.y = copy_b.r.y;
+
+    surf = TTF_RenderText_Solid(font, "Paste", pallet->black);
+    paste_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    copy_buffer = (Sint16*)malloc(sizeof(Sint16)*1000);
+    copy_buffer_size = 1000;
+
     setup_new_sample();
 }
 
 Sample_edit::~Sample_edit()
 {
-
+    free(copy_buffer);
 }
 
 void Sample_edit::setup_new_sample()
@@ -89,38 +119,7 @@ void Sample_edit::setup_new_sample()
     wave_zoom = (double)t->sample[t->s_pos].len / (double)waveform.r.w;
     wave_offset = 0;
     select_all();
-    draw_wave();
-
-    // set sample length display
-    if (sample_len_display.t != NULL)
-    {
-        SDL_DestroyTexture(sample_len_display.t);
-    }
-    string length = to_string(t->sample[t->s_pos].len);
-    length = blank_fill(length, 6, '0');
-    surf = TTF_RenderText_Solid(font, length.c_str(), pallet->black);
-    sample_len_display.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
-
-    if (selection_front_entry.t != NULL)
-    {
-        SDL_DestroyTexture(selection_front_entry.t);
-    }
-    string data = to_string(selection.sample_front);
-    data = blank_fill(data, 6, '0');
-    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
-    selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
-
-    if (selection_back_entry.t != NULL)
-    {
-        SDL_DestroyTexture(selection_back_entry.t);
-    }
-    data = to_string(selection.sample_back);
-    data = blank_fill(data, 6, '0');
-    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
-    selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    update_selection_index();
 }
 
 void Sample_edit::draw_wave()
@@ -268,6 +267,11 @@ void Sample_edit::get_zoom_offset()
 void Sample_edit::select_all()
 {
     selection.sample_front = 0;
+    if (t->sample[t->s_pos].len == 0)
+    {
+        selection.sample_back = 0;
+        return;
+    }
     selection.sample_back = t->sample[t->s_pos].len - 1;
 }
 
@@ -287,6 +291,16 @@ void Sample_edit::render_struct(SDL_Renderer *r, Button *b, Entry *e)
 
 void Sample_edit::update_selection_index()
 {
+    string length = to_string(t->sample[t->s_pos].len);
+    length = blank_fill(length, 6, '0');
+    surf = TTF_RenderText_Solid(font, length.c_str(), pallet->black);
+    if (sample_len_display.t != NULL)
+    {
+        SDL_DestroyTexture(sample_len_display.t);
+    }
+    sample_len_display.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     string data;
     if (selection_front_entry.t != NULL)
     {
@@ -307,6 +321,112 @@ void Sample_edit::update_selection_index()
     surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
     selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+
+    draw_wave();
+}
+
+void Sample_edit::cut_selection()
+{
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+    long int size = t->sample[t->s_pos].len - (selection.sample_back - selection.sample_front);
+    if (size < 2)
+    {
+        selection.sample_front = 0;
+        selection.sample_back = 0;
+        t->sample[t->s_pos].len = 0;
+        draw_wave();
+        return;
+    }
+    Sint16 *buffer = (Sint16*)malloc(sizeof(Sint16)*size);
+
+    for (int p = 0, new_p = 0; p < t->sample[t->s_pos].len; p++)
+    {
+        if (p < selection.sample_front || p > selection.sample_back)
+        {
+            buffer[new_p] = t->sample[t->s_pos].data[p];
+            new_p++;
+        }
+    }
+
+    if (size > t->sample[t->s_pos].len)
+    {
+        t->sample[t->s_pos].data = (Sint16*)realloc(t->sample[t->s_pos].data, sizeof(Sint16)*size);
+    }
+    t->sample[t->s_pos].len = size;
+
+    memcpy(t->sample[t->s_pos].data, buffer, size*sizeof(Sint16));
+    free(buffer);
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+    update_selection_index();
+}
+
+void Sample_edit::copy_selection()
+{
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+    if (copy_buffer_size < selection.sample_back - selection.sample_front)
+    {
+        copy_buffer_size = (selection.sample_back - selection.sample_front) + 1;
+        copy_buffer = (Sint16*)realloc(copy_buffer, sizeof(Sint16)*copy_buffer_size);
+    }
+    long int size = 0;
+    for (int p = selection.sample_front; p < selection.sample_back; p++)
+    {
+        copy_buffer[size] = t->sample[t->s_pos].data[p];
+        size++;
+    }
+    paste_size = size;
+}
+
+void Sample_edit::paste_buffer()
+{
+    long int size = t->sample[t->s_pos].len + paste_size;
+    Sint16 *buffer = (Sint16*)malloc(sizeof(Sint16)*size);
+
+    for (int p = 0, old_p = 0, new_p = 0; p < size; p++)
+    {
+        if (p < selection.sample_front || p > selection.sample_front + (paste_size - 1))
+        {
+            buffer[p] = t->sample[t->s_pos].data[old_p];
+            old_p++;
+        } else {
+            buffer[p] = copy_buffer[new_p];
+            new_p++;
+        }
+    }
+
+    if (t->sample[t->s_pos].data == NULL)
+    {
+        t->sample[t->s_pos].data = (Sint16*)malloc(sizeof(Sint16)*size);
+        t->sample[t->s_pos].level = 100;
+    } else if (t->sample[t->s_pos].len < size)
+    {
+        t->sample[t->s_pos].data = (Sint16*)realloc(t->sample[t->s_pos].data, sizeof(Sint16)*size);
+    }
+    t->sample[t->s_pos].len = size;
+    memcpy(t->sample[t->s_pos].data, buffer, size*sizeof(Sint16));
+    free(buffer);
+    setup_new_sample();
 }
 
 void Sample_edit::de_init()
@@ -344,6 +464,9 @@ void Sample_edit::refresh()
     SDL_RenderCopy(render, zoom_to_end.t, NULL, &zoom_to_end.r);
 
     render_struct(render, &range_all, NULL);
+    render_struct(render, &cut_b, NULL);
+    render_struct(render, &copy_b, NULL);
+    render_struct(render, &paste_b, NULL);
 
     if (t->channel[0].play)
     {
@@ -409,6 +532,12 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         select_all();
         draw_wave();
         update_selection_index();
+    } else if (checkButton(x, y, &cut_b.r)){
+        cut_selection();
+    } else if (checkButton(x, y, &copy_b.r)){
+        copy_selection();
+    } else if (checkButton(x, y, &paste_b.r)){
+        paste_buffer();
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)

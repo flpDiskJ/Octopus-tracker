@@ -31,6 +31,10 @@ private:
     Button sample_len_display;
     Entry zoom_to_start, zoom_to_end;
     Button range_all;
+    Button cut_b, copy_b, paste_b;
+    Sint16 *copy_buffer = NULL;
+    long int copy_buffer_size = 0;
+    long int paste_size = 0;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -49,6 +53,12 @@ private:
     void render_struct(SDL_Renderer *r, Button *b, Entry *e); // renders button and/or entry
 
     void update_selection_index();
+
+    void cut_selection();
+
+    void copy_selection();
+
+    void paste_buffer();
 
 public:
 

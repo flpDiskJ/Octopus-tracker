@@ -24,6 +24,7 @@ private:
 
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
+        char *array;
         int length; // number of Notes in the block
         int speed; // steps per beat
         string name;
@@ -209,9 +210,9 @@ public:
 
     void dec_trigger_bars(); // run in main loop to decay bars
 
-    void low_pass(int sample_slot, int cutoff); // low pass filter
+    void low_pass(int sample_slot, int cutoff, int sample_rate); // low pass filter
 
-    void resample(int sample_slot, int new_rate);
+    void resample(int sample_slot, int old_rate, int new_rate);
 
     bool load_inst(string path, string name, int sample_slot); // loads wav into instrument slot of s_pos | returns true if successful
 

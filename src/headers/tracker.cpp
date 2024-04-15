@@ -407,9 +407,9 @@ void Tracker::dec_trigger_bars()
     }
 }
 
-void Tracker::low_pass(int sample_slot, int cutoff)
+void Tracker::low_pass(int sample_slot, int cutoff, int sample_rate)
 {
-    long double x = tanf(M_PI * cutoff / sample[sample_slot].sample_rate);
+    long double x = tanf(M_PI * cutoff / sample_rate);
     long double output = 0;
     Sint16 out;
     Sint16 input;
@@ -423,12 +423,12 @@ void Tracker::low_pass(int sample_slot, int cutoff)
     }
 }
 
-void Tracker::resample(int sample_slot, int new_rate)
+void Tracker::resample(int sample_slot, int old_rate, int new_rate)
 {
     Sint16 *buffer = (Sint16*)malloc(sample[sample_slot].len*sizeof(Sint16));
     memset(buffer, 0, sample[sample_slot].len*sizeof(Sint16));
-    low_pass(sample_slot, new_rate/2);
-    double pos_adv = (double)sample[sample_slot].sample_rate / (double)new_rate;
+    low_pass(sample_slot, new_rate/2, old_rate);
+    double pos_adv = (double)old_rate / (double)new_rate;
     double pos = 0;
     int actual_pos = 0;
     int output_pos = 0;
@@ -471,9 +471,8 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         sample[sample_slot].len = new_length;
         sample[sample_slot].tune = 1;
         sample[sample_slot].level = 100;
-        sample[sample_slot].name.clear();
-        sample[sample_slot].name += name;
-        sample[sample_slot].sample_rate = inputSpec.freq;
+        sample[sample_slot].name = name;
+        sample[sample_slot].sample_rate = getFreq(default_pitch.note, default_pitch.key, default_pitch.octave);
         if (inputSpec.channels == 1)
         {
             for (int x = 0, p = 0; x < length; x += 2, p++)
@@ -491,7 +490,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         SDL_FreeWAV(data);
         return false;
     }
-    resample(sample_slot, getFreq(default_pitch.note, default_pitch.key, default_pitch.octave));
+    resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate);
     update_info();
     return true;
 }
