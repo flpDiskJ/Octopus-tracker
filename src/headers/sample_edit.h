@@ -19,6 +19,8 @@ private:
         unsigned long int sample_back;
     };
 
+    const int waveform_zoom_sensitivity = 25;
+
     Button waveform;
     Selector selection; // selected area of sample
     double wave_zoom; // number of samples to skip over when drawing waveform
@@ -35,7 +37,7 @@ private:
     Sint16 *copy_buffer = NULL;
     long int copy_buffer_size = 0;
     long int paste_size = 0;
-    Button slice_b;
+    Button slice_b, fade_in_b, fade_out_b;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -63,9 +65,11 @@ private:
 
     void slice_selection();
 
-public:
+    void fade_in_selection();
 
-    int waveform_zoom_sensitivity = 25;
+    void fade_out_selection();
+
+public:
 
     Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p);
 

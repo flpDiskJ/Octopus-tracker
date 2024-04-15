@@ -67,7 +67,7 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
 
     zoom_offset = 0;
 
-    range_all.r.w = 14 * 9;
+    range_all.r.w = (14 * 9) - 2;
     range_all.r.h = 20;
     range_all.r.x = zoom_to_end.r.x + zoom_to_end.r.w + 8;
     range_all.r.y = zoom_to_end.r.y;
@@ -113,6 +113,24 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
 
     surf = TTF_RenderText_Solid(font, "Slice", pallet->black);
     slice_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    fade_in_b.r.w = 14 * 5;
+    fade_in_b.r.h = 20;
+    fade_in_b.r.x = slice_b.r.x + slice_b.r.w + 8;
+    fade_in_b.r.y = slice_b.r.y;
+
+    surf = TTF_RenderText_Solid(font, "Fade In", pallet->black);
+    fade_in_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    fade_out_b.r.w = 14 * 6;
+    fade_out_b.r.h = 20;
+    fade_out_b.r.x = fade_in_b.r.x + fade_in_b.r.w + 8;
+    fade_out_b.r.y = fade_in_b.r.y;
+
+    surf = TTF_RenderText_Solid(font, "Fade Out", pallet->black);
+    fade_out_b.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
     setup_new_sample();
@@ -487,6 +505,66 @@ void Sample_edit::slice_selection()
     update_selection_index();
 }
 
+void Sample_edit::fade_in_selection()
+{
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+
+    long int selection_len = selection.sample_back - selection.sample_front;
+    if (selection_len < 2)
+    {
+        return;
+    }
+
+    double amplifier = 0.0;
+    double increase = 1.0 / (double)selection_len;
+    for (int p = 0; p < t->sample[t->s_pos].len; p++)
+    {
+        if (p >= selection.sample_front && p < selection.sample_back)
+        {
+            t->sample[t->s_pos].data[p] = t->sample[t->s_pos].data[p] * amplifier;
+            amplifier += increase;
+        }
+    }
+    draw_wave();
+}
+
+void Sample_edit::fade_out_selection()
+{
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+
+    long int selection_len = selection.sample_back - selection.sample_front;
+    if (selection_len < 2)
+    {
+        return;
+    }
+
+    double amplifier = 1.0;
+    double decrease = 1.0 / (double)selection_len;
+    for (int p = 0; p < t->sample[t->s_pos].len; p++)
+    {
+        if (p >= selection.sample_front && p < selection.sample_back)
+        {
+            t->sample[t->s_pos].data[p] = t->sample[t->s_pos].data[p] * amplifier;
+            amplifier -= decrease;
+        }
+    }
+    draw_wave();
+}
+
 void Sample_edit::de_init()
 {
     SDL_DestroyRenderer(render);
@@ -526,6 +604,8 @@ void Sample_edit::refresh()
     render_struct(render, &copy_b, NULL);
     render_struct(render, &paste_b, NULL);
     render_struct(render, &slice_b, NULL);
+    render_struct(render, &fade_in_b, NULL);
+    render_struct(render, &fade_out_b, NULL);
 
     if (t->channel[0].play)
     {
@@ -599,6 +679,10 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         paste_buffer();
     } else if (checkButton(x, y, &slice_b.r)){
         slice_selection();
+    } else if (checkButton(x, y, &fade_in_b.r)){
+        fade_in_selection();
+    } else if (checkButton(x, y, &fade_out_b.r)){
+        fade_out_selection();
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
