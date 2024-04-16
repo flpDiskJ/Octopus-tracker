@@ -23,6 +23,8 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
         printf("Failed to create renderer for sample editor window!\n");
     }
 
+    fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(window));
+
     waveform.r.x = 20;
     waveform.r.y = 20;
     waveform.r.w = 960;
@@ -153,7 +155,6 @@ void Sample_edit::draw_wave()
 {
     void *pixels;
     int pitch;
-    SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(window));
     SDL_LockTexture(waveform.t, NULL, &pixels, &pitch);
     int amp_high = waveform.r.h / 2;
     int amp_low = waveform.r.h / 2;
@@ -232,9 +233,7 @@ void Sample_edit::draw_wave()
             }
         }
     }
-
     SDL_UnlockTexture(waveform.t);
-    SDL_FreeFormat(fmt);
 }
 
 void Sample_edit::get_sample_postions(int x, bool front)
@@ -261,7 +260,7 @@ void Sample_edit::get_sample_postions(int x, bool front)
 string Sample_edit::blank_fill(string input, int len, char fill_char)
 {
     string out;
-    int fill = len - strlen(input.c_str());
+    int fill = len - input.length();
     for (int i = 0; i < fill; i++)
     {
         out += fill_char;
@@ -311,8 +310,13 @@ void Sample_edit::render_struct(SDL_Renderer *r, Button *b, Entry *e)
     }
     if (e != NULL)
     {
+        if (e->active)
+        {
+            SDL_SetRenderDrawColor(r, pallet->red.r, pallet->red.g, pallet->red.b, 0xFF);
+        }
         SDL_RenderDrawRect(r, &e->r);
         SDL_RenderCopy(r, e->t, NULL, &e->r);
+        SDL_SetRenderDrawColor(r, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF);
     }
 }
 
@@ -338,6 +342,7 @@ void Sample_edit::update_selection_index()
     surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
     selection_front_entry.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+    selection_front_entry.text = data;
 
     if (selection_back_entry.t != NULL)
     {
@@ -348,8 +353,30 @@ void Sample_edit::update_selection_index()
     surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
     selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+    selection_back_entry.text = data;
 
     draw_wave();
+}
+
+void Sample_edit::update_entries()
+{
+    if (selection_front_entry.text.length() > 0 && selection_front_entry.text.length() < 7)
+    {
+        selection.sample_front = stoi(selection_front_entry.text);
+    }
+    if (selection_back_entry.text.length() > 0 && selection_back_entry.text.length() < 7)
+    {
+        selection.sample_back = stoi(selection_back_entry.text);
+    }
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+    update_selection_index();
 }
 
 void Sample_edit::cut_selection()
@@ -565,17 +592,60 @@ void Sample_edit::fade_out_selection()
     draw_wave();
 }
 
+void Sample_edit::text_entry(Entry *entry, SDL_Event *e)
+{
+    string keyname;
+    switch (e->key.keysym.sym)
+    {
+        case SDLK_DELETE:
+        case SDLK_BACKSPACE:
+            if (entry->text.length() > 0)
+            {
+                entry->text.pop_back();
+            }
+            break;
+        case SDLK_RETURN:
+            entry->active = false;
+            update_entries();
+            return;
+            break;
+        case SDLK_0:
+        case SDLK_1:
+        case SDLK_2:
+        case SDLK_3:
+        case SDLK_4:
+        case SDLK_5:
+        case SDLK_6:
+        case SDLK_7:
+        case SDLK_8:
+        case SDLK_9:
+            keyname = SDL_GetKeyName(e->key.keysym.sym);
+            entry->text += keymap.sdl_getText(keyname, (SDL_GetModState() & KMOD_SHIFT));
+            break;
+        default:
+            break;
+    }
+    if (entry->t != NULL)
+    {
+        SDL_DestroyTexture(entry->t);
+    }
+    surf = TTF_RenderText_Solid(font, entry->text.c_str(), pallet->black);
+    entry->t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+}
+
 void Sample_edit::de_init()
 {
+    SDL_FreeFormat(fmt);
     SDL_DestroyRenderer(render);
     SDL_DestroyWindow(window);
 }
 
 void Sample_edit::refresh()
 {
-    SDL_SetRenderDrawColor(render, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r, 0xFF); // Background color
+    SDL_SetRenderDrawColor(render, pallet->bgd.r, pallet->bgd.g, pallet->bgd.b, 0xFF); // Background color
     SDL_RenderClear(render);
-    SDL_SetRenderDrawColor(render, pallet->black.b, pallet->black.g, pallet->black.r, 0xFF); // Black
+    SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
 
     SDL_RenderCopy(render, waveform.t, NULL, &waveform.r);
     SDL_RenderDrawRect(render, &waveform.r);
@@ -609,7 +679,7 @@ void Sample_edit::refresh()
 
     if (t->channel[0].play)
     {
-        SDL_SetRenderDrawColor(render, pallet->green.b, pallet->green.g, pallet->green.r, 0xFF);
+        SDL_SetRenderDrawColor(render, pallet->green.r, pallet->green.g, pallet->green.b, 0xFF);
         int pos = (int)t->channel[0].pos;
         if (pos > wave_offset && pos < wave_offset + (waveform.r.w * wave_zoom))
         {
@@ -683,6 +753,10 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         fade_in_selection();
     } else if (checkButton(x, y, &fade_out_b.r)){
         fade_out_selection();
+    } else if (checkButton(x, y, &selection_front_entry.r)){
+        selection_front_entry.active = true;
+    } else if (checkButton(x, y, &selection_back_entry.r)){
+        selection_back_entry.active = true;
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
@@ -738,35 +812,43 @@ void Sample_edit::mouse_wheel(SDL_Event *e)
 
 void Sample_edit::keyboard(SDL_Event *e)
 {
-    switch (e->key.keysym.sym)
+    if (selection_front_entry.active)
     {
-        case SDLK_RIGHT:
-            if (SDL_GetModState() & KMOD_SHIFT)
-            {
-                t->sample_inc();
-                setup_new_sample();
-            } else {
-                wave_offset += wave_zoom * (double)waveform_zoom_sensitivity;
-                bound_offset();
-                draw_wave();
-            }
-            break;
-        case SDLK_LEFT:
-            if (SDL_GetModState() & KMOD_SHIFT)
-            {
-                t->sample_dec();
-                setup_new_sample();
-            } else {
-                wave_offset -= wave_zoom * (double)waveform_zoom_sensitivity;
-                bound_offset();
-                draw_wave();
-            }
-            break;
-        default:
-            if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
-            {
-                audioworks->play_sample(e, t->s_pos);
-            }
-            break;
+        text_entry(&selection_front_entry, e);
+    } else if (selection_back_entry.active)
+    {
+        text_entry(&selection_back_entry, e);
+    } else {
+        switch (e->key.keysym.sym)
+        {
+            case SDLK_RIGHT:
+                if (SDL_GetModState() & KMOD_SHIFT)
+                {
+                    t->sample_inc();
+                    setup_new_sample();
+                } else {
+                    wave_offset += wave_zoom * (double)waveform_zoom_sensitivity;
+                    bound_offset();
+                    draw_wave();
+                }
+                break;
+            case SDLK_LEFT:
+                if (SDL_GetModState() & KMOD_SHIFT)
+                {
+                    t->sample_dec();
+                    setup_new_sample();
+                } else {
+                    wave_offset -= wave_zoom * (double)waveform_zoom_sensitivity;
+                    bound_offset();
+                    draw_wave();
+                }
+                break;
+            default:
+                if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+                {
+                    audioworks->play_sample(e, t->s_pos);
+                }
+                break;
+        }
     }
 }

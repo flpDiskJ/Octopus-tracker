@@ -2,6 +2,7 @@
 
 #include "tracker.h"
 #include "audioworks.h"
+#include "sdl_keymap.h"
 
 class Sample_edit{
 
@@ -13,6 +14,8 @@ private:
     SDL_Surface *surf;
     TTF_Font *font; // pointer to the program font
     Pallet *pallet; // pointer to the program pallet
+    SDL_PixelFormat *fmt;
+    SDL_KEYMAP keymap;
 
     struct Selector{
         unsigned long int sample_front; // actual sample position
@@ -57,6 +60,8 @@ private:
 
     void update_selection_index();
 
+    void update_entries();
+
     void cut_selection();
 
     void copy_selection();
@@ -68,6 +73,8 @@ private:
     void fade_in_selection();
 
     void fade_out_selection();
+
+    void text_entry(Entry *entry, SDL_Event *e);
 
 public:
 
