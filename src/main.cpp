@@ -124,13 +124,15 @@ int main(int argc, char* args[]) {
     }
     SDL_PauseAudio(0);
 
-    AudioW aworks(&tracker, &audio_buffer, tracker_render);
+    AudioW aworks(&tracker, &audio_buffer, tracker_render, tracker_window, &pallet);
 
     Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
 
     Sample_edit sample_editor(&aworks, &tracker, Font, &pallet);
 
     tracker.load_inst("test_sample.wav", "Test Sample", 0); // used for testing only
+
+    aworks.generate_default_wave();
 
     SDL_Event e;
     int xM, yM; // mouse cords
@@ -381,6 +383,7 @@ int main(int argc, char* args[]) {
     inst_prop.de_init();
     disk_op.de_init();
     sample_editor.de_init();
+    aworks.deinit();
     free(audio_buffer.data);
     SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);

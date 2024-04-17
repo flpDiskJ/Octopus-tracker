@@ -1,12 +1,15 @@
 #include "audioworks.h"
 
-AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren)
+AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren, SDL_Window *window, Pallet *plt)
 {
     t = tracker;
     b = buffer;
     render = ren;
+    pallet = plt;
     sample_count = 0;
     tick_count = 0;
+
+    fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(window));
 
     for (int c = 0; c < CHANNELS; c++)
     {
@@ -18,7 +21,7 @@ AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren)
         scope[c].data_size = SAMPLE_RATE / REFRESH_RATE;
         scope[c].data = (Uint8*)malloc(sizeof(Uint8)*scope[c].data_size);
     }
-
+    scope_idle_t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 120, 80);
 }
 
 AudioW::~AudioW()
@@ -29,6 +32,26 @@ AudioW::~AudioW()
     }
 }
 
+void AudioW::generate_default_wave()
+{
+    void *pixels;
+    int pitch;
+    SDL_LockTexture(scope_idle_t, NULL, &pixels, &pitch);
+    for (int x = 0; x < 120; x++)
+    {
+        for (int y = 0; y < 80; y++)
+        {
+            if (y == 40)
+            {
+                ((Uint32*)pixels)[x+(y*120)] = SDL_MapRGB(fmt, pallet->white.b, pallet->white.g, pallet->white.r);
+            } else {
+                ((Uint32*)pixels)[x+(y*120)] = SDL_MapRGB(fmt, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r);
+            }
+        }
+    }
+    SDL_UnlockTexture(scope_idle_t);
+}
+
 void AudioW::render_scopes()
 {
     for (int c = 0; c < CHANNELS; c++)
@@ -37,7 +60,7 @@ void AudioW::render_scopes()
         {
             SDL_RenderCopy(render, scope[c].t, NULL, &scope[c].r);
         } else {
-            SDL_RenderCopy(render, scope_default_t, NULL, &scope[c].r);
+            SDL_RenderCopy(render, scope_idle_t, NULL, &scope[c].r);
         }
         SDL_RenderDrawRect(render, &scope[c].r);
     }
@@ -381,4 +404,9 @@ void AudioW::audio_works() // fills audio buffer
     {
         t->set_trigger_bar(c, sig_max[c]);
     }
+}
+
+void AudioW::deinit()
+{
+    SDL_FreeFormat(fmt);
 }

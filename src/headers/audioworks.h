@@ -7,6 +7,8 @@ private:
     Tracker *t;
     SDL_Renderer *render;
     AudioBuffer *b;
+    SDL_PixelFormat *fmt;
+    Pallet *pallet;
     Uint32 tick_count; // counts ticks for effects commands
 
     struct Scope{
@@ -18,14 +20,18 @@ private:
     };
 
     Scope scope[CHANNELS];
-    SDL_Texture *scope_default_t = NULL;
+    SDL_Texture *scope_idle_t;
 
 public:
     Uint32 sample_count; // used to determine timing
 
-    AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren);
+    AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren, SDL_Window *window, Pallet *plt);
 
     ~AudioW();
+
+    void generate_default_wave();
+
+    void deinit();
 
     void render_scopes();
 
