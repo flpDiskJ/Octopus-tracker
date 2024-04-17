@@ -73,37 +73,25 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     range_all.r.h = 20;
     range_all.r.x = zoom_to_end.r.x + zoom_to_end.r.w + 8;
     range_all.r.y = zoom_to_end.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Range All", pallet->black);
-    range_all.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&range_all, "Range All");
 
     cut_b.r.w = 14 * 3;
     cut_b.r.h = 20;
     cut_b.r.x = range_all.r.x + range_all.r.w + 8;
     cut_b.r.y = range_all.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Cut", pallet->black);
-    cut_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&cut_b, "Cut");
 
     copy_b.r.w = 14 * 4;
     copy_b.r.h = 20;
     copy_b.r.x = cut_b.r.x + cut_b.r.w + 8;
     copy_b.r.y = cut_b.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Copy", pallet->black);
-    copy_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&copy_b, "Copy");
 
     paste_b.r.w = 14 * 5;
     paste_b.r.h = 20;
     paste_b.r.x = copy_b.r.x + copy_b.r.w + 8;
     paste_b.r.y = copy_b.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Paste", pallet->black);
-    paste_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&paste_b, "Paste");
 
     copy_buffer = (Sint16*)malloc(sizeof(Sint16)*1000);
     copy_buffer_size = 1000;
@@ -112,28 +100,19 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     slice_b.r.h = 20;
     slice_b.r.x = paste_b.r.x + paste_b.r.w + 8;
     slice_b.r.y = paste_b.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Slice", pallet->black);
-    slice_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&slice_b, "Slice");
 
     fade_in_b.r.w = 14 * 5;
     fade_in_b.r.h = 20;
     fade_in_b.r.x = slice_b.r.x + slice_b.r.w + 8;
     fade_in_b.r.y = slice_b.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Fade In", pallet->black);
-    fade_in_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&fade_in_b, "Fade In");
 
     fade_out_b.r.w = 14 * 6;
     fade_out_b.r.h = 20;
     fade_out_b.r.x = fade_in_b.r.x + fade_in_b.r.w + 8;
     fade_out_b.r.y = fade_in_b.r.y;
-
-    surf = TTF_RenderText_Solid(font, "Fade Out", pallet->black);
-    fade_out_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    tex_gen(&fade_out_b, "Fade Out");
 
     vol_e.r.x = zoom_to_end.r.x;
     vol_e.r.y = 20 + waveform.r.h + selection_front_entry.r.h + 8;
@@ -145,10 +124,30 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     vol_b.r.y = vol_e.r.y;
     vol_b.r.w = range_all.r.w;
     vol_b.r.h = 20;
+    tex_gen(&vol_b, "Change Vol");
 
-    surf = TTF_RenderText_Solid(font, "Change Vol", pallet->black);
-    vol_b.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    sample_rate_d.r.x = selection_front_entry.r.x;
+    sample_rate_d.r.y = vol_b.r.y;
+    sample_rate_d.r.w = selection_front_entry.r.w;
+    sample_rate_d.r.h = 20;
+
+    half_rate_b.r.x = selection_back_entry.r.x;
+    half_rate_b.r.y = vol_e.r.y;
+    half_rate_b.r.w = selection_back_entry.r.w;
+    half_rate_b.r.h = 20;
+    tex_gen(&half_rate_b, " 1/2 ");
+
+    third_rate_b.r.x = sample_len_display.r.x;
+    third_rate_b.r.y = vol_e.r.y;
+    third_rate_b.r.w = sample_len_display.r.w;
+    third_rate_b.r.h = 20;
+    tex_gen(&third_rate_b, " 1/3 ");
+
+    quarter_rate_b.r.x = zoom_to_start.r.x;
+    quarter_rate_b.r.y = vol_e.r.y;
+    quarter_rate_b.r.w = zoom_to_start.r.w;
+    quarter_rate_b.r.h = 20;
+    tex_gen(&quarter_rate_b, " 1/4 ");
 
     setup_new_sample();
     update_vol_entry();
@@ -370,6 +369,17 @@ void Sample_edit::update_selection_index()
     selection_back_entry.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
     selection_back_entry.text = data;
+
+    if (sample_rate_d.t != NULL)
+    {
+        SDL_DestroyTexture(sample_rate_d.t);
+    }
+    data = to_string(t->sample[t->s_pos].sample_rate);
+    data = blank_fill(data, 5, '0');
+    data += "Hz";
+    surf = TTF_RenderText_Solid(font, data.c_str(), pallet->black);
+    sample_rate_d.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
 
     draw_wave();
 }
@@ -688,6 +698,17 @@ void Sample_edit::change_vol()
     draw_wave();
 }
 
+void Sample_edit::tex_gen(Button *bt, const char *text)
+{
+    if (bt->t != NULL)
+    {
+        SDL_DestroyTexture(bt->t);
+    }
+    surf = TTF_RenderText_Solid(font, text, pallet->black);
+    bt->t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+}
+
 void Sample_edit::de_init()
 {
     SDL_FreeFormat(fmt);
@@ -731,6 +752,10 @@ void Sample_edit::refresh()
     render_struct(render, &fade_in_b, NULL);
     render_struct(render, &fade_out_b, NULL);
     render_struct(render, &vol_b, &vol_e);
+    render_struct(render, &sample_rate_d, NULL);
+    render_struct(render, &half_rate_b, NULL);
+    render_struct(render, &third_rate_b, NULL);
+    render_struct(render, &quarter_rate_b, NULL);
 
     if (t->channel[0].play)
     {
@@ -816,6 +841,17 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         vol_e.active = true;
     } else if (checkButton(x, y, &vol_b.r)){
         change_vol();
+    } else if (checkButton(x, y, &half_rate_b.r)){
+        t->resample(t->s_pos, t->sample[t->s_pos].sample_rate, t->sample[t->s_pos].sample_rate / 2);
+        update_selection_index();
+    } else if (checkButton(x, y, &third_rate_b.r)){
+        t->resample(t->s_pos, t->sample[t->s_pos].sample_rate,
+            t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.3333333333));
+        update_selection_index();
+    } else if (checkButton(x, y, &quarter_rate_b.r)){
+        t->resample(t->s_pos, t->sample[t->s_pos].sample_rate,
+            t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.25));
+        update_selection_index();
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)

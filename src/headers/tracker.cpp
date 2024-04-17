@@ -425,6 +425,10 @@ void Tracker::low_pass(int sample_slot, int cutoff, int sample_rate)
 
 void Tracker::resample(int sample_slot, int old_rate, int new_rate)
 {
+    if (new_rate < 2000 || new_rate > 96000)
+    {
+        return;
+    }
     Sint16 *buffer = (Sint16*)malloc(sample[sample_slot].len*sizeof(Sint16));
     memset(buffer, 0, sample[sample_slot].len*sizeof(Sint16));
     low_pass(sample_slot, new_rate/2, old_rate);

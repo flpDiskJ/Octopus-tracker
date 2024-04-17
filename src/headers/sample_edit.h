@@ -42,6 +42,8 @@ private:
     long int paste_size = 0;
     Button slice_b, fade_in_b, fade_out_b;
     Entry vol_e; Button vol_b;
+    Button sample_rate_d;
+    Button half_rate_b, third_rate_b, quarter_rate_b; // resample buttons
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -80,6 +82,8 @@ private:
     void update_vol_entry();
 
     void change_vol();
+
+    void tex_gen(Button *bt, const char *text); // generate string texture
 
 public:
 
