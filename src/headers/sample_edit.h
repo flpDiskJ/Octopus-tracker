@@ -41,6 +41,7 @@ private:
     long int copy_buffer_size = 0;
     long int paste_size = 0;
     Button slice_b, fade_in_b, fade_out_b;
+    Entry vol_e; Button vol_b;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -75,6 +76,10 @@ private:
     void fade_out_selection();
 
     void text_entry(Entry *entry, SDL_Event *e);
+
+    void update_vol_entry();
+
+    void change_vol();
 
 public:
 

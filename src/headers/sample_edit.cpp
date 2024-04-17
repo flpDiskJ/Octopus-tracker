@@ -135,7 +135,23 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     fade_out_b.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
+    vol_e.r.x = zoom_to_end.r.x;
+    vol_e.r.y = 20 + waveform.r.h + selection_front_entry.r.h + 8;
+    vol_e.r.w = zoom_to_end.r.w;
+    vol_e.r.h = 20;
+    vol_e.text = "100";
+
+    vol_b.r.x = range_all.r.x;
+    vol_b.r.y = vol_e.r.y;
+    vol_b.r.w = range_all.r.w;
+    vol_b.r.h = 20;
+
+    surf = TTF_RenderText_Solid(font, "Change Vol", pallet->black);
+    vol_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     setup_new_sample();
+    update_vol_entry();
 }
 
 Sample_edit::~Sample_edit()
@@ -379,6 +395,23 @@ void Sample_edit::update_entries()
     update_selection_index();
 }
 
+void Sample_edit::update_vol_entry()
+{
+    if (vol_e.t != NULL)
+    {
+        SDL_DestroyTexture(vol_e.t);
+    }
+    if (vol_e.text.length() == 0)
+    {
+        vol_e.text = "0";
+    }
+    string temp = blank_fill(vol_e.text, 4, ' ');
+    temp += "% ";
+    surf = TTF_RenderText_Solid(font, temp.c_str(), pallet->black);
+    vol_e.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+}
+
 void Sample_edit::cut_selection()
 {
     if (selection.sample_back >= t->sample[t->s_pos].len)
@@ -607,6 +640,7 @@ void Sample_edit::text_entry(Entry *entry, SDL_Event *e)
         case SDLK_RETURN:
             entry->active = false;
             update_entries();
+            update_vol_entry();
             return;
             break;
         case SDLK_0:
@@ -619,8 +653,11 @@ void Sample_edit::text_entry(Entry *entry, SDL_Event *e)
         case SDLK_7:
         case SDLK_8:
         case SDLK_9:
-            keyname = SDL_GetKeyName(e->key.keysym.sym);
-            entry->text += keymap.sdl_getText(keyname, (SDL_GetModState() & KMOD_SHIFT));
+            if (entry->text.length() < 8)
+            {
+                keyname = SDL_GetKeyName(e->key.keysym.sym);
+                entry->text += keymap.sdl_getText(keyname, (SDL_GetModState() & KMOD_SHIFT));
+            }
             break;
         default:
             break;
@@ -632,6 +669,23 @@ void Sample_edit::text_entry(Entry *entry, SDL_Event *e)
     surf = TTF_RenderText_Solid(font, entry->text.c_str(), pallet->black);
     entry->t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+}
+
+void Sample_edit::change_vol()
+{
+    double amp = (double)stoi(vol_e.text) / 100.0;
+    for (int p = selection.sample_front; p < selection.sample_back; p++)
+    {
+        t->sample[t->s_pos].data[p] = (double)t->sample[t->s_pos].data[p] * amp;
+        if (t->sample[t->s_pos].data[p] > SAMPLE_PEAK)
+        {
+            t->sample[t->s_pos].data[p] = SAMPLE_PEAK;
+        } else if (t->sample[t->s_pos].data[p] < 0 - SAMPLE_PEAK)
+        {
+            t->sample[t->s_pos].data[p] = 0 - SAMPLE_PEAK;
+        }
+    }
+    draw_wave();
 }
 
 void Sample_edit::de_init()
@@ -676,6 +730,7 @@ void Sample_edit::refresh()
     render_struct(render, &slice_b, NULL);
     render_struct(render, &fade_in_b, NULL);
     render_struct(render, &fade_out_b, NULL);
+    render_struct(render, &vol_b, &vol_e);
 
     if (t->channel[0].play)
     {
@@ -757,6 +812,10 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         selection_front_entry.active = true;
     } else if (checkButton(x, y, &selection_back_entry.r)){
         selection_back_entry.active = true;
+    } else if (checkButton(x, y, &vol_e.r)){
+        vol_e.active = true;
+    } else if (checkButton(x, y, &vol_b.r)){
+        change_vol();
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
@@ -818,6 +877,9 @@ void Sample_edit::keyboard(SDL_Event *e)
     } else if (selection_back_entry.active)
     {
         text_entry(&selection_back_entry, e);
+    } else if (vol_e.active)
+    {
+        text_entry(&vol_e, e);
     } else {
         switch (e->key.keysym.sym)
         {
