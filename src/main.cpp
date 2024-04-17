@@ -132,8 +132,6 @@ int main(int argc, char* args[]) {
 
     tracker.load_inst("test_sample.wav", "Test Sample", 0); // used for testing only
 
-    aworks.generate_default_wave();
-
     SDL_Event e;
     int xM, yM; // mouse cords
     bool run = true;

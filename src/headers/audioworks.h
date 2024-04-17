@@ -14,13 +14,16 @@ private:
     struct Scope{
         SDL_Texture *t = NULL;
         SDL_Rect r;
-        Uint8 *data = NULL;
+        int *data = NULL;
         Uint16 data_size = 0;
+        Uint16 data_pos = 0;
         bool active = false;
     };
 
     Scope scope[CHANNELS];
     SDL_Texture *scope_idle_t;
+
+    void generate_scope(int index);
 
 public:
     Uint32 sample_count; // used to determine timing
@@ -28,8 +31,6 @@ public:
     AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren, SDL_Window *window, Pallet *plt);
 
     ~AudioW();
-
-    void generate_default_wave();
 
     void deinit();
 
