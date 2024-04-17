@@ -44,6 +44,7 @@ private:
     Entry vol_e; Button vol_b;
     Button sample_rate_d;
     Button half_rate_b, third_rate_b, quarter_rate_b; // resample buttons
+    Button rev_b; // reverse
 
     void setup_new_sample(); // sets inital values for zoom and selection
 
@@ -84,6 +85,8 @@ private:
     void change_vol();
 
     void tex_gen(Button *bt, const char *text); // generate string texture
+
+    void reverse_selection();
 
 public:
 

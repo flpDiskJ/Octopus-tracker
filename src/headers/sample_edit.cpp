@@ -149,6 +149,12 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     quarter_rate_b.r.h = 20;
     tex_gen(&quarter_rate_b, " 1/4 ");
 
+    rev_b.r.x = cut_b.r.x;
+    rev_b.r.y = vol_e.r.y;
+    rev_b.r.w = cut_b.r.w;
+    rev_b.r.h = 20;
+    tex_gen(&rev_b, "Rev");
+
     setup_new_sample();
     update_vol_entry();
 }
@@ -709,6 +715,30 @@ void Sample_edit::tex_gen(Button *bt, const char *text)
     SDL_FreeSurface(surf);
 }
 
+void Sample_edit::reverse_selection()
+{
+    if (selection.sample_back >= t->sample[t->s_pos].len)
+    {
+        selection.sample_back = t->sample[t->s_pos].len - 1;
+    }
+    if (selection.sample_front >= t->sample[t->s_pos].len)
+    {
+        selection.sample_front = t->sample[t->s_pos].len - 1;
+    }
+    long int length = sizeof(Sint16)*t->sample[t->s_pos].len;
+    Sint16 *buffer = (Sint16*)malloc(length);
+    memcpy(buffer, t->sample[t->s_pos].data, length);
+    int pos = selection.sample_front;
+    for (int p = selection.sample_back; p >= selection.sample_front; p--)
+    {
+        buffer[pos] = t->sample[t->s_pos].data[p];
+        pos++;
+    }
+    memcpy(t->sample[t->s_pos].data, buffer, length);
+    free(buffer);
+    draw_wave();
+}
+
 void Sample_edit::de_init()
 {
     SDL_FreeFormat(fmt);
@@ -756,6 +786,7 @@ void Sample_edit::refresh()
     render_struct(render, &half_rate_b, NULL);
     render_struct(render, &third_rate_b, NULL);
     render_struct(render, &quarter_rate_b, NULL);
+    render_struct(render, &rev_b, NULL);
 
     if (t->channel[0].play)
     {
@@ -852,6 +883,8 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         t->resample(t->s_pos, t->sample[t->s_pos].sample_rate,
             t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.25));
         update_selection_index();
+    } else if (checkButton(x, y, &rev_b.r)){
+        reverse_selection();
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
