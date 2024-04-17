@@ -1,16 +1,46 @@
 #include "audioworks.h"
 
-AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer)
+AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren)
 {
     t = tracker;
     b = buffer;
+    render = ren;
     sample_count = 0;
     tick_count = 0;
+
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        scope[c].r.w = 120;
+        scope[c].r.h = 80;
+        scope[c].r.x = 48 + (155 * c);
+        scope[c].r.y = 710;
+        scope[c].t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, scope[c].r.w, scope[c].r.h);
+        scope[c].data_size = SAMPLE_RATE / REFRESH_RATE;
+        scope[c].data = (Uint8*)malloc(sizeof(Uint8)*scope[c].data_size);
+    }
+
 }
 
 AudioW::~AudioW()
 {
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        free(scope[c].data);
+    }
+}
 
+void AudioW::render_scopes()
+{
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        if (scope[c].active)
+        {
+            SDL_RenderCopy(render, scope[c].t, NULL, &scope[c].r);
+        } else {
+            SDL_RenderCopy(render, scope_default_t, NULL, &scope[c].r);
+        }
+        SDL_RenderDrawRect(render, &scope[c].r);
+    }
 }
 
 void AudioW::play_note(SDL_Event *e)
@@ -312,6 +342,7 @@ void AudioW::audio_works() // fills audio buffer
 
             if (t->channel[c].play && t->mute[c] == false)
             {
+                scope[c].active = true;
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
@@ -328,6 +359,8 @@ void AudioW::audio_works() // fills audio buffer
                 } else {
                     t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
                 }
+            } else {
+                scope[c].active = false;
             }
         }
         temp = val / CHANNELS;

@@ -30,7 +30,7 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     waveform.r.w = 960;
     waveform.r.h = 200;
     wave_scale = (SAMPLE_PEAK * 2) / waveform.r.h;
-    waveform.t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, waveform.r.w, waveform.r.h);;
+    waveform.t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, waveform.r.w, waveform.r.h);
 
     selection_front_entry.r.x = 20;
     selection_front_entry.r.y = 20 + waveform.r.h + 4;

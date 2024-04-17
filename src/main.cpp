@@ -12,7 +12,7 @@
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_HEIGHT = 800;
 
 void audio_callback(void* buffer, Uint8* stream, int len)
 {
@@ -124,7 +124,7 @@ int main(int argc, char* args[]) {
     }
     SDL_PauseAudio(0);
 
-    AudioW aworks(&tracker, &audio_buffer);
+    AudioW aworks(&tracker, &audio_buffer, tracker_render);
 
     Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
 
@@ -334,6 +334,8 @@ int main(int argc, char* args[]) {
             tracker.render_steps();
 
             tracker.render_bars();
+
+            aworks.render_scopes();
 
             SDL_RenderPresent(tracker_render); // Present image to screen
 
