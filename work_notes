@@ -49,6 +49,8 @@ To do:
 
 Bugs:
 
+    - Reverse with range-all in sample editor causes seg fault.
+
     - Something caused the following error after the program was quit:
       double free or corruption (!prev)
       Aborted
