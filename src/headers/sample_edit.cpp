@@ -729,7 +729,7 @@ void Sample_edit::reverse_selection()
     Sint16 *buffer = (Sint16*)malloc(length);
     memcpy(buffer, t->sample[t->s_pos].data, length);
     int pos = selection.sample_front;
-    for (int p = selection.sample_back; p >= selection.sample_front; p--)
+    for (int p = selection.sample_back; p > selection.sample_front; p--)
     {
         buffer[pos] = t->sample[t->s_pos].data[p];
         pos++;
