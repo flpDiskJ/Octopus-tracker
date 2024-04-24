@@ -49,8 +49,8 @@ To do:
 
 Bugs:
 
-    - Reverse with range-all in sample editor causes seg fault.
-
     - Something caused the following error after the program was quit:
       double free or corruption (!prev)
       Aborted
+
+    - Lowered refresh rate to 50 as the scope generation process was stopping audio channels prematurely at 60 or higher
