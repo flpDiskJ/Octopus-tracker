@@ -404,6 +404,11 @@ void AudioW::audio_works() // fills audio buffer
                     val += temp;
                     if (t->channel[c].reverse)
                     {
+                        // handles ping pong loop
+                        if (t->sample[t->channel[c].sample].loop == 2 && actual_pos <= t->sample[t->channel[c].sample].loop_point)
+                        {
+                            t->channel[c].reverse = false;
+                        }
                         t->channel[c].pos -= t->channel[c].pos_adv;
                     } else {
                         t->channel[c].pos += t->channel[c].pos_adv;
@@ -411,7 +416,17 @@ void AudioW::audio_works() // fills audio buffer
                     if (sig_max[c] < temp * BIT_REDUCT)
                     {sig_max[c] = temp * BIT_REDUCT;}
                 } else {
-                    t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
+                    // handle looping
+                    if (t->sample[t->channel[c].sample].loop == 1)
+                    {
+                        t->channel[c].pos = t->sample[t->channel[c].sample].loop_point;
+                    } else if (t->sample[t->channel[c].sample].loop == 2)
+                    {
+                        t->channel[c].reverse = true;
+                        t->channel[c].pos -= 1;
+                    } else {
+                        t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
+                    }
                 }
             } else {
                 scope[c].active = false;
