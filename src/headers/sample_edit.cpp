@@ -250,7 +250,10 @@ void Sample_edit::draw_wave()
                 } else if (y == 101) {
                     ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->red.b, pallet->red.g, pallet->red.r);
                 } else {
-                    if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
+                    if (t->sample[t->s_pos].loop > 0 && actual_pos == t->sample[t->s_pos].loop_point)
+                    {
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->blue.b, pallet->blue.g, pallet->blue.r);
+                    } else if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
                     {
                         ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.b, pallet->white.g, pallet->white.r);
                     } else {
@@ -264,7 +267,11 @@ void Sample_edit::draw_wave()
                 } else if (y == 101) {
                     ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->red.b, pallet->red.g, pallet->red.r);
                 } else {
-                    if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
+                    if (t->sample[t->s_pos].loop > 0 && (actual_pos+wave_zoom) >= t->sample[t->s_pos].loop_point
+                        && (actual_pos-wave_zoom) <= t->sample[t->s_pos].loop_point)
+                    {
+                        ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->blue.b, pallet->blue.g, pallet->blue.r);
+                    } else if (actual_pos >= selection.sample_front && actual_pos <= selection.sample_back)
                     {
                         ((Uint32*)pixels)[x+(y*waveform.r.w)] = SDL_MapRGB(fmt, pallet->white.b, pallet->white.g, pallet->white.r);
                     } else {
@@ -759,6 +766,17 @@ void Sample_edit::reverse_selection()
     draw_wave();
 }
 
+void Sample_edit::set_loop_point(int x)
+{
+    x = x - waveform.r.x;
+    Uint32 point = ((double)x * wave_zoom) + wave_offset;
+    if (point >= t->sample[t->s_pos].len)
+    {
+        point = t->sample[t->s_pos].len - 1;
+    }
+    t->sample[t->s_pos].loop_point = point;
+}
+
 void Sample_edit::de_init()
 {
     SDL_FreeFormat(fmt);
@@ -926,6 +944,7 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
             t->sample[t->s_pos].loop = 0;
             tex_gen(&loop_mode, " --- ");
         }
+        draw_wave();
     } else if (checkButton(x, y, &loop_mode.r)){
         if (t->sample[t->s_pos].loop == 2)
         {
@@ -941,7 +960,12 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         switch (e->button.button)
         {
             case SDL_BUTTON_LEFT:
-                get_sample_postions(x, true);
+                if (SDL_GetModState() & KMOD_CTRL)
+                {
+                    set_loop_point(x);
+                } else {
+                    get_sample_postions(x, true);
+                }
                 draw_wave();
                 break;
             case SDL_BUTTON_RIGHT:

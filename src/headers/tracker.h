@@ -43,6 +43,7 @@ private:
         string name;
         int sample_rate = 0;
         Uint8 loop = 0; // 0 = no loop, 1 = normal loop, 2 = ping pong
+        Uint32 loop_point = 0;
     };
 
     struct Channel{ // set these values when note is triggered

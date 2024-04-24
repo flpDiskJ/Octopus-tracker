@@ -90,6 +90,8 @@ private:
 
     void reverse_selection();
 
+    void set_loop_point(int x);
+
 public:
 
     Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p);

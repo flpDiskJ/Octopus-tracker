@@ -66,3 +66,4 @@ Sample Editor Sub-window:
     MOUSE SCROLL = zoom waveform
     LEFT/RIGHT/MIDDLE MOUSE BUTTONS = set waveform selection
     SHIFT+LEFT/RIGHT = change sample/instrument
+    CTRL+LeftMouse = set loop point
