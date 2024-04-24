@@ -13,44 +13,45 @@ private:
     TTF_Font *font;
 
     struct Note{ // holds data for single note
-        char note; // A, B, C, D, E, F, G or - for blank
-        char key; // - or #
-        int octave; // 1 thru 6 or - for blank
-        int sample; // 0 - 99
+        char note = '-'; // A, B, C, D, E, F, G or - for blank
+        char key = '-'; // - or #
+        int octave = 0; // 1 thru 6 or 0 for blank
+        int sample = 0; // 0 - 99
         char command[3];
         char parameter[3]; // parameters for command
-        double pos_adv; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
+        double pos_adv = 0; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
 
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
         char *array;
-        int length; // number of Notes in the block
-        int speed; // steps per beat
+        int length = 0; // number of Notes in the block
+        int speed = 0; // steps per beat
         string name;
     };
 
     struct Buffer{ // used to copy and paste channels
-        Note *data;
-        int length;
+        Note *data = NULL;
+        int length = 0;
     };
 
     struct Instrument{ // data for each instrument/sample
-        Sint16 *data;
-        Uint32 len;
-        int level; // 0-100
-        double tune; // 0. - 2
+        Sint16 *data = NULL;
+        Uint32 len = 0;
+        int level = 0; // 0-100
+        double tune = 0; // 0. - 2
         string name;
-        int sample_rate;
+        int sample_rate = 0;
+        Uint8 loop = 0; // 0 = no loop, 1 = normal loop, 2 = ping pong
     };
 
     struct Channel{ // set these values when note is triggered
-        bool play; // set to true to play audio
+        bool play = false; // set to true to play audio
 
         ///// command bs
-        Uint8 command_type;
+        Uint8 command_type = COM_NONE;
         unsigned int command_param[3]; // 0 = first slot only, 1 = second slot only, 2 = combined value
-        Uint8 octave; // octave of current note
+        Uint8 octave = 0; // octave of current note
 
         // 00 Arpeggio
         unsigned int arp_toggle;
@@ -89,14 +90,14 @@ private:
         unsigned int retrig_count;
 
         // 0A
-        bool reverse;
+        bool reverse = false;
 
         double amplifier; // control level. calculate: desired_level / 100.0
         //////
 
-        int sample; // sample to play.
-        double pos; // curent position of sample in channel
-        double pos_adv; // amount to advance pos // calculate: Desired rate / SAMPLE_RATE // multiplied by pitch_mod every advance
+        int sample = 0; // sample to play.
+        double pos = 0; // curent position of sample in channel
+        double pos_adv = 0; // amount to advance pos // calculate: Desired rate / SAMPLE_RATE // multiplied by pitch_mod every advance
     };
 
     SDL_Rect tracker_box; // only functions for design (box around tracker)

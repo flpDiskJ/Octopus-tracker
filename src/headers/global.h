@@ -12,7 +12,7 @@ using namespace std;
 #include <iostream>
 
 //// Customable
-#define REFRESH_RATE 60
+#define REFRESH_RATE 50
 #define AUDIO_LATENCY 6 // 4 to 8
 #define AMP_LEV 2 // master level
 #define SAMPLE_RATE 48000 // output sample rate
@@ -75,7 +75,7 @@ struct Pallet{ // global color pallet
 
 struct Button{
     SDL_Rect r;
-    SDL_Texture *t;
+    SDL_Texture *t = NULL;
 };
 
 struct Entry{
@@ -91,9 +91,9 @@ struct Slider{
 };
 
 struct AudioBuffer{ // global audio output buffer // passed into audio callback
-    Uint8 *data;
-    Uint32 len;
-    Uint32 read_pos;
-    Uint32 write_pos;
-    bool stop;
+    Uint8 *data = NULL;
+    Uint32 len = 0;
+    Uint32 read_pos = 0;
+    Uint32 write_pos = 0;
+    bool stop = false;
 };

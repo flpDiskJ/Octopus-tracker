@@ -18,8 +18,8 @@ private:
     SDL_KEYMAP keymap;
 
     struct Selector{
-        unsigned long int sample_front; // actual sample position
-        unsigned long int sample_back;
+        unsigned long int sample_front = 0; // actual sample position
+        unsigned long int sample_back = 0;
     };
 
     const int waveform_zoom_sensitivity = 25;
@@ -45,6 +45,8 @@ private:
     Button sample_rate_d;
     Button half_rate_b, third_rate_b, quarter_rate_b; // resample buttons
     Button rev_b; // reverse
+    Button loop_on;
+    Button loop_mode;
 
     void setup_new_sample(); // sets inital values for zoom and selection
 

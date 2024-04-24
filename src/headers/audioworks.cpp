@@ -392,6 +392,7 @@ void AudioW::audio_works() // fills audio buffer
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
                     temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+
                     scope[c].data[scope[c].data_pos] = temp;
                     scope[c].data_pos++;
                     if (scope[c].data_pos >= scope[c].data_size)

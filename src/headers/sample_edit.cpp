@@ -155,6 +155,17 @@ Sample_edit::Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p
     rev_b.r.h = 20;
     tex_gen(&rev_b, "Rev");
 
+    loop_on.r.x = copy_b.r.x;
+    loop_on.r.y = vol_e.r.y;
+    loop_on.r.w = copy_b.r.w;
+    loop_on.r.h = 20;
+    tex_gen(&loop_on, "Loop");
+
+    loop_mode.r.x = paste_b.r.x;
+    loop_mode.r.y = vol_e.r.y;
+    loop_mode.r.w = paste_b.r.w;
+    loop_mode.r.h = 20;
+
     setup_new_sample();
     update_vol_entry();
 }
@@ -168,6 +179,15 @@ void Sample_edit::setup_new_sample()
 {
     wave_zoom = (double)t->sample[t->s_pos].len / (double)waveform.r.w;
     wave_offset = 0;
+    if (t->sample[t->s_pos].loop == 1)
+    {
+        tex_gen(&loop_mode, " --> ");
+    } else if (t->sample[t->s_pos].loop == 2)
+    {
+        tex_gen(&loop_mode, " <-> ");
+    } else {
+        tex_gen(&loop_mode, " --- ");
+    }
     select_all();
     update_selection_index();
 }
@@ -774,6 +794,8 @@ void Sample_edit::refresh()
     SDL_RenderCopy(render, zoom_to_start.t, NULL, &zoom_to_start.r);
     SDL_RenderCopy(render, zoom_to_end.t, NULL, &zoom_to_end.r);
 
+    render_struct(render, &loop_mode, NULL);
+
     render_struct(render, &range_all, NULL);
     render_struct(render, &cut_b, NULL);
     render_struct(render, &copy_b, NULL);
@@ -798,6 +820,16 @@ void Sample_edit::refresh()
             SDL_RenderDrawLine(render, x, waveform.r.y + 1, x, waveform.r.y + waveform.r.h - 2);
         }
     }
+
+    if (t->sample[t->s_pos].loop > 0)
+    {
+        SDL_SetRenderDrawColor(render, pallet->blue.r, pallet->blue.g, pallet->blue.b, 0xFF);
+        SDL_RenderFillRect(render, &loop_on.r);
+    } else {
+        SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF);
+        SDL_RenderDrawRect(render, &loop_on.r);
+    }
+    SDL_RenderCopy(render, loop_on.t, NULL, &loop_on.r);
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -885,6 +917,25 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
         update_selection_index();
     } else if (checkButton(x, y, &rev_b.r)){
         reverse_selection();
+    } else if (checkButton(x, y, &loop_on.r)){
+        if (t->sample[t->s_pos].loop == 0)
+        {
+            t->sample[t->s_pos].loop = 1;
+            tex_gen(&loop_mode, " --> ");
+        } else {
+            t->sample[t->s_pos].loop = 0;
+            tex_gen(&loop_mode, " --- ");
+        }
+    } else if (checkButton(x, y, &loop_mode.r)){
+        if (t->sample[t->s_pos].loop == 2)
+        {
+            t->sample[t->s_pos].loop = 1;
+            tex_gen(&loop_mode, " --> ");
+        } else if (t->sample[t->s_pos].loop == 1)
+        {
+            t->sample[t->s_pos].loop = 2;
+            tex_gen(&loop_mode, " <-> ");
+        }
     } else if (checkButton(x, y, &waveform.r))
     {
         switch (e->button.button)
