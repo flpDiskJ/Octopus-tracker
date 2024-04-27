@@ -28,29 +28,20 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
     }
 
     // button intialization
-    load_inst.r.x = 20;
-    load_inst.r.y = 20;
-    load_inst.r.w = 150;
-    load_inst.r.h = 50;
-
     save_file.r.x = 195;
-    save_file.r.y = 20;
+    save_file.r.y = 10;
     save_file.r.w = 150;
-    save_file.r.h = 50;
+    save_file.r.h = 30;
 
     load_file.r.x = 370;
-    load_file.r.y = 20;
+    load_file.r.y = 10;
     load_file.r.w = 150;
-    load_file.r.h = 50;
+    load_file.r.h = 30;
 
     export_audio.r.x = 545;
-    export_audio.r.y = 20;
+    export_audio.r.y = 10;
     export_audio.r.w = 150;
-    export_audio.r.h = 50;
-
-    surf = TTF_RenderText_Solid(font, "Load Instrument", pallet->black);
-    load_inst.t = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
+    export_audio.r.h = 30;
 
     surf = TTF_RenderText_Solid(font, "Save File", pallet->black);
     save_file.t = SDL_CreateTextureFromSurface(render, surf);
@@ -65,9 +56,9 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
     SDL_FreeSurface(surf);
 
     // file border init
-    file_border.x = 20;
-    file_border.y = 100;
-    file_border.w = 710;
+    file_border.x = 195;
+    file_border.y = 55;
+    file_border.w = 515;
     file_border.h = 380;
 }
 
@@ -81,12 +72,18 @@ string DiskOp::cat_path(string path1, string path2)
     return path1 + path2;
 }
 
-void DiskOp::fill_path_list()
+void DiskOp::fill_path_list(string absolute_path)
 {
     // clean up path vector
     path_list.clear();
 
-    d_op_path = opendir(parent[parent_index].c_str()); // change to path from config file
+    // TODO Immediately: add the logic to setup the default path and then update the absolute path to files based off of 
+    // which subfolder the user wishes to browse.
+
+    // Currently the cat_path() method isn't being utilized in this method but once the ability to navigate the diskop menu
+    // is implemented it will be used to update the absolute path.
+
+    d_op_path = opendir(absolute_path.c_str()); 
     while (dp = readdir(d_op_path))// if dp is null no more content to list
     {
         path_list.push_back(dp->d_name); // append path string to path list
@@ -96,7 +93,8 @@ void DiskOp::fill_path_list()
 
 void DiskOp::update_list_textures()
 {
-
+    // For now I'm thinking we have a fixed number of files/file locations that will be displayed to the window at any given moment
+    // but this method will update the SDL_Textures to be displayed to the diskop window
 }
 
 void DiskOp::de_init() {
@@ -111,9 +109,6 @@ void DiskOp::refresh()
     SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
 
     // render buttons
-    SDL_RenderDrawRect(render, &load_inst.r);
-    SDL_RenderCopy(render, load_inst.t, NULL, &load_inst.r);
-
     SDL_RenderDrawRect(render, &save_file.r);
     SDL_RenderCopy(render, save_file.t, NULL, &save_file.r);
 
@@ -124,6 +119,8 @@ void DiskOp::refresh()
     SDL_RenderCopy(render, export_audio.t, NULL, &export_audio.r);
 
     SDL_RenderDrawRect(render, &file_border);
+
+    update_list_textures(); // this method needs to be implemented!!!
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -155,10 +152,10 @@ bool DiskOp::checkButton(int mouseX, int mouseY, SDL_Rect *button) {
 
 void DiskOp::mouse(int x, int y)
 {
-    if (checkButton(x, y, &load_inst.r))
-    {
-        // do something
-    }
+    // if (checkButton(x, y, &load_inst.r))
+    // {
+    //     // do something
+    // }
     refresh();
 }
 

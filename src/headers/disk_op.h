@@ -4,6 +4,8 @@
 #include <dirent.h>
 #include <vector>
 
+#define FILE_LIST_SIZE 16
+
 /**
 NOTE FROM JAKE
 
@@ -11,7 +13,7 @@ NOTE FROM JAKE
 
     when t->load_inst() is called it will now resample the audio to the pitch specified in default_pitch
 
-    only the note, key, and octave elemnts from default_pitch are used (check Note struct in tracker.h)
+    only the note, key, and octave elements from default_pitch are used (check Note struct in tracker.h)
 
 **/
 
@@ -23,11 +25,15 @@ class DiskOp {
         SDL_Surface *surf;
         TTF_Font *font; // pointer to the program font
         Pallet *pallet; // pointer to the program pallet
-        Button load_inst, save_file, load_file, export_audio; // DiskOp gui buttons
+        Button save_file, load_file, export_audio; // DiskOp gui buttons
         SDL_Rect file_border;
         struct dirent *dp; // instance of the dirent struct to get sub-directory strings
         DIR *d_op_path; // directory stream for disk op window
         vector<string> path_list;
+        // I got the types and names for the UI for the disk op from the sequence list code
+        int cursor = 8;
+        int scroll_pos = 0;
+        Button list[FILE_LIST_SIZE];
         enum path_type
         {
             module_p, sample_p, export_p
@@ -38,9 +44,9 @@ class DiskOp {
         // helper methods
         string cat_path(string path1, string path2);
 
-        void fill_path_list();
+        void fill_path_list(string absolute_path);
 
-        void update_list_textures();
+        void update_list_textures(); // this might end up being more similar to the update_sequence_list method from sequence_list.h
 
 
     public:
