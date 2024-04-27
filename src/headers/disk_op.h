@@ -44,7 +44,7 @@ class DiskOp {
         // helper methods
         string cat_path(string path1, string path2);
 
-        void fill_path_list(string absolute_path);
+        void fill_path_list(string sub_path);
 
         void update_list_textures(); // this might end up being more similar to the update_sequence_list method from sequence_list.h
 

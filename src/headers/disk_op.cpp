@@ -9,8 +9,8 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
 
     // read from config eventually
     parent[0] = "/";
-    parent[1] = "/";
-    parent[2] = "/";
+    parent[1] = "/home";
+    parent[2] = "/etc";
 
     // initialize window and renderer
     window = SDL_CreateWindow("Disk Op", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -72,7 +72,7 @@ string DiskOp::cat_path(string path1, string path2)
     return path1 + path2;
 }
 
-void DiskOp::fill_path_list(string absolute_path)
+void DiskOp::fill_path_list(string sub_path) // for now pass "/", when this is used later in the program it will be different
 {
     // clean up path vector
     path_list.clear();
@@ -83,7 +83,7 @@ void DiskOp::fill_path_list(string absolute_path)
     // Currently the cat_path() method isn't being utilized in this method but once the ability to navigate the diskop menu
     // is implemented it will be used to update the absolute path.
 
-    d_op_path = opendir(absolute_path.c_str()); 
+    d_op_path = opendir(cat_path(parent[1],sub_path).c_str()); 
     while (dp = readdir(d_op_path))// if dp is null no more content to list
     {
         path_list.push_back(dp->d_name); // append path string to path list
