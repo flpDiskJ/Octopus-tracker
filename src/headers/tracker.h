@@ -19,12 +19,10 @@ private:
         int sample = 0; // 0 - 99
         char command[3];
         char parameter[3]; // parameters for command
-        double pos_adv = 0; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
 
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
-        char *array;
         int length = 0; // number of Notes in the block
         int speed = 0; // steps per beat
         string name;
@@ -38,7 +36,7 @@ private:
     struct Instrument{ // data for each instrument/sample
         Sint16 *data = NULL;
         Uint32 len = 0;
-        int level = 0; // 0-100
+        Uint8 level = 0; // 0-100
         Sint8 tune = 0; // -12 to 12
         Sint8 fine_tune = 0; // -12 to 12
         string name;
@@ -198,6 +196,18 @@ public:
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
 
+    struct Scope{
+        SDL_Texture *t = NULL;
+        SDL_Rect r;
+        Sint32 *data = NULL;
+        Uint16 data_size = 0;
+        Uint16 data_pos = 0;
+        bool active = false;
+    };
+
+    Scope scope[CHANNELS];
+    SDL_Texture *scope_idle_t;
+
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
@@ -219,7 +229,8 @@ public:
 
     bool load_inst(string path, string name, int sample_slot); // loads wav into instrument slot of s_pos | returns true if successful
 
-    int getFreq(char note, char key, int oct); // returns sample rate of note
+    int getFreq(char note, char key, int oct, int sample_id); // returns sample rate of note
+    // pass -1 to sample_id to bypass tune and finetune
 
     void incpos(); // increment step position
 

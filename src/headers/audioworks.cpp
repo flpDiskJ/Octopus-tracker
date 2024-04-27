@@ -1,91 +1,44 @@
 #include "audioworks.h"
 
-AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren, SDL_Window *window, Pallet *plt)
+AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_PixelFormat *f, Pallet *plt)
 {
     t = tracker;
     b = buffer;
-    render = ren;
     pallet = plt;
     sample_count = 0;
     tick_count = 0;
-
-    fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(window));
-
-    for (int c = 0; c < CHANNELS; c++)
-    {
-        scope[c].r.w = 120;
-        scope[c].r.h = 80;
-        scope[c].r.x = 48 + (155 * c);
-        scope[c].r.y = 710;
-        scope[c].t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, scope[c].r.w / 2, scope[c].r.h / 2);
-        scope[c].data_size = SAMPLE_RATE / REFRESH_RATE;
-        scope[c].data = (int*)malloc(sizeof(int)*scope[c].data_size);
-    }
-    scope_idle_t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, scope[0].r.w / 2, scope[0].r.h / 2);
-    void *pixels;
-    int pitch;
-    SDL_LockTexture(scope_idle_t, NULL, &pixels, &pitch);
-    for (int x = 0; x < scope[0].r.w / 2; x++)
-    {
-        for (int y = 0; y < scope[0].r.h / 2; y++)
-        {
-            if (y == scope[0].r.h / 4)
-            {
-                ((Uint32*)pixels)[x+(y*(scope[0].r.w/2))] = SDL_MapRGB(fmt, pallet->white.b, pallet->white.g, pallet->white.r);
-            } else {
-                ((Uint32*)pixels)[x+(y*(scope[0].r.w/2))] = SDL_MapRGB(fmt, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r);
-            }
-        }
-    }
-    SDL_UnlockTexture(scope_idle_t);
+    fmt = f;
 }
 
 AudioW::~AudioW()
 {
-    for (int c = 0; c < CHANNELS; c++)
-    {
-        free(scope[c].data);
-    }
+
 }
 
 void AudioW::generate_scope(int index)
 {
     void *pixels;
     int pitch;
-    int scale = SAMPLE_PEAK / ((scope[index].r.h / 2) - 1);
+    int scale = SAMPLE_PEAK / ((t->scope[index].r.h / 2) - 1);
     double pos = 0;
-    double pos_adv = (double)scope[index].data_size / (double)(scope[index].r.w/2);
+    double pos_adv = (double)t->scope[index].data_size / (double)(t->scope[index].r.w/2);
     int actual_pos = 0;
-    SDL_LockTexture(scope[index].t, NULL, &pixels, &pitch);
-    for (int x = 0; x < scope[index].r.w / 2; x++)
+    SDL_LockTexture(t->scope[index].t, NULL, &pixels, &pitch);
+    for (int x = 0; x < t->scope[index].r.w / 2; x++)
     {
-        for (int y = 0; y < scope[index].r.h / 2; y++)
+        for (int y = 0; y < t->scope[index].r.h / 2; y++)
         {
-            if (y == (scope[index].data[actual_pos] / scale) + (scope[index].r.h / 4))
+            if (y == (t->scope[index].data[actual_pos] / scale) + (t->scope[index].r.h / 4))
             {
-                ((Uint32*)pixels)[x+(y*(scope[index].r.w/2))] = SDL_MapRGB(fmt, pallet->black.b, pallet->black.g, pallet->black.r);
+                ((Uint32*)pixels)[x+(y*(t->scope[index].r.w/2))] = SDL_MapRGB(fmt, pallet->black.b, pallet->black.g, pallet->black.r);
             } else {
-                ((Uint32*)pixels)[x+(y*(scope[index].r.w/2))] = SDL_MapRGB(fmt, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r);
+                ((Uint32*)pixels)[x+(y*(t->scope[index].r.w/2))] = SDL_MapRGB(fmt, pallet->bgd.b, pallet->bgd.g, pallet->bgd.r);
             }
         }
         pos += pos_adv;
         actual_pos = (int)pos;
     }
-    SDL_UnlockTexture(scope[index].t);
-}
-
-void AudioW::render_scopes()
-{
-    for (int c = 0; c < CHANNELS; c++)
-    {
-        if (scope[c].active)
-        {
-            SDL_RenderCopy(render, scope[c].t, NULL, &scope[c].r);
-        } else {
-            SDL_RenderCopy(render, scope_idle_t, NULL, &scope[c].r);
-        }
-        SDL_RenderDrawRect(render, &scope[c].r);
-    }
+    SDL_UnlockTexture(t->scope[index].t);
 }
 
 void AudioW::play_note(SDL_Event *e)
@@ -144,7 +97,7 @@ void AudioW::play_note(SDL_Event *e)
     {
         t->channel[t->cursor_channel].pos = 0;
         t->channel[t->cursor_channel].sample = t->s_pos;
-        t->channel[t->cursor_channel].pos_adv = (double)t->getFreq(note, key, oct) / (double)SAMPLE_RATE;
+        t->channel[t->cursor_channel].pos_adv = (double)t->getFreq(note, key, oct, t->s_pos) / (double)SAMPLE_RATE;
         t->channel[t->cursor_channel].amplifier = (double)t->sample[t->s_pos].level / 100.0;
         t->channel[t->cursor_channel].play = true;
         t->channel[t->cursor_channel].reverse = false;
@@ -203,7 +156,7 @@ void AudioW::play_sample(SDL_Event *e, int sample)
     {
         t->channel[0].pos = 0;
         t->channel[0].sample = sample;
-        t->channel[0].pos_adv = (double)t->getFreq(note, key, oct) / (double)SAMPLE_RATE;
+        t->channel[0].pos_adv = (double)t->getFreq(note, key, oct, sample) / (double)SAMPLE_RATE;
         t->channel[0].amplifier = (double)t->sample[sample].level / 100.0;
         t->channel[0].play = true;
         t->channel[0].reverse = false;
@@ -387,17 +340,17 @@ void AudioW::audio_works() // fills audio buffer
 
             if (t->channel[c].play && t->mute[c] == false)
             {
-                scope[c].active = true;
+                t->scope[c].active = true;
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
                     temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
 
-                    scope[c].data[scope[c].data_pos] = temp;
-                    scope[c].data_pos++;
-                    if (scope[c].data_pos >= scope[c].data_size)
+                    t->scope[c].data[t->scope[c].data_pos] = temp;
+                    t->scope[c].data_pos++;
+                    if (t->scope[c].data_pos >= t->scope[c].data_size - 1)
                     {
-                        scope[c].data_pos = 0;
+                        t->scope[c].data_pos = 0;
                         generate_scope(c);
                     }
 
@@ -429,14 +382,17 @@ void AudioW::audio_works() // fills audio buffer
                     }
                 }
             } else {
-                scope[c].active = false;
+                if (t->scope[c].active)
+                {
+                    t->scope[c].active = false;
+                }
             }
         }
         temp = val / CHANNELS;
         temp = temp * AMP_LEV * BIT_REDUCT;
         if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
         else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
-        out = temp;
+        out = (Sint16)temp;
         b->data[b->write_pos] = out & 0xFF;
         b->data[b->write_pos+1] = out >> 8 & 0xFF;
         if (b->write_pos >= b->len)
@@ -450,9 +406,4 @@ void AudioW::audio_works() // fills audio buffer
     {
         t->set_trigger_bar(c, sig_max[c]);
     }
-}
-
-void AudioW::deinit()
-{
-    SDL_FreeFormat(fmt);
 }

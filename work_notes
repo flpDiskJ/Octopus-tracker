@@ -56,3 +56,4 @@ Bugs:
     - Scope generation process stops audio some channels prematurely and causes distortion in others.
       This bug occurs randomly...  :/ ???
       It doesn't seem to occur when the generate_scope function is commented out.
+      Removing the unused element from the block struct in tracker.h 'char *array;' makes the bug persistent.. ???

@@ -36,6 +36,7 @@ const int refresh_delay_ms = 1000 / REFRESH_RATE;
 const int TICK_LEN = SAMPLE_RATE / 32;
 const double SEMITONE_MULTIPLIER = 1.0595555;
 const double HALF_SEMITONE_MULTIPLIER = 1.02977775;
+const double FINETUNE_MULTIPLIER = 1.005;
 const int AUDIO_PEAK = 32760;
 const int AUDIO_PEAK_LOW = -32760;
 const int SAMPLE_PEAK = AUDIO_PEAK / BIT_REDUCT;
