@@ -37,7 +37,7 @@ private:
     struct Instrument{ // data for each instrument/sample
         Sint16 *data = NULL;
         Uint32 len = 0;
-        int level = 0; // 0-100
+        Uint8 level = 0; // 0-100
         Sint8 tune = 0; // -12 to 12
         Sint8 fine_tune = 0; // -12 to 12
         string name;

@@ -17,9 +17,10 @@ AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_Renderer *ren, SDL_Win
         scope[c].r.h = 80;
         scope[c].r.x = 48 + (155 * c);
         scope[c].r.y = 710;
-        scope[c].t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, scope[c].r.w / 2, scope[c].r.h / 2);
+        scope[c].t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING,
+            scope[c].r.w / 2, scope[c].r.h / 2);
         scope[c].data_size = SAMPLE_RATE / REFRESH_RATE;
-        scope[c].data = (int*)malloc(sizeof(int)*scope[c].data_size);
+        scope[c].data = (Sint32*)malloc(sizeof(Sint32)*scope[c].data_size+10);
     }
     scope_idle_t = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, scope[0].r.w / 2, scope[0].r.h / 2);
     void *pixels;
@@ -395,7 +396,7 @@ void AudioW::audio_works() // fills audio buffer
 
                     scope[c].data[scope[c].data_pos] = temp;
                     scope[c].data_pos++;
-                    if (scope[c].data_pos >= scope[c].data_size)
+                    if (scope[c].data_pos >= scope[c].data_size - 1)
                     {
                         scope[c].data_pos = 0;
                         generate_scope(c);
@@ -429,7 +430,10 @@ void AudioW::audio_works() // fills audio buffer
                     }
                 }
             } else {
-                scope[c].active = false;
+                if (scope[c].active)
+                {
+                    scope[c].active = false;
+                }
             }
         }
         temp = val / CHANNELS;

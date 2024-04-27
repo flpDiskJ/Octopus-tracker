@@ -14,7 +14,7 @@ private:
     struct Scope{
         SDL_Texture *t = NULL;
         SDL_Rect r;
-        int *data = NULL;
+        Sint32 *data = NULL;
         Uint16 data_size = 0;
         Uint16 data_pos = 0;
         bool active = false;
