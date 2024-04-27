@@ -43,7 +43,7 @@ Sequencer::Sequencer(Tracker *tracker, Util *util, TTF_Font *f, Pallet *p)
     delete_btn.r.w = 168;
     delete_btn.r.h = 30;
 
-    for (int index = 0; index < list_entries; index++)
+    for (int index = 0; index < LIST_ENTRIES; index++)
     {
         list[index].r.w = list_box.w;
         list[index].r.h = 24;
@@ -74,7 +74,7 @@ Sequencer::~Sequencer()
 
 bool Sequencer::set_seq_pos(int entry)
 {
-    int pos =  scroll_pos + (entry - (list_entries/2));
+    int pos =  scroll_pos + (entry - (LIST_ENTRIES/2));
     if (pos >= 0 && pos < t->sequence_len)
     {
         t->sq_pos = pos;
@@ -104,7 +104,7 @@ void Sequencer::refresh()
     SDL_RenderDrawRect(render, &delete_btn.r);
     SDL_RenderCopy(render, delete_btn.t, NULL, &delete_btn.r);
 
-    for (int i = 0; i < list_entries; i++)
+    for (int i = 0; i < LIST_ENTRIES; i++)
     {
         SDL_RenderCopy(render, list[i].t, NULL, &list[i].r);
     }
@@ -121,7 +121,7 @@ void Sequencer::refresh()
 void Sequencer::update_list()
 {
     string text;
-    for (int index = 0, p = scroll_pos - (list_entries / 2); index < list_entries; index++, p++)
+    for (int index = 0, p = scroll_pos - (LIST_ENTRIES / 2); index < LIST_ENTRIES; index++, p++)
     {
         if (p >= 0 && p < t->sequence_len)
         {
@@ -159,7 +159,7 @@ void Sequencer::open()
     SDL_ShowWindow(window);
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
-    cursor = list_entries/2;
+    cursor = LIST_ENTRIES/2;
     scroll_pos = t->sq_pos;
     selected = true;
     update_list();
@@ -201,7 +201,7 @@ void Sequencer::mouse(int x, int y)
         }
     } else if (checkButton(x, y, &list_box))
     {
-        for (int i = 0; i < list_entries; i++)
+        for (int i = 0; i < LIST_ENTRIES; i++)
         {
             if (checkButton(x, y, &list[i].r))
             {

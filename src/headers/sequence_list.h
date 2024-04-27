@@ -3,6 +3,8 @@
 #include "tracker.h"
 #include "util.h"
 
+#define LIST_ENTRIES 15
+
 class Sequencer{
 
 private:
@@ -15,8 +17,7 @@ private:
     Pallet *pallet; // pointer to the program pallet
     SDL_Rect list_box;
     Button append_btn, insert_btn, delete_btn;
-    const int list_entries = 15;
-    Button list[15]; // Note: same amount as list_entries
+    Button list[LIST_ENTRIES]; // Note: same amount as list_entries
     int cursor = 7;
     bool selected = false;
     int scroll_pos = 0;
