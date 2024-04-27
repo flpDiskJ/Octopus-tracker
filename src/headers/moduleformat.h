@@ -19,8 +19,8 @@
 
 **/
 
-
 class ModuleFormat{
+
 private:
     struct ModuleHead{
         char module_name[20];
@@ -29,6 +29,7 @@ private:
         Uint8 number_of_blocks;
         Uint16 sequence_length;
         Uint8 number_of_samples;
+        Uint16 master_tempo;
     };
 
     struct BlockHead{
@@ -48,6 +49,7 @@ private:
     };
 
     struct SampleHead{
+        Uint8 index; // sample slot
         char name[20];
         Uint32 length;
         Uint8 level;
@@ -62,6 +64,14 @@ private:
     BlockHead block_spec;
     BlockNote note_data;
     SampleHead sample_spec;
+
+    void setup_mod_head();
+
+    void setup_block_head(int b);
+
+    void setup_block_note(int b, int c, int s);
+
+    void setup_sample_head(int index);
 
 public:
 

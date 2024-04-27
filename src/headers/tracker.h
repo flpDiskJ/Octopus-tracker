@@ -15,16 +15,16 @@ private:
     struct Note{ // holds data for single note
         char note = '-'; // A, B, C, D, E, F, G or - for blank
         char key = '-'; // - or #
-        int octave = 0; // 1 thru 6 or 0 for blank
-        int sample = 0; // 0 - 99
+        Uint8 octave = 0; // 1 thru 6 or 0 for blank
+        Uint8 sample = 0; // 0 - 99
         char command[3];
         char parameter[3]; // parameters for command
     };
 
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
-        int length = 0; // number of Notes in the block
-        int speed = 0; // steps per beat
+        Uint16 length = 0; // number of Notes in the block
+        Uint8 speed = 0; // steps per beat
         string name;
     };
 
@@ -164,13 +164,13 @@ public:
     Block block_buffer; // used to copy blocks
     Buffer channel_buffer; // used to copy channels
     Note note_buffer[10]; // used to copy notes
-    int total_blocks = 0;
+    Uint8 total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     Note default_pitch; // only use note, key, and octave (default is C-3)
     int *sequence; // array of block numbers ex. block[sequence[s_pos]]
     const int seq_size_chunk = 30;
-    int sequence_size = 0; // allocated size of sequence
-    int sequence_len = 0; // num of sequence slots in use
+    Uint32 sequence_size = 0; // allocated size of sequence
+    Uint16 sequence_len = 0; // num of sequence slots in use
     bool sequence_update = false; // set to true to update sequence sub-window
     bool block_update = false; // set to true to update block sub-window
     bool run_sequence = false; // if true the song plays out otherwise the block loops

@@ -9,6 +9,7 @@
 #include "headers/instrument_properties.h"
 #include "headers/disk_op.h"
 #include "headers/sample_edit.h"
+#include "headers/moduleformat.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
@@ -95,6 +96,8 @@ int main(int argc, char* args[]) {
     }
 
     Tracker tracker(tracker_render, Font, &pallet);
+
+    ModuleFormat module(&tracker);
 
     SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(tracker_window));
 
@@ -334,6 +337,14 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_e)
                             {
                                 sample_editor.open();
+                            } else if (e.key.keysym.sym == SDLK_s)
+                            {
+                                // FOR TESTING PURPOSES
+                                module.save_module("/home/jake/Desktop/test.octo");
+                            } else if (e.key.keysym.sym == SDLK_l)
+                            {
+                                // FOR TESTING PURPOSES
+                                module.load_module("/home/jake/Desktop/test.octo");
                             }
                         }
                         tracker.keyboard(&e);
