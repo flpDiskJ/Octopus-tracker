@@ -331,11 +331,11 @@ void AudioW::tick()
 
 void AudioW::audio_works() // fills audio buffer
 {
-    int actual_pos;
-    int val;
+    long unsigned int actual_pos;
+    long signed int val;
     Sint16 out;
-    int sig_max[CHANNELS];
-    int temp;
+    long int sig_max[CHANNELS];
+    long signed int temp;
     for (int c = 0; c < CHANNELS; c++)
     {
         sig_max[c] = 0;
