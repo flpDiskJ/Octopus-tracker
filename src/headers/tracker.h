@@ -39,7 +39,8 @@ private:
         Sint16 *data = NULL;
         Uint32 len = 0;
         int level = 0; // 0-100
-        double tune = 0; // 0. - 2
+        Sint8 tune = 0; // -12 to 12
+        Sint8 fine_tune = 0; // -12 to 12
         string name;
         int sample_rate = 0;
         Uint8 loop = 0; // 0 = no loop, 1 = normal loop, 2 = ping pong

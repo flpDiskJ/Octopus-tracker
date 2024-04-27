@@ -2,6 +2,7 @@
 
 #include "tracker.h"
 #include "audioworks.h"
+#include "sdl_keymap.h"
 
 class Instrument_properties{
 
@@ -16,10 +17,19 @@ private:
     Slider transpose_sliderbox, finetune_sliderbox, volume_sliderbox;
     Button inst_name_label, transpose_label, finetune_label, volume_label;
     Entry samplename_entry;
+    SDL_KEYMAP keymap;
 
     void update_instname();
 
     string blank_fill(string input, int len, char fill_char);
+
+    void set_inst_name();
+
+    void setup_tuning_sliders();
+
+    void set_transpose_slider(int x);
+
+    void set_finetune_slider(int x);
 
 public:
 

@@ -68,6 +68,8 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     {
         sample[s].level = 0;
         sample[s].len = 0;
+        sample[s].tune = 0;
+        sample[s].fine_tune = 0;
     }
 
     sequence_size = seq_size_chunk;
@@ -473,7 +475,8 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         sample[sample_slot].data = (Sint16*)malloc(new_length*sizeof(Sint16));
         memset(sample[sample_slot].data, 0, new_length);
         sample[sample_slot].len = new_length;
-        sample[sample_slot].tune = 1;
+        sample[sample_slot].tune = 0;
+        sample[sample_slot].fine_tune = 0;
         sample[sample_slot].level = 100;
         sample[sample_slot].name = name;
         sample[sample_slot].sample_rate = getFreq(default_pitch.note, default_pitch.key, default_pitch.octave);

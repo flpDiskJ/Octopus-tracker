@@ -43,6 +43,11 @@ Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Fo
     transpose_sliderbox.slide.w = 500;
     transpose_sliderbox.slide.h = 30;
 
+    transpose_sliderbox.pos.w = transpose_sliderbox.slide.w / 25;
+    transpose_sliderbox.pos.h = 28;
+    transpose_sliderbox.pos.x = transpose_sliderbox.slide.x;
+    transpose_sliderbox.pos.y = 91;
+
     finetune_label.r.x = 250;
     finetune_label.r.y = 120;
     finetune_label.r.w = 112;
@@ -52,6 +57,11 @@ Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Fo
     finetune_sliderbox.slide.y = 150;
     finetune_sliderbox.slide.w = 500;
     finetune_sliderbox.slide.h = 30;
+
+    finetune_sliderbox.pos.w = finetune_sliderbox.slide.w / 25;
+    finetune_sliderbox.pos.h = 28;
+    finetune_sliderbox.pos.x = finetune_sliderbox.slide.x;
+    finetune_sliderbox.pos.y = 151;
 
     volume_label.r.x = 264;
     volume_label.r.y = 180;
@@ -63,7 +73,7 @@ Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Fo
     volume_sliderbox.slide.w = 506;
     volume_sliderbox.slide.h = 30;
 
-    volume_sliderbox.pos.w = 5;
+    volume_sliderbox.pos.w = volume_sliderbox.slide.w / 101;
     volume_sliderbox.pos.h = 28;
     volume_sliderbox.pos.x = volume_sliderbox.slide.x + (t->sample[t->s_pos].level * volume_sliderbox.pos.w);
     volume_sliderbox.pos.y = 211;
@@ -94,7 +104,9 @@ void Instrument_properties::update_instname()
     {
         SDL_DestroyTexture(samplename_entry.t);
     }
-    string temp = t->sample[t->s_pos].name;
+    string temp = samplename_entry.text;
+    t->sample[t->s_pos].name = samplename_entry.text;
+    t->update_info();
     for (int f = strlen(temp.c_str()); f < 15; f++)
     {
         temp += ' ';
@@ -115,6 +127,31 @@ void Instrument_properties::update_instname()
     SDL_FreeSurface(surf);
 
     refresh();
+}
+
+void Instrument_properties::set_inst_name()
+{
+    samplename_entry.text = t->sample[t->s_pos].name;
+    setup_tuning_sliders();
+    update_instname();
+}
+
+void Instrument_properties::setup_tuning_sliders()
+{
+    transpose_sliderbox.pos.x = transpose_sliderbox.slide.x + (transpose_sliderbox.pos.w * (t->sample[t->s_pos].tune + 12));
+    finetune_sliderbox.pos.x = finetune_sliderbox.slide.x + (finetune_sliderbox.pos.w * (t->sample[t->s_pos].fine_tune + 12));
+}
+
+void Instrument_properties::set_transpose_slider(int x)
+{
+    t->sample[t->s_pos].tune = ((x - transpose_sliderbox.slide.x) / (transpose_sliderbox.slide.w / 25)) - 12;
+    setup_tuning_sliders();
+}
+
+void Instrument_properties::set_finetune_slider(int x)
+{
+    t->sample[t->s_pos].fine_tune = ((x - finetune_sliderbox.slide.x) / (finetune_sliderbox.slide.w / 25)) - 12;
+    setup_tuning_sliders();
 }
 
 string Instrument_properties::blank_fill(string input, int len, char fill_char)
@@ -148,15 +185,23 @@ void Instrument_properties::refresh()
     SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF); // Black
 
     //sample naming
+    if (samplename_entry.active)
+    {
+        SDL_SetRenderDrawColor(render, pallet->red.r, pallet->red.g, pallet->red.b, 0xFF);
+    }
     SDL_RenderDrawRect(render, &samplename_entry.r);
+    SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF);
+
     SDL_RenderCopy(render, samplename_entry.t, NULL, &samplename_entry.r);
     SDL_RenderCopy(render, inst_name_label.t, NULL, &inst_name_label.r);
 
     //sample params
     SDL_SetRenderDrawColor(render, pallet->blue.r, pallet->blue.g, pallet->blue.b, 0xFF); // Blue
     SDL_RenderCopy(render, transpose_label.t, NULL, &transpose_label.r);
+    SDL_RenderFillRect(render, &transpose_sliderbox.pos);
     SDL_RenderDrawRect(render, &transpose_sliderbox.slide);
     SDL_RenderCopy(render, finetune_label.t,  NULL, &finetune_label.r);
+    SDL_RenderFillRect(render, &finetune_sliderbox.pos);
     SDL_RenderDrawRect(render, &finetune_sliderbox.slide);
     SDL_RenderCopy(render, volume_label.t,    NULL, &volume_label.r);
     SDL_RenderDrawRect(render, &volume_sliderbox.slide);
@@ -171,7 +216,7 @@ void Instrument_properties::open()
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
     update();
-    update_instname();
+    set_inst_name();
 }
 
 void Instrument_properties::close()
@@ -203,6 +248,13 @@ void Instrument_properties::mouse(int x, int y)
         } else {
             t->sample[t->s_pos].level = 100;
         }
+    } else if (checkButton(x, y, &transpose_sliderbox.slide)) {
+        set_transpose_slider(x);
+    } else if (checkButton(x, y, &finetune_sliderbox.slide)) {
+        set_finetune_slider(x);
+    } else if (checkButton(x, y, &samplename_entry.r))
+    {
+        samplename_entry.active = true;
     }
     update();
 }
@@ -215,7 +267,7 @@ void Instrument_properties::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 t->sample_inc();
-                update_instname();
+                set_inst_name();
                 update();
             }
             break;
@@ -223,18 +275,39 @@ void Instrument_properties::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 t->sample_dec();
-                update_instname();
+                set_inst_name();
                 update();
             }
             break;
+        case SDLK_DELETE:
+        case SDLK_BACKSPACE:
+            if (samplename_entry.text.length() > 0 && samplename_entry.active)
+            {
+                samplename_entry.text.pop_back();
+                update_instname();
+            }
+            break;
+        case SDLK_SPACE:
+            if (samplename_entry.active)
+            {
+                samplename_entry.text += ' ';
+                update_instname();
+            }
+            break;
+        case SDLK_RETURN:
+            samplename_entry.active = false;
+            break;
         default:
-            if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+            if (samplename_entry.active)
+            {
+                string keyname = SDL_GetKeyName(e->key.keysym.sym);
+                samplename_entry.text += keymap.sdl_getText(keyname, SDL_GetModState() & KMOD_SHIFT);
+                update_instname();
+            } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
             {
                 audioworks->play_sample(e, t->s_pos);
             }
             break;
     }
-
-
-
+    refresh();
 }
