@@ -138,6 +138,7 @@ int main(int argc, char* args[]) {
     Sequencer sequence_list(&tracker, &util, Font, &pallet);
 
     DiskOp disk_op(&tracker, Font, &pallet);
+    
 
     AudioBuffer audio_buffer;
 

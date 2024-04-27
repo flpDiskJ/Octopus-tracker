@@ -2,15 +2,15 @@
 
 DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
 {
-    // get pointers from main func
+    // get pointers from main function
     t = tracker;
     font = f;
     pallet = p;
 
     // read from config eventually
     parent[0] = "/";
-    parent[1] = "/";
-    parent[2] = "/";
+    parent[1] = "/home";
+    parent[2] = "/etc";
 
     // initialize window and renderer
     window = SDL_CreateWindow("Disk Op", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -60,6 +60,15 @@ DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
     file_border.y = 55;
     file_border.w = 515;
     file_border.h = 380;
+
+    // init rectangles for file paths to be displayed
+    for (int i = 0; i < FILE_LIST_SIZE; i++) {
+        path_list_buttons[i].r.x = 200;
+        path_list_buttons[i].r.y = (file_border.y + 5) + (i * 36);
+        path_list_buttons[i].r.w = 505;
+        path_list_buttons[i].r.h = 36;
+        path_list_buttons[i].t = NULL;
+    }
 }
 
 DiskOp::~DiskOp()
@@ -72,10 +81,10 @@ string DiskOp::cat_path(string path1, string path2)
     return path1 + path2;
 }
 
-void DiskOp::fill_path_list(string absolute_path)
+void DiskOp::fill_path_list(string sub_path) // for now pass "/", when this is used later in the program it will be different
 {
     // clean up path vector
-    path_list.clear();
+    path_list_strings.clear();
 
     // TODO Immediately: add the logic to setup the default path and then update the absolute path to files based off of 
     // which subfolder the user wishes to browse.
@@ -83,18 +92,21 @@ void DiskOp::fill_path_list(string absolute_path)
     // Currently the cat_path() method isn't being utilized in this method but once the ability to navigate the diskop menu
     // is implemented it will be used to update the absolute path.
 
-    d_op_path = opendir(absolute_path.c_str()); 
+    d_op_path = opendir(cat_path(parent[0], sub_path).c_str()); 
     while (dp = readdir(d_op_path))// if dp is null no more content to list
     {
-        path_list.push_back(dp->d_name); // append path string to path list
+        path_list_strings.push_back(dp->d_name); // append path string to path list
     }
     closedir(d_op_path);
 }
 
 void DiskOp::update_list_textures()
 {
-    // For now I'm thinking we have a fixed number of files/file locations that will be displayed to the window at any given moment
-    // but this method will update the SDL_Textures to be displayed to the diskop window
+    for (int i = 0; i < FILE_LIST_SIZE; i++) {
+        surf = TTF_RenderText_Solid(font, path_list_strings[i].c_str(), pallet->black); // do i need to use c_str?
+        path_list_buttons[i].t = SDL_CreateTextureFromSurface(render, surf);
+        SDL_FreeSurface(surf);
+    }
 }
 
 void DiskOp::de_init() {
@@ -120,7 +132,10 @@ void DiskOp::refresh()
 
     SDL_RenderDrawRect(render, &file_border);
 
-    update_list_textures(); // this method needs to be implemented!!!
+    // render subpaths
+    for (int i = 0; i < FILE_LIST_SIZE; i++) {
+        SDL_RenderCopy(render, path_list_buttons[i].t, NULL, &path_list_buttons[i].r);
+    }
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -130,6 +145,8 @@ void DiskOp::open()
     SDL_ShowWindow(window);
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
+    fill_path_list("");
+    update_list_textures();
 }
 
 void DiskOp::close()
