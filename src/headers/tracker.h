@@ -23,7 +23,6 @@ private:
 
     struct Block{ // holds all data for block
         Note *channel[CHANNELS];
-        char *array;
         int length = 0; // number of Notes in the block
         int speed = 0; // steps per beat
         string name;
@@ -196,6 +195,18 @@ public:
     Channel channel[CHANNELS];
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
+
+    struct Scope{
+        SDL_Texture *t = NULL;
+        SDL_Rect r;
+        Sint32 *data = NULL;
+        Uint16 data_size = 0;
+        Uint16 data_pos = 0;
+        bool active = false;
+    };
+
+    Scope scope[CHANNELS];
+    SDL_Texture *scope_idle_t;
 
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
     // default constructor, sets up rects, textures, and copies renderer and font pointers

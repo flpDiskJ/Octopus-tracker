@@ -157,6 +157,11 @@ Tracker::~Tracker() {
         }
     }
     free(sequence);
+
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        free(scope[c].data);
+    }
 }
 
 bool Tracker::check_command(int c, const char *command)

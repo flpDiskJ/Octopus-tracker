@@ -96,6 +96,38 @@ int main(int argc, char* args[]) {
 
     Tracker tracker(tracker_render, Font, &pallet);
 
+    SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(tracker_window));
+
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        tracker.scope[c].r.w = 120;
+        tracker.scope[c].r.h = 80;
+        tracker.scope[c].r.x = 48 + (155 * c);
+        tracker.scope[c].r.y = 710;
+        tracker.scope[c].t = SDL_CreateTexture(tracker_render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING,
+            tracker.scope[c].r.w / 2, tracker.scope[c].r.h / 2);
+        tracker.scope[c].data_size = SAMPLE_RATE / REFRESH_RATE;
+        tracker.scope[c].data = (Sint32*)malloc(sizeof(Sint32)*tracker.scope[c].data_size+10);
+    }
+    tracker.scope_idle_t = SDL_CreateTexture(tracker_render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING,
+        tracker.scope[0].r.w / 2, tracker.scope[0].r.h / 2);
+    void *pixels;
+    int pitch;
+    SDL_LockTexture(tracker.scope_idle_t, NULL, &pixels, &pitch);
+    for (int x = 0; x < tracker.scope[0].r.w / 2; x++)
+    {
+        for (int y = 0; y < tracker.scope[0].r.h / 2; y++)
+        {
+            if (y == tracker.scope[0].r.h / 4)
+            {
+                ((Uint32*)pixels)[x+(y*(tracker.scope[0].r.w/2))] = SDL_MapRGB(fmt, pallet.white.b, pallet.white.g, pallet.white.r);
+            } else {
+                ((Uint32*)pixels)[x+(y*(tracker.scope[0].r.w/2))] = SDL_MapRGB(fmt, pallet.bgd.b, pallet.bgd.g, pallet.bgd.r);
+            }
+        }
+    }
+    SDL_UnlockTexture(tracker.scope_idle_t);
+
     tracker.update_info();
 
     Util util(&tracker, Font, &pallet);
@@ -124,7 +156,7 @@ int main(int argc, char* args[]) {
     }
     SDL_PauseAudio(0);
 
-    AudioW aworks(&tracker, &audio_buffer, tracker_render, tracker_window, &pallet);
+    AudioW aworks(&tracker, &audio_buffer, fmt, &pallet);
 
     Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
 
@@ -335,7 +367,16 @@ int main(int argc, char* args[]) {
 
             tracker.render_bars();
 
-            aworks.render_scopes();
+            for (int c = 0; c < CHANNELS; c++)
+            {
+                if (tracker.scope[c].active)
+                {
+                    SDL_RenderCopy(tracker_render, tracker.scope[c].t, NULL, &tracker.scope[c].r);
+                } else {
+                    SDL_RenderCopy(tracker_render, tracker.scope_idle_t, NULL, &tracker.scope[c].r);
+                }
+                SDL_RenderDrawRect(tracker_render, &tracker.scope[c].r);
+            }
 
             SDL_RenderPresent(tracker_render); // Present image to screen
 
@@ -381,8 +422,8 @@ int main(int argc, char* args[]) {
     inst_prop.de_init();
     disk_op.de_init();
     sample_editor.de_init();
-    aworks.deinit();
     free(audio_buffer.data);
+    SDL_FreeFormat(fmt);
     SDL_CloseAudio();
     SDL_DestroyRenderer(tracker_render);
     SDL_DestroyWindow(tracker_window);
