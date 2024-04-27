@@ -4,7 +4,7 @@
 #include <dirent.h>
 #include <vector>
 
-#define FILE_LIST_SIZE 16
+#define FILE_LIST_SIZE 8
 
 /**
 NOTE FROM JAKE
@@ -29,11 +29,11 @@ class DiskOp {
         SDL_Rect file_border;
         struct dirent *dp; // instance of the dirent struct to get sub-directory strings
         DIR *d_op_path; // directory stream for disk op window
-        vector<string> path_list;
+        vector<string> path_list_strings;
         // I got the types and names for the UI for the disk op from the sequence list code
         int cursor = 8;
         int scroll_pos = 0;
-        Button list[FILE_LIST_SIZE];
+        Button path_list_buttons[FILE_LIST_SIZE];
         enum path_type
         {
             module_p, sample_p, export_p
