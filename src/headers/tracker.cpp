@@ -89,7 +89,6 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         note_buffer[x].parameter[0] = '0';
         note_buffer[x].parameter[1] = '0';
         note_buffer[x].parameter[2] = '\0';
-        note_buffer[x].pos_adv = 0;
     }
 
     block_buffer.length = 0;
@@ -351,17 +350,22 @@ void Tracker::note_trigger()
             {
                 channel[c].slide_target = getFreq(block[b_pos].channel[c][pos].note,
                 block[b_pos].channel[c][pos].key,
-                block[b_pos].channel[c][pos].octave);
+                block[b_pos].channel[c][pos].octave,
+                block[b_pos].channel[c][pos].sample);
             } else {
                 channel[c].pos = 0;
                 channel[c].sample = block[b_pos].channel[c][pos].sample;
-                channel[c].pos_adv = block[b_pos].channel[c][pos].pos_adv;
+                channel[c].pos_adv = (double)getFreq(block[b_pos].channel[c][pos].note,
+                block[b_pos].channel[c][pos].key,
+                block[b_pos].channel[c][pos].octave,
+                block[b_pos].channel[c][pos].sample) / (double)SAMPLE_RATE;
                 channel[c].amplifier = (double)sample[channel[c].sample].level / 100.0;
                 channel[c].play = true;
                 // note: slide_pos can be referenced as the original note's sample rate if the 03 command is not in use
                 channel[c].slide_pos = getFreq(block[b_pos].channel[c][pos].note,
                 block[b_pos].channel[c][pos].key,
-                block[b_pos].channel[c][pos].octave);
+                block[b_pos].channel[c][pos].octave,
+                block[b_pos].channel[c][pos].sample);
                 channel[c].vib_pos = channel[c].slide_pos;
                 channel[c].octave = block[b_pos].channel[c][pos].octave;
                 channel[c].reverse = false;
@@ -479,7 +483,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         sample[sample_slot].fine_tune = 0;
         sample[sample_slot].level = 100;
         sample[sample_slot].name = name;
-        sample[sample_slot].sample_rate = getFreq(default_pitch.note, default_pitch.key, default_pitch.octave);
+        sample[sample_slot].sample_rate = getFreq(default_pitch.note, default_pitch.key, default_pitch.octave, -1);
         if (inputSpec.channels == 1)
         {
             for (int x = 0, p = 0; x < length; x += 2, p++)
@@ -512,7 +516,6 @@ void Tracker::copy_note(int buff)
     note_buffer[buff].command[1] = block[b_pos].channel[cursor_channel][pos].command[1];
     note_buffer[buff].parameter[0] = block[b_pos].channel[cursor_channel][pos].parameter[0];
     note_buffer[buff].parameter[1] = block[b_pos].channel[cursor_channel][pos].parameter[1];
-    note_buffer[buff].pos_adv = block[b_pos].channel[cursor_channel][pos].pos_adv;
 }
 
 void Tracker::paste_note(int buff)
@@ -527,7 +530,6 @@ void Tracker::paste_note(int buff)
         block[b_pos].channel[cursor_channel][pos].command[1] = note_buffer[buff].command[1];
         block[b_pos].channel[cursor_channel][pos].parameter[0] = note_buffer[buff].parameter[0];
         block[b_pos].channel[cursor_channel][pos].parameter[1] = note_buffer[buff].parameter[1];
-        block[b_pos].channel[cursor_channel][pos].pos_adv = note_buffer[buff].pos_adv;
         incpos();
     }
 }
@@ -552,7 +554,6 @@ void Tracker::copy_channel()
         channel_buffer.data[s].command[1] = block[b_pos].channel[cursor_channel][s].command[1];
         channel_buffer.data[s].parameter[0] = block[b_pos].channel[cursor_channel][s].parameter[0];
         channel_buffer.data[s].parameter[1] = block[b_pos].channel[cursor_channel][s].parameter[1];
-        channel_buffer.data[s].pos_adv = block[b_pos].channel[cursor_channel][s].pos_adv;
     }
 }
 
@@ -575,7 +576,6 @@ void Tracker::paste_channel()
         block[b_pos].channel[cursor_channel][s].command[1] = channel_buffer.data[s].command[1];
         block[b_pos].channel[cursor_channel][s].parameter[0] = channel_buffer.data[s].parameter[0];
         block[b_pos].channel[cursor_channel][s].parameter[1] = channel_buffer.data[s].parameter[1];
-        block[b_pos].channel[cursor_channel][s].pos_adv = channel_buffer.data[s].pos_adv;
     }
 }
 
@@ -656,7 +656,6 @@ void Tracker::realloc_block(int size)
                 block[b_pos].channel[c][s].parameter[0] = '0';
                 block[b_pos].channel[c][s].parameter[1] = '0';
                 block[b_pos].channel[c][s].parameter[2] = '\0';
-                block[b_pos].channel[c][s].pos_adv = 0;
             }
         }
     }
@@ -697,7 +696,6 @@ void Tracker::copy_block(int blk)
             block_buffer.channel[c][s].command[1] = block[blk].channel[c][s].command[1];
             block_buffer.channel[c][s].parameter[0] = block[blk].channel[c][s].parameter[0];
             block_buffer.channel[c][s].parameter[1] = block[blk].channel[c][s].parameter[1];
-            block_buffer.channel[c][s].pos_adv = block[blk].channel[c][s].pos_adv;
         }
     }
 }
@@ -732,7 +730,6 @@ void Tracker::paste_block(int blk)
             block[blk].channel[c][s].command[1] = block_buffer.channel[c][s].command[1];
             block[blk].channel[c][s].parameter[0] = block_buffer.channel[c][s].parameter[0];
             block[blk].channel[c][s].parameter[1] = block_buffer.channel[c][s].parameter[1];
-            block[blk].channel[c][s].pos_adv = block_buffer.channel[c][s].pos_adv;
         }
     }
 }
@@ -1089,7 +1086,6 @@ void Tracker::clear_channel()
         block[b_pos].channel[cursor_channel][s].parameter[0] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[1] = '0';
         block[b_pos].channel[cursor_channel][s].parameter[2] = '\0';
-        block[b_pos].channel[cursor_channel][s].pos_adv = 0;
     }
 }
 
@@ -1110,7 +1106,6 @@ void Tracker::clear_block(int blk) // Clears indicated block
             block[blk].channel[c][s].parameter[0] = '0';
             block[blk].channel[c][s].parameter[1] = '0';
             block[blk].channel[c][s].parameter[2] = '\0';
-            block[blk].channel[c][s].pos_adv = 0;
         }
     }
 }
@@ -1202,7 +1197,7 @@ void Tracker::render_steps() // Renders block data to screen
     }
 }
 
-int Tracker::getFreq(char note, char key, int oct)
+int Tracker::getFreq(char note, char key, int oct, int sample_id)
 {
     int rate;
     switch (note)
@@ -1220,6 +1215,38 @@ int Tracker::getFreq(char note, char key, int oct)
     {
         rate = rate * 2;
     }
+
+    if (sample_id == -1)
+    {
+        return rate;
+    }
+
+    if (sample[sample_id].tune > 0)
+    {
+        for (int x = 0; x < sample[sample_id].tune; x++)
+        {
+            rate *= SEMITONE_MULTIPLIER;
+        }
+    } else if (sample[sample_id].tune < 0) {
+        for (int x = 0; x > sample[sample_id].tune; x--)
+        {
+            rate /= SEMITONE_MULTIPLIER;
+        }
+    }
+
+    if (sample[sample_id].fine_tune > 0)
+    {
+        for (int x = 0; x < sample[sample_id].fine_tune; x++)
+        {
+            rate *= FINETUNE_MULTIPLIER;
+        }
+    } else if (sample[sample_id].fine_tune < 0) {
+        for (int x = 0; x > sample[sample_id].fine_tune; x--)
+        {
+            rate /= FINETUNE_MULTIPLIER;
+        }
+    }
+
     return rate;
 }
 
@@ -1285,7 +1312,6 @@ void Tracker::get_note(SDL_Event *e)
             block[b_pos].channel[cursor_channel][pos].key = key;
             block[b_pos].channel[cursor_channel][pos].octave = oct;
             block[b_pos].channel[cursor_channel][pos].sample = s_pos;
-            block[b_pos].channel[cursor_channel][pos].pos_adv = (double)getFreq(note, key, oct) / (double)SAMPLE_RATE;
             if (!tracker_running)
             {incpos();}
         }
@@ -1365,7 +1391,6 @@ void Tracker::clear_step()
     block[b_pos].channel[cursor_channel][pos].command[1] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[0] = '0';
     block[b_pos].channel[cursor_channel][pos].parameter[1] = '0';
-    block[b_pos].channel[cursor_channel][pos].pos_adv = 0;
     if (!tracker_running)
     {incpos();}
     update_steps();

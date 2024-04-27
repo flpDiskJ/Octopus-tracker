@@ -144,7 +144,7 @@ void AudioW::play_note(SDL_Event *e)
     {
         t->channel[t->cursor_channel].pos = 0;
         t->channel[t->cursor_channel].sample = t->s_pos;
-        t->channel[t->cursor_channel].pos_adv = (double)t->getFreq(note, key, oct) / (double)SAMPLE_RATE;
+        t->channel[t->cursor_channel].pos_adv = (double)t->getFreq(note, key, oct, t->s_pos) / (double)SAMPLE_RATE;
         t->channel[t->cursor_channel].amplifier = (double)t->sample[t->s_pos].level / 100.0;
         t->channel[t->cursor_channel].play = true;
         t->channel[t->cursor_channel].reverse = false;
@@ -203,7 +203,7 @@ void AudioW::play_sample(SDL_Event *e, int sample)
     {
         t->channel[0].pos = 0;
         t->channel[0].sample = sample;
-        t->channel[0].pos_adv = (double)t->getFreq(note, key, oct) / (double)SAMPLE_RATE;
+        t->channel[0].pos_adv = (double)t->getFreq(note, key, oct, sample) / (double)SAMPLE_RATE;
         t->channel[0].amplifier = (double)t->sample[sample].level / 100.0;
         t->channel[0].play = true;
         t->channel[0].reverse = false;

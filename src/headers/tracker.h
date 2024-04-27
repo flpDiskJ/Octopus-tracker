@@ -19,7 +19,6 @@ private:
         int sample = 0; // 0 - 99
         char command[3];
         char parameter[3]; // parameters for command
-        double pos_adv = 0; // amount to advance sample pos for playback. Caulculated by getFreq() / SAMPLE_RATE
     };
 
     struct Block{ // holds all data for block
@@ -219,7 +218,8 @@ public:
 
     bool load_inst(string path, string name, int sample_slot); // loads wav into instrument slot of s_pos | returns true if successful
 
-    int getFreq(char note, char key, int oct); // returns sample rate of note
+    int getFreq(char note, char key, int oct, int sample_id); // returns sample rate of note
+    // pass -1 to sample_id to bypass tune and finetune
 
     void incpos(); // increment step position
 
