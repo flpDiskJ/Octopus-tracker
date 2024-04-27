@@ -21,7 +21,7 @@ private:
     int cursor = 7;
     bool selected = false;
     int scroll_pos = 0;
-
+    string file_name;
     bool set_seq_pos(int entry); // sets sq_pos in tracker class
 
 public:
