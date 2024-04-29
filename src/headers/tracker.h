@@ -54,45 +54,45 @@ private:
         Uint8 octave = 0; // octave of current note
 
         // 00 Arpeggio
-        unsigned int arp_toggle;
+        unsigned int arp_toggle = 0;
         unsigned int arp_rates[3];
 
         // 01 02 03
-        unsigned int slide_pos; // sample rate of pitch
-        unsigned int slide_speed;
+        unsigned int slide_pos = 0; // sample rate of pitch
+        unsigned int slide_speed = 0;
         // 03
-        unsigned int slide_target; // target sample rate
+        unsigned int slide_target = 0; // target sample rate
 
         // 04 Vibrato
-        unsigned int vib_high; // high pitch limit
-        unsigned int vib_low; // low pitch limit
-        unsigned int vib_pos;
-        bool vib_up; // slide direction toggle
-        unsigned int vib_speed;
+        unsigned int vib_high = 0; // high pitch limit
+        unsigned int vib_low = 0; // low pitch limit
+        unsigned int vib_pos = 0;
+        bool vib_up = false; // slide direction toggle
+        unsigned int vib_speed = 0;
 
         // 07 Tremolo
-        unsigned int trem_start; // Note: can be used to reference current volume
-        unsigned int trem_depth;
-        unsigned int trem_current;
-        unsigned int trem_speed;
-        bool trem_up;
+        unsigned int trem_start = 0; // Note: can be used to reference current volume
+        unsigned int trem_depth = 0;
+        unsigned int trem_current = 0;
+        unsigned int trem_speed = 0;
+        bool trem_up = false;
 
         // 08 hold and decay (uses trem_current to keep current volume)
-        bool hold_and_decay;
-        unsigned int hold;
-        unsigned int decay;
+        bool hold_and_decay = false;
+        unsigned int hold = 0;
+        unsigned int decay = 0;
 
         // 05 delay & 06 retrigger
-        unsigned int trigger_pos;
-        unsigned int total_triggers;
-        unsigned int retriggers; // set to zero by default
-        unsigned int retrig_freq;
-        unsigned int retrig_count;
+        unsigned int trigger_pos = 0;
+        unsigned int total_triggers = 0;
+        unsigned int retriggers = 0;
+        unsigned int retrig_freq = 0;
+        unsigned int retrig_count = 0;
 
         // 0A
         bool reverse = false;
 
-        double amplifier; // control level. calculate: desired_level / 100.0
+        double amplifier = 1; // control level. calculate: desired_level / 100.0
         //////
 
         int sample = 0; // sample to play.
@@ -199,7 +199,7 @@ public:
     struct Scope{
         SDL_Texture *t = NULL;
         SDL_Rect r;
-        Sint32 *data = NULL;
+        int *data = NULL;
         int data_size = 0;
         int data_pos = 0;
         bool active = false;

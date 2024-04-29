@@ -285,10 +285,10 @@ void AudioW::tick()
 void AudioW::audio_works() // fills audio buffer
 {
     long unsigned int actual_pos;
-    long signed int val;
+    Sint32 val;
     Sint16 out;
     long int sig_max[CHANNELS];
-    long signed int temp;
+    Sint32 temp;
     for (int c = 0; c < CHANNELS; c++)
     {
         sig_max[c] = 0;
@@ -346,7 +346,7 @@ void AudioW::audio_works() // fills audio buffer
                 {
                     temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
 
-                    t->scope[c].data[t->scope[c].data_pos] = temp;
+                    t->scope[c].data[t->scope[c].data_pos] = (int)temp;
                     t->scope[c].data_pos++;
                     if (t->scope[c].data_pos >= t->scope[c].data_size - 1)
                     {

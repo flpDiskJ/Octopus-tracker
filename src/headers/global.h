@@ -12,11 +12,12 @@ using namespace std;
 #include <iostream>
 
 //// Customable
-#define REFRESH_RATE 50
+#define REFRESH_RATE 60
 #define AUDIO_LATENCY 6 // 4 to 8
 #define AMP_LEV 2 // master level
 #define SAMPLE_RATE 48000 // output sample rate
 #define BUFF_SIZE 1024 // size of audio stream buffer
+#define SCOPE_CHUNK 800
 
 // command tweaks
 const int PITCH_SLIDE_AMOUNT = 30; // 01 & 02 & 03

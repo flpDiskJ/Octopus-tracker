@@ -109,8 +109,8 @@ int main(int argc, char* args[]) {
         tracker.scope[c].r.y = 710;
         tracker.scope[c].t = SDL_CreateTexture(tracker_render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING,
             tracker.scope[c].r.w / 2, tracker.scope[c].r.h / 2);
-        tracker.scope[c].data_size = SAMPLE_RATE / REFRESH_RATE;
-        tracker.scope[c].data = (Sint32*)malloc(sizeof(Sint32)*tracker.scope[c].data_size+10);
+        tracker.scope[c].data_size = SCOPE_CHUNK;
+        tracker.scope[c].data = (int*)malloc(sizeof(int)*tracker.scope[c].data_size+10);
     }
     tracker.scope_idle_t = SDL_CreateTexture(tracker_render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING,
         tracker.scope[0].r.w / 2, tracker.scope[0].r.h / 2);
