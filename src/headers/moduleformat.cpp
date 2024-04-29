@@ -90,6 +90,7 @@ void ModuleFormat::setup_sample_head(int index)
     sample_spec.finetune = t->sample[index].fine_tune;
     sample_spec.loop = t->sample[index].loop;
     sample_spec.loop_point = t->sample[index].loop_point;
+    sample_spec.original_rate = t->sample[index].sample_rate;
 }
 
 bool ModuleFormat::save_module(string path)
@@ -103,6 +104,7 @@ bool ModuleFormat::save_module(string path)
     }
 
     fwrite(&header, sizeof(ModuleHead), 1, fp);
+    fwrite(t->sequence, sizeof(Uint8), t->sequence_len, fp);
 
     for (int b = 0; b < t->total_blocks; b++)
     {
@@ -136,5 +138,75 @@ bool ModuleFormat::save_module(string path)
 
 bool ModuleFormat::load_module(string path)
 {
+    FILE *fp = fopen(path.c_str(), "rb");
+    if (fp == NULL)
+    {
+        return false;
+    }
+
+    fread(&header, sizeof(ModuleHead), 1, fp);
+    if (t->sequence != NULL)
+    {
+        free(t->sequence);
+    }
+    t->sequence_len = t->sequence_size = header.sequence_length;
+    t->sequence_size += t->seq_size_chunk;
+    t->sequence = (Uint8*)malloc(sizeof(Uint8)*t->sequence_size);
+    fread(t->sequence, sizeof(Uint8), t->sequence_len, fp);
+    t->master_tempo = header.master_tempo;
+    t->total_blocks = header.number_of_blocks;
+    t->track_name.clear();
+    t->track_name = string(header.module_name);
+    t->track_artist.clear();
+    t->track_artist = string(header.module_artist);
+    t->track_date.clear();
+    t->track_date = string(header.module_date);
+
+    for (int b = 0; b < t->total_blocks; b++)
+    {
+        fread(&block_spec, sizeof(BlockHead), 1, fp);
+        t->block[b].name.clear();
+        t->block[b].name = string(block_spec.name);
+        t->block[b].speed = block_spec.speed;
+        t->allocate_block(b, block_spec.length);
+
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            for (int step = 0; step < block_spec.length; step++)
+            {
+                fread(&note_data, sizeof(BlockNote), 1, fp);
+                t->block[b].channel[c][step].note = note_data.note;
+                t->block[b].channel[c][step].key = note_data.key;
+                t->block[b].channel[c][step].octave = note_data.octave;
+                t->block[b].channel[c][step].sample = note_data.sample;
+                strncpy(t->block[b].channel[c][step].command, note_data.command, 3);
+                strncpy(t->block[b].channel[c][step].parameter, note_data.parameter, 3);
+            }
+        }
+    }
+
+    for (int s = 0; s < header.number_of_samples; s++)
+    {
+        fread(&sample_spec, sizeof(SampleHead), 1, fp);
+        t->sample[sample_spec.index].name.clear();
+        t->sample[sample_spec.index].name = string(sample_spec.name);
+        t->sample[sample_spec.index].len = sample_spec.length;
+        t->sample[sample_spec.index].level = sample_spec.level;
+        t->sample[sample_spec.index].tune = sample_spec.transpose;
+        t->sample[sample_spec.index].fine_tune = sample_spec.finetune;
+        t->sample[sample_spec.index].loop = sample_spec.loop;
+        t->sample[sample_spec.index].loop_point = sample_spec.loop_point;
+        t->sample[sample_spec.index].sample_rate = sample_spec.original_rate;
+
+        if (t->sample[sample_spec.index].data != NULL)
+        {
+            free(t->sample[sample_spec.index].data);
+        }
+        t->sample[sample_spec.index].data = (Sint16*)malloc(sizeof(Sint16)*sample_spec.length);
+        fread(t->sample[sample_spec.index].data, sizeof(Sint16), sample_spec.length, fp);
+    }
+
+    fclose(fp);
+    t->set_timing_delay();
     return true;
 }

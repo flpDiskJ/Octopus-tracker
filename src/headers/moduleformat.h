@@ -8,6 +8,8 @@
 
     ModuleHead
 
+    Sequence data
+
     BlockHead
     (followed by full note data (block chunks) for the block)
     (all notes in channel starting at channel 0 and incrementing up)
@@ -57,6 +59,7 @@ private:
         Sint8 finetune;
         Uint8 loop;
         Uint32 loop_point;
+        Uint16 original_rate;
     };
 
     Tracker *t;

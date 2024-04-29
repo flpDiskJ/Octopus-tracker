@@ -137,8 +137,7 @@ int main(int argc, char* args[]) {
 
     Sequencer sequence_list(&tracker, &util, Font, &pallet);
 
-    DiskOp disk_op(&tracker, Font, &pallet);
-    
+    DiskOp disk_op(&tracker, &module, Font, &pallet);
 
     AudioBuffer audio_buffer;
 
@@ -338,14 +337,6 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_e)
                             {
                                 sample_editor.open();
-                            } else if (e.key.keysym.sym == SDLK_s)
-                            {
-                                // FOR TESTING PURPOSES
-                                module.save_module("/home/jake/Desktop/test.octo");
-                            } else if (e.key.keysym.sym == SDLK_l)
-                            {
-                                // FOR TESTING PURPOSES
-                                module.load_module("/home/jake/Desktop/test.octo");
                             }
                         }
                         tracker.keyboard(&e);

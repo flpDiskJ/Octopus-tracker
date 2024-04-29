@@ -40,7 +40,7 @@ private:
         Sint8 tune = 0; // -12 to 12
         Sint8 fine_tune = 0; // -12 to 12
         string name;
-        int sample_rate = 0;
+        Uint16 sample_rate = 0;
         Uint8 loop = 0; // 0 = no loop, 1 = normal loop, 2 = ping pong
         Uint32 loop_point = 0;
     };
@@ -167,7 +167,7 @@ public:
     Uint8 total_blocks = 0;
     Instrument sample[MAXSAMPLES]; // static array of instruments/samples
     Note default_pitch; // only use note, key, and octave (default is C-3)
-    int *sequence; // array of block numbers ex. block[sequence[s_pos]]
+    Uint8 *sequence; // array of block numbers ex. block[sequence[s_pos]]
     const int seq_size_chunk = 30;
     Uint32 sequence_size = 0; // allocated size of sequence
     Uint16 sequence_len = 0; // num of sequence slots in use
@@ -200,8 +200,8 @@ public:
         SDL_Texture *t = NULL;
         SDL_Rect r;
         Sint32 *data = NULL;
-        Uint16 data_size = 0;
-        Uint16 data_pos = 0;
+        int data_size = 0;
+        int data_pos = 0;
         bool active = false;
     };
 
@@ -247,6 +247,8 @@ public:
     void sequencer(Uint8 flag); // append, insert, delete, alter sequence element
 
     void realloc_block(int size); // reallocates block at b_pos
+
+    void allocate_block(int blk, Uint16 size);
 
     void delete_block(int blk); // deletes indicated block
 

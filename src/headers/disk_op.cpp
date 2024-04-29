@@ -1,9 +1,10 @@
 #include "disk_op.h"
 
-DiskOp::DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p)
+DiskOp::DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p)
 {
     // get pointers from main function
     t = tracker;
+    module = m;
     font = f;
     pallet = p;
 
@@ -86,13 +87,13 @@ void DiskOp::fill_path_list(string sub_path) // for now pass "/", when this is u
     // clean up path vector
     path_list_strings.clear();
 
-    // TODO Immediately: add the logic to setup the default path and then update the absolute path to files based off of 
+    // TODO Immediately: add the logic to setup the default path and then update the absolute path to files based off of
     // which subfolder the user wishes to browse.
 
     // Currently the cat_path() method isn't being utilized in this method but once the ability to navigate the diskop menu
     // is implemented it will be used to update the absolute path.
 
-    d_op_path = opendir(cat_path(parent[0], sub_path).c_str()); 
+    d_op_path = opendir(cat_path(parent[0], sub_path).c_str());
     while (dp = readdir(d_op_path))// if dp is null no more content to list
     {
         path_list_strings.push_back(dp->d_name); // append path string to path list

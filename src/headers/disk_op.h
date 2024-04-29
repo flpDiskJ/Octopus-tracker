@@ -3,6 +3,7 @@
 #include "tracker.h"
 #include <dirent.h>
 #include <vector>
+#include "moduleformat.h"
 
 #define FILE_LIST_SIZE 8
 
@@ -14,6 +15,8 @@ NOTE FROM JAKE
     when t->load_inst() is called it will now resample the audio to the pitch specified in default_pitch
 
     only the note, key, and octave elements from default_pitch are used (check Note struct in tracker.h)
+
+    NEW: load_module() and save_module() are ready for use. Check moduleformat.h
 
 **/
 
@@ -41,6 +44,8 @@ class DiskOp {
         path_type parent_index = module_p;
         string parent[3];
 
+        ModuleFormat *module; // use this class to save and load the module
+
         // helper methods
         string cat_path(string path1, string path2);
 
@@ -50,7 +55,7 @@ class DiskOp {
 
 
     public:
-        DiskOp(Tracker *tracker, TTF_Font *f, Pallet *p);
+        DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p);
 
         ~DiskOp();
 

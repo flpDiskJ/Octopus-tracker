@@ -73,7 +73,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     }
 
     sequence_size = seq_size_chunk;
-    sequence = (int*)malloc(sizeof(int)*sequence_size);
+    sequence = (Uint8*)malloc(sizeof(Uint8)*sequence_size);
     sequence[0] = 0;
     sequence_len = 1;
 
@@ -133,7 +133,8 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     set_timing_delay();
 }
 
-Tracker::~Tracker() {
+Tracker::~Tracker()
+{
     for (int b = 0; b < total_blocks; b++)
     {
         for (int c = 0; c < CHANNELS; c++)
@@ -593,7 +594,7 @@ void Tracker::sequencer(Uint8 flag)
             if (sequence_len >= sequence_size)
             {
                 sequence_size += seq_size_chunk;
-                sequence = (int*)realloc(sequence, sequence_size*sizeof(int));
+                sequence = (Uint8*)realloc(sequence, sequence_size*sizeof(Uint8));
             }
             sequence[sequence_len-1] = b_pos;
             break;
@@ -602,7 +603,7 @@ void Tracker::sequencer(Uint8 flag)
             if (sequence_len >= sequence_size)
             {
                 sequence_size += seq_size_chunk;
-                sequence = (int*)realloc(sequence, sequence_size*sizeof(int));
+                sequence = (Uint8*)realloc(sequence, sequence_size*sizeof(Uint8));
             }
             for (int i = sequence_len-1; i > sq_pos; i--)
             {
@@ -669,6 +670,19 @@ void Tracker::realloc_block(int size)
     {
         pos = size - 1;
     }
+}
+
+void Tracker::allocate_block(int blk, Uint16 size)
+{
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        if (block[blk].channel[c] != NULL)
+        {
+            free(block[blk].channel[c]);
+        }
+        block[blk].channel[c] = (Note*)malloc(sizeof(Note)*size);
+    }
+    block[blk].length = size;
 }
 
 void Tracker::copy_block(int blk)
