@@ -407,3 +407,123 @@ void AudioW::audio_works() // fills audio buffer
         t->set_trigger_bar(c, sig_max[c]);
     }
 }
+
+Uint32 AudioW::prepare_export()
+{
+    long unsigned int actual_pos = 0;
+    Sint32 val = 0;
+    Sint32 temp = 0;
+    sample_count = 0;
+    tick_count = 0;
+    Uint32 buffer_len = 0;
+    Uint32 buffer_size = SAMPLE_RATE * 10;
+    wav_data = (Sint32*)malloc(sizeof(Sint32)*buffer_size);
+
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        t->channel[c].play = false;
+        t->channel[c].command_type = COM_NONE;
+    }
+
+    t->sq_pos = 0;
+    t->b_pos = t->sequence[t->sq_pos];
+    t->tracker_running = true;
+    t->run_sequence = true;
+    t->sequence_end = false;
+    t->set_timing_delay();
+    t->note_trigger();
+
+    while (!t->sequence_end)
+    {
+        // timing
+        if (sample_count >= t->timing_delay)
+        {
+            t->move_step();
+            sample_count = 0;
+        } else {
+            sample_count++;
+        }
+
+        // ticks
+        if (tick_count >= TICK_LEN)
+        {
+            tick();
+            tick_count = 0;
+        } else {
+            tick_count++;
+        }
+
+        val = 0;
+        for (int c = 0; c < CHANNELS; c++) // c for channel
+        {
+            // retrigger
+            if (t->channel[c].retriggers > 0 && t->channel[c].retrig_freq == 0)
+            {
+                if (t->channel[c].retrig_count >= t->channel[c].total_triggers)
+                {
+                    t->channel[c].retrig_count = 0;
+                    t->channel[c].retriggers--;
+                    t->channel[c].pos = (double)t->channel[c].trigger_pos;
+                } else {
+                    t->channel[c].retrig_count++;
+                }
+            }
+
+            if (t->channel[c].play && t->mute[c] == false)
+            {
+                actual_pos = (int)t->channel[c].pos;
+                if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
+                {
+                    temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    val += temp;
+                    if (t->channel[c].reverse)
+                    {
+                        // handles ping pong loop
+                        if (t->sample[t->channel[c].sample].loop == 2 && actual_pos <= t->sample[t->channel[c].sample].loop_point)
+                        {
+                            t->channel[c].reverse = false;
+                        }
+                        t->channel[c].pos -= t->channel[c].pos_adv;
+                    } else {
+                        t->channel[c].pos += t->channel[c].pos_adv;
+                    }
+                } else {
+                    // handle looping
+                    if (t->sample[t->channel[c].sample].loop == 1)
+                    {
+                        t->channel[c].pos = t->sample[t->channel[c].sample].loop_point;
+                    } else if (t->sample[t->channel[c].sample].loop == 2)
+                    {
+                        t->channel[c].reverse = true;
+                        t->channel[c].pos -= 1;
+                    } else {
+                        t->channel[c].play = false; // stop channel playback if sample reaches end or sample is empty
+                    }
+                }
+            }
+        }
+        temp = val / CHANNELS;
+        temp = temp * AMP_LEV * BIT_REDUCT;
+
+        wav_data[buffer_len] = temp;
+        buffer_len++;
+        if (buffer_len >= buffer_size)
+        {
+            buffer_size += SAMPLE_RATE * 10;
+            wav_data = (Sint32*)realloc(wav_data, sizeof(Sint32)*buffer_size);
+        }
+    }
+
+    t->sq_pos = 0;
+    t->b_pos = t->sequence[t->sq_pos];
+    t->tracker_running = false;
+    t->run_sequence = false;
+
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        t->channel[c].play = false;
+        t->channel[c].command_type = COM_NONE;
+    }
+
+    return buffer_len;
+}

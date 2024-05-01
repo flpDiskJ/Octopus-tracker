@@ -195,6 +195,7 @@ public:
     Channel channel[CHANNELS];
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
+    bool sequence_end = false; // set to true when entire sequence has elapsed
 
     struct Scope{
         SDL_Texture *t = NULL;

@@ -1047,6 +1047,7 @@ void Tracker::move_step() // used by timer to run tracker
                     sq_pos++;
                 } else {
                     sq_pos = 0;
+                    sequence_end = true;
                 }
                 b_pos = sequence[sq_pos];
                 sequence_update = true;

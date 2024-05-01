@@ -14,6 +14,7 @@ private:
 
 public:
     Uint32 sample_count; // used to determine timing
+    Sint32 *wav_data = NULL; // used for export
 
     AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_PixelFormat *f, Pallet *plt);
 
@@ -26,5 +27,7 @@ public:
     void tick();
 
     void audio_works(); // run in program loop // generates buffer data
+
+    Uint32 prepare_export(); // returns length of buffer
 
 };

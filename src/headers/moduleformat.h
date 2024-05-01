@@ -2,6 +2,8 @@
 
 #include "global.h"
 #include "tracker.h"
+#include "AudioFile.h"
+#include "audioworks.h"
 
 // FORMATING
 /**
@@ -63,6 +65,7 @@ private:
     };
 
     Tracker *t;
+    AudioW *aworks;
     ModuleHead header;
     BlockHead block_spec;
     BlockNote note_data;
@@ -78,7 +81,7 @@ private:
 
 public:
 
-    ModuleFormat(Tracker *t_pointer);
+    ModuleFormat(Tracker *t_pointer, AudioW *a_pointer);
 
     ~ModuleFormat();
 
@@ -86,4 +89,5 @@ public:
 
     bool load_module(string path);
 
+    void export_wav(string path);
 };

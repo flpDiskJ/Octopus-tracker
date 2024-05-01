@@ -1,6 +1,6 @@
 // Octopus Version 0.1 2024
 // Created by Jake Aigner & Stephen Robinson & John Dunbar
-// Open source. Free to distribute. Please include original credits!
+// Open source. Free to distribute. Must include original credits!
 
 #include "headers/tracker.h"
 #include "headers/util.h"
@@ -97,8 +97,6 @@ int main(int argc, char* args[]) {
 
     Tracker tracker(tracker_render, Font, &pallet);
 
-    ModuleFormat module(&tracker);
-
     SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(tracker_window));
 
     for (int c = 0; c < CHANNELS; c++)
@@ -137,8 +135,6 @@ int main(int argc, char* args[]) {
 
     Sequencer sequence_list(&tracker, &util, Font, &pallet);
 
-    DiskOp disk_op(&tracker, &module, Font, &pallet);
-
     AudioBuffer audio_buffer;
 
     SDL_AudioSpec mFormat;
@@ -160,6 +156,10 @@ int main(int argc, char* args[]) {
     SDL_PauseAudio(0);
 
     AudioW aworks(&tracker, &audio_buffer, fmt, &pallet);
+
+    ModuleFormat module(&tracker, &aworks);
+
+    DiskOp disk_op(&tracker, &module, Font, &pallet);
 
     Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
 
@@ -337,6 +337,9 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_e)
                             {
                                 sample_editor.open();
+                            } else if (e.key.keysym.sym == SDLK_s)
+                            {
+                                module.export_wav("/home/jake/Desktop/test.wav");
                             }
                         }
                         tracker.keyboard(&e);

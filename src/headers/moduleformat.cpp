@@ -1,8 +1,9 @@
 #include "moduleformat.h"
 
-ModuleFormat::ModuleFormat(Tracker *t_pointer)
+ModuleFormat::ModuleFormat(Tracker *t_pointer, AudioW *a_pointer)
 {
     t = t_pointer;
+    aworks = a_pointer;
 }
 
 ModuleFormat::~ModuleFormat()
@@ -209,4 +210,19 @@ bool ModuleFormat::load_module(string path)
     fclose(fp);
     t->set_timing_delay();
     return true;
+}
+
+void ModuleFormat::export_wav(string path)
+{
+    AudioFile<int> audioFile;
+    Uint32 signal_length = aworks->prepare_export();
+    audioFile.setAudioBufferSize (1, signal_length);
+    audioFile.setBitDepth (16);
+    audioFile.setSampleRate (SAMPLE_RATE);
+    for (int x = 0; x < signal_length; x++)
+    {
+        audioFile.samples[0][x] = aworks->wav_data[x];
+    }
+    audioFile.save (path, AudioFileFormat::Wave);
+    free(aworks->wav_data);
 }
