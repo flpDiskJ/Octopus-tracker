@@ -229,6 +229,9 @@ int main(int argc, char* args[]) {
                     if (sample_editor.get_state() & SDL_WINDOW_SHOWN)
                     {
                         sample_editor.mouse_wheel(&e);
+                    } else if (disk_op.get_state() & SDL_WINDOW_SHOWN)
+                    {
+                        disk_op.mouse_wheel(&e);
                     }
                     break;
 

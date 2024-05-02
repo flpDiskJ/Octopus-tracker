@@ -5,7 +5,10 @@
 #include <vector>
 #include "moduleformat.h"
 
-#define FILE_LIST_SIZE 8
+#define FILE_LIST_SIZE 16
+#define MOD_PATH 0
+#define EXPORT_PATH 1
+#define SAMPLE_PATH 2
 
 /**
 NOTE FROM JAKE
@@ -16,7 +19,7 @@ NOTE FROM JAKE
 
     only the note, key, and octave elements from default_pitch are used (check Note struct in tracker.h)
 
-    NEW: load_module() and save_module() are ready for use. Check moduleformat.h
+    NEW: load_module(), save_module(), and export_wav() are ready for use. Check moduleformat.h
 
 **/
 
@@ -28,28 +31,28 @@ class DiskOp {
         SDL_Surface *surf;
         TTF_Font *font; // pointer to the program font
         Pallet *pallet; // pointer to the program pallet
-        Button save_file, load_file, export_audio; // DiskOp gui buttons
+        Button save_file, load_file; // DiskOp gui buttons
+        Button inst_b, octo_b, wave_b;
         SDL_Rect file_border;
         struct dirent *dp; // instance of the dirent struct to get sub-directory strings
         DIR *d_op_path; // directory stream for disk op window
-        vector<string> path_list_strings;
-        // I got the types and names for the UI for the disk op from the sequence list code
-        int cursor = 8;
-        int scroll_pos = 0;
+        vector<string> path_list_strings; // all the file/dir names in the given directory
+        vector<int> path_list_types; // list item type (file or dir) corresponds to path_list_strings
+        // DT_REG = normal file, DT_DIR = directory
+
+        int list_offset = 0;
+        int selected = -1; // set to -1 when nothing is selected
         Button path_list_buttons[FILE_LIST_SIZE];
-        enum path_type
-        {
-            module_p, sample_p, export_p
-        };
-        path_type parent_index = module_p;
+        Uint8 parent_index = SAMPLE_PATH;
         string parent[3];
+        Button parent_path_display;
 
         ModuleFormat *module; // use this class to save and load the module
 
         // helper methods
-        string cat_path(string path1, string path2);
+        void fill_path_list();
 
-        void fill_path_list(string sub_path);
+        void set_parent_display();
 
         void update_list_textures(); // this might end up being more similar to the update_sequence_list method from sequence_list.h
 
@@ -72,6 +75,8 @@ class DiskOp {
         bool checkButton(int mouseX, int mouseY, SDL_Rect *button);
 
         void mouse(int x, int y);
+
+        void mouse_wheel(SDL_Event *e);
 
         void keyboard(SDL_Event *e);
 };
