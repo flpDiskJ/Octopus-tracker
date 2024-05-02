@@ -165,8 +165,6 @@ int main(int argc, char* args[]) {
 
     Sample_edit sample_editor(&aworks, &tracker, Font, &pallet);
 
-    tracker.load_inst("test_sample.wav", "Test Sample", 0); // used for testing only
-
     SDL_Event e;
     int xM, yM; // mouse cords
     bool run = true;
