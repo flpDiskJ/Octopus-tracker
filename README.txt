@@ -4,7 +4,7 @@ Speed is the name of the game.
 Octopus is designed to be as lightweight as possible so that it can be run on any system.
 It is also designed to make efficient use of the keyboard. The mouse is barely utilized in the main window.
 Due to this however, the program may seem intimidating to someone with little or no experience with trackers.
-We have included a help menu inside the program that should provide everything you need to get started.
+We will be implementing a help menu inside the program that should provide everything you need to get started.
 
 Required Libraries:
 
