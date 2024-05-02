@@ -26,6 +26,11 @@
 class ModuleFormat{
 
 private:
+
+    struct Octo_ID{
+        char identifier[5] = {'O', 'C', 'T', 'O'};
+    };
+
     struct ModuleHead{
         char module_name[20];
         char module_artist[20];
@@ -70,6 +75,7 @@ private:
     BlockHead block_spec;
     BlockNote note_data;
     SampleHead sample_spec;
+    Octo_ID id;
 
     void setup_mod_head();
 

@@ -159,7 +159,7 @@ int main(int argc, char* args[]) {
 
     ModuleFormat module(&tracker, &aworks);
 
-    DiskOp disk_op(&tracker, &module, Font, &pallet);
+    DiskOp disk_op(&tracker, &aworks, &module, Font, &pallet);
 
     Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
 

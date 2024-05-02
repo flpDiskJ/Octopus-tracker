@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <vector>
 #include "moduleformat.h"
+#include "sdl_keymap.h"
 
 #define FILE_LIST_SIZE 16
 #define MOD_PATH 0
@@ -25,14 +26,20 @@ NOTE FROM JAKE
 
 class DiskOp {
     private:
+
+        const char os_slash = '/'; // swap to \ for Windows
+
         Tracker *t; // pointer to instance of the tracker class
+        AudioW *audioworks; // pointer to audioworks instance
         SDL_Window *window = NULL;
         SDL_Renderer *render = NULL;
         SDL_Surface *surf;
         TTF_Font *font; // pointer to the program font
         Pallet *pallet; // pointer to the program pallet
+        SDL_KEYMAP keymap;
         Button save_file, load_file; // DiskOp gui buttons
         Button inst_b, octo_b, wave_b;
+        Button back_b;
         SDL_Rect file_border;
         struct dirent *dp; // instance of the dirent struct to get sub-directory strings
         DIR *d_op_path; // directory stream for disk op window
@@ -46,6 +53,7 @@ class DiskOp {
         Uint8 parent_index = SAMPLE_PATH;
         string parent[3];
         Button parent_path_display;
+        Entry file_name_entry;
 
         ModuleFormat *module; // use this class to save and load the module
 
@@ -54,11 +62,21 @@ class DiskOp {
 
         void set_parent_display();
 
+        void set_file_name();
+
+        void update_file_name();
+
+        void revert_dir();
+
+        void save_button();
+
+        void load_button();
+
         void update_list_textures(); // this might end up being more similar to the update_sequence_list method from sequence_list.h
 
 
     public:
-        DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p);
+        DiskOp(Tracker *tracker, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p);
 
         ~DiskOp();
 

@@ -104,6 +104,8 @@ bool ModuleFormat::save_module(string path)
         return false;
     }
 
+    fwrite(&id, sizeof(Octo_ID), 1, fp);
+
     fwrite(&header, sizeof(ModuleHead), 1, fp);
     fwrite(t->sequence, sizeof(Uint8), t->sequence_len, fp);
 
@@ -142,6 +144,14 @@ bool ModuleFormat::load_module(string path)
     FILE *fp = fopen(path.c_str(), "rb");
     if (fp == NULL)
     {
+        return false;
+    }
+
+    fread(&id, sizeof(Octo_ID), 1, fp);
+
+    if (id.identifier[0] != 'O' || id.identifier[1] != 'C' || id.identifier[2] != 'T' || id.identifier[3] != 'O')
+    {
+        fclose(fp);
         return false;
     }
 

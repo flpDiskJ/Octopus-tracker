@@ -472,6 +472,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         fprintf(stderr, "Could not open wav: %s\n", SDL_GetError());
         return false;
     }
+
     // convert input format
     if (inputSpec.format == AUDIO_S16)
     {
@@ -481,7 +482,8 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
             free(sample[sample_slot].data);
         }
         int new_length = length / 2;
-        Sint16 val;
+        Sint16 val, val2;
+        Sint32 mix;
         sample[sample_slot].data = (Sint16*)malloc(new_length*sizeof(Sint16));
         memset(sample[sample_slot].data, 0, new_length);
         sample[sample_slot].len = new_length;
@@ -498,7 +500,15 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
                 sample[sample_slot].data[p] = val / BIT_REDUCT;
             }
         } else {
-            printf("Stereo not supported :/\n");
+            for (int x = 0, p = 0; x < length; x += 4, p++)
+            {
+                val = ((data[x+1] & 0xFF) << 8) | (data[x] & 0xFF);
+                val2 = ((data[x+3] & 0xFF) << 8) | (data[x+2] & 0xFF);
+                mix = (val + val2) / 2;
+                val = (Sint16)mix;
+                sample[sample_slot].data[p] = val / BIT_REDUCT;
+            }
+            sample[sample_slot].len /= 2;
         }
         SDL_UnlockAudio();
         SDL_FreeWAV(data);

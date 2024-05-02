@@ -1,15 +1,16 @@
 #include "disk_op.h"
 
-DiskOp::DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p)
+DiskOp::DiskOp(Tracker *tracker, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p)
 {
     // get pointers from main function
     t = tracker;
+    audioworks = a;
     module = m;
     font = f;
     pallet = p;
 
     // read from config eventually
-    parent[MOD_PATH] = "/home/";
+    parent[MOD_PATH] = "/home/jake/";
     parent[SAMPLE_PATH] = "/home/";
     parent[EXPORT_PATH] = "/home/";
 
@@ -54,6 +55,11 @@ DiskOp::DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p)
     wave_b.r.w = 14 * 4;
     wave_b.r.h = 28;
 
+    back_b.r.x = 20;
+    back_b.r.y = wave_b.r.y + wave_b.r.h + 10;
+    back_b.r.w = 14 * 4;
+    back_b.r.h = 28;
+
     surf = TTF_RenderText_Solid(font, "Save", pallet->black);
     save_file.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
@@ -74,6 +80,10 @@ DiskOp::DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p)
     wave_b.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
+    surf = TTF_RenderText_Solid(font, "BACK", pallet->black);
+    back_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     // file border init
     file_border.x = 20 + save_file.r.w + 10;
     file_border.y = 20;
@@ -92,6 +102,11 @@ DiskOp::DiskOp(Tracker *tracker, ModuleFormat *m, TTF_Font *f, Pallet *p)
     parent_path_display.r.y = file_border.y + file_border.h + 5;
     parent_path_display.r.w = file_border.w;
     parent_path_display.r.h = 24;
+
+    file_name_entry.r.x = parent_path_display.r.x;
+    file_name_entry.r.y = parent_path_display.r.y + parent_path_display.r.h + 5;
+    file_name_entry.r.w = 400;
+    file_name_entry.r.h = 28;
 }
 
 DiskOp::~DiskOp()
@@ -105,6 +120,7 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
     path_list_strings.clear();
     path_list_types.clear();
     selected = -1;
+    file_name_entry.text.clear();
 
     d_op_path = opendir(parent[parent_index].c_str());
 
@@ -119,6 +135,7 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
 
     closedir(d_op_path);
     set_parent_display();
+    set_file_name();
     update_list_textures();
 }
 
@@ -135,6 +152,54 @@ void DiskOp::set_parent_display()
     }
     surf = TTF_RenderText_Solid(font, path.c_str(), pallet->black);
     parent_path_display.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+}
+
+void DiskOp::set_file_name()
+{
+    if (selected >= 0 && selected < path_list_strings.size() && path_list_types[selected] == DT_REG)
+    {
+        file_name_entry.text = path_list_strings[selected];
+    } else {
+        file_name_entry.text.clear();
+        if (path_list_types[selected] == DT_DIR)
+        {
+            parent[parent_index] += path_list_strings[selected];
+            parent[parent_index] += os_slash;
+            fill_path_list();
+        }
+    }
+    if (file_name_entry.t != NULL)
+    {
+        SDL_DestroyTexture(file_name_entry.t);
+    }
+    string temp;
+    for (int f = file_name_entry.text.length(); f < 25; f++)
+    {
+        temp += ' ';
+    }
+    temp += file_name_entry.text;
+    temp += ' ';
+    surf = TTF_RenderText_Solid(font, temp.c_str(), pallet->black);
+    file_name_entry.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+}
+
+void DiskOp::update_file_name()
+{
+    if (file_name_entry.t != NULL)
+    {
+        SDL_DestroyTexture(file_name_entry.t);
+    }
+    string temp;
+    for (int f = file_name_entry.text.length(); f < 25; f++)
+    {
+        temp += ' ';
+    }
+    temp += file_name_entry.text;
+    temp += ' ';
+    surf = TTF_RenderText_Solid(font, temp.c_str(), pallet->black);
+    file_name_entry.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 }
 
@@ -171,7 +236,52 @@ void DiskOp::update_list_textures()
         path_list_buttons[list_p].t = SDL_CreateTextureFromSurface(render, surf);
         SDL_FreeSurface(surf);
     }
-    refresh();
+}
+
+void DiskOp::revert_dir()
+{
+    if (parent[parent_index].length() == 1)
+    {
+        return;
+    }
+    parent[parent_index].pop_back();
+    while (parent[parent_index].back() != os_slash)
+    {
+        parent[parent_index].pop_back();
+    }
+    fill_path_list();
+}
+
+void DiskOp::save_button()
+{
+    string path = parent[parent_index] + file_name_entry.text;
+    switch (parent_index)
+    {
+        case MOD_PATH:
+            module->save_module(path);
+            break;
+        case EXPORT_PATH:
+            module->export_wav(path);
+            break;
+        default:
+            break;
+    }
+}
+
+void DiskOp::load_button()
+{
+    string path = parent[parent_index] + file_name_entry.text;
+    switch (parent_index)
+    {
+        case MOD_PATH:
+            module->load_module(path);
+            break;
+        case SAMPLE_PATH:
+            t->load_inst(path, file_name_entry.text, t->s_pos);
+            break;
+        default:
+            break;
+    }
 }
 
 void DiskOp::de_init()
@@ -219,6 +329,9 @@ void DiskOp::refresh()
     SDL_RenderDrawRect(render, &wave_b.r);
     SDL_RenderCopy(render, wave_b.t, NULL, &wave_b.r);
 
+    SDL_RenderDrawRect(render, &back_b.r);
+    SDL_RenderCopy(render, back_b.t, NULL, &back_b.r);
+
     SDL_RenderDrawRect(render, &file_border);
 
     // render subpaths
@@ -228,6 +341,13 @@ void DiskOp::refresh()
     }
 
     SDL_RenderCopy(render, parent_path_display.t, NULL, &parent_path_display.r);
+
+    if (file_name_entry.active)
+    {
+        SDL_SetRenderDrawColor(render, pallet->red.r, pallet->red.g, pallet->red.b, 0xFF);
+    }
+    SDL_RenderDrawRect(render, &file_name_entry.r);
+    SDL_RenderCopy(render, file_name_entry.t, NULL, &file_name_entry.r);
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -239,6 +359,7 @@ void DiskOp::open()
     SDL_SetWindowInputFocus(window);
     fill_path_list();
     update_list_textures();
+    refresh();
 }
 
 void DiskOp::close()
@@ -272,6 +393,7 @@ void DiskOp::mouse_wheel(SDL_Event *e)
             {
                 list_offset--;
                 update_list_textures();
+                refresh();
             }
         }
         else if(e->wheel.y < 0) // scroll up
@@ -280,6 +402,7 @@ void DiskOp::mouse_wheel(SDL_Event *e)
             {
                 list_offset++;
                 update_list_textures();
+                refresh();
             }
         }
     }
@@ -290,15 +413,30 @@ void DiskOp::mouse(int x, int y)
     if (checkButton(x, y, &inst_b.r))
     {
         parent_index = SAMPLE_PATH;
+        list_offset = 0;
         fill_path_list();
     } else if (checkButton(x, y, &octo_b.r))
     {
         parent_index = MOD_PATH;
+        list_offset = 0;
         fill_path_list();
     } else if (checkButton(x, y, &wave_b.r))
     {
         parent_index = EXPORT_PATH;
+        list_offset = 0;
         fill_path_list();
+    } else if (checkButton(x, y, &file_name_entry.r))
+    {
+        file_name_entry.active = !file_name_entry.active;
+    } else if (checkButton(x, y, &back_b.r))
+    {
+        revert_dir();
+    } else if (checkButton(x, y, &save_file.r))
+    {
+        save_button();
+    } else if (checkButton(x, y, &load_file.r))
+    {
+        load_button();
     } else
     {
         for (int i = 0; i < FILE_LIST_SIZE; i++)
@@ -310,7 +448,7 @@ void DiskOp::mouse(int x, int y)
                 {
                     selected = -1;
                 } else {
-                    // string concatination
+                    set_file_name();
                 }
                 update_list_textures();
             }
@@ -321,5 +459,49 @@ void DiskOp::mouse(int x, int y)
 
 void DiskOp::keyboard(SDL_Event *e)
 {
-
+    switch (e->key.keysym.sym)
+    {
+        case SDLK_RIGHT:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                t->sample_inc();
+            }
+            break;
+        case SDLK_LEFT:
+            if (SDL_GetModState() & KMOD_SHIFT)
+            {
+                t->sample_dec();
+            }
+            break;
+        case SDLK_DELETE:
+        case SDLK_BACKSPACE:
+            if (file_name_entry.text.length() > 0 && file_name_entry.active)
+            {
+                file_name_entry.text.pop_back();
+                update_file_name();
+            }
+            break;
+        case SDLK_SPACE:
+            if (file_name_entry.active)
+            {
+                file_name_entry.text += ' ';
+                update_file_name();
+            }
+            break;
+        case SDLK_RETURN:
+            file_name_entry.active = false;
+            break;
+        default:
+            if (file_name_entry.active)
+            {
+                string keyname = SDL_GetKeyName(e->key.keysym.sym);
+                file_name_entry.text += keymap.sdl_getText(keyname, SDL_GetModState() & KMOD_SHIFT);
+                update_file_name();
+            } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+            {
+                audioworks->play_sample(e, t->s_pos);
+            }
+            break;
+    }
+    refresh();
 }
