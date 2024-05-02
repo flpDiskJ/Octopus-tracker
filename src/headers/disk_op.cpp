@@ -10,7 +10,7 @@ DiskOp::DiskOp(Tracker *tracker, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet
     pallet = p;
 
     // read from config eventually
-    parent[MOD_PATH] = "/home/jake/";
+    parent[MOD_PATH] = "/home/";
     parent[SAMPLE_PATH] = "/home/";
     parent[EXPORT_PATH] = "/home/";
 
@@ -121,6 +121,7 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
     path_list_types.clear();
     selected = -1;
     file_name_entry.text.clear();
+    list_offset = 0;
 
     d_op_path = opendir(parent[parent_index].c_str());
 

@@ -60,6 +60,7 @@ void ModuleFormat::setup_block_head(int b)
         block_spec.name[19] = '\0';
     } else {
         strncpy(block_spec.name, t->block[b].name.c_str(), t->block[b].name.length());
+        block_spec.name[t->block[b].name.length()] = '\0';
     }
 }
 
@@ -83,6 +84,7 @@ void ModuleFormat::setup_sample_head(int index)
         sample_spec.name[19] = '\0';
     } else {
         strncpy(sample_spec.name, t->sample[index].name.c_str(), t->sample[index].name.length());
+        sample_spec.name[t->sample[index].name.length()] = '\0';
     }
 
     sample_spec.length = t->sample[index].len;

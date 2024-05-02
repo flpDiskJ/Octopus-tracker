@@ -4,7 +4,7 @@
 
 New Additions (Most recent on top):
 
-    
+
 
 To do:
 
@@ -29,11 +29,9 @@ To do:
 
 Bugs:
 
-    - One of the tracker commands sometimes causes the following error after the program is quit:
-      double free or corruption (!prev)
-      Aborted
+    - Following errors sometime pop up after quit:
+      1. corrupted size vs. prev_size while consolidating
+         Aborted
 
-    - Scope generation process stops audio some channels prematurely and causes distortion in others.
-      This bug occurs randomly...  :/ ???
-      It doesn't seem to occur when the generate_scope function is commented out.
-      Removing the unused element from the block struct in tracker.h 'char *array;' makes the bug persistent.. ???
+      2. double free or corruption (!prev)
+         Aborted
