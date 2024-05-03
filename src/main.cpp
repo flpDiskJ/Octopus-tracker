@@ -376,7 +376,7 @@ int main(int argc, char* args[]) {
 
             for (int c = 0; c < CHANNELS; c++)
             {
-                if (tracker.scope[c].active)
+                if (tracker.scope[c].active && tracker.scope[c].texture_ready)
                 {
                     SDL_RenderCopy(tracker_render, tracker.scope[c].t, NULL, &tracker.scope[c].r);
                 } else {

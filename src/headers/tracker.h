@@ -204,6 +204,7 @@ public:
         int data_size = 0;
         int data_pos = 0;
         bool active = false;
+        bool texture_ready = false;
     };
 
     Scope scope[CHANNELS];

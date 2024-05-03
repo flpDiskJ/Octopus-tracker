@@ -39,6 +39,7 @@ void AudioW::generate_scope(int index)
         actual_pos = (int)pos;
     }
     SDL_UnlockTexture(t->scope[index].t);
+    t->scope[index].texture_ready = true;
 }
 
 void AudioW::play_note(SDL_Event *e)
