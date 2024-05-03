@@ -2,25 +2,25 @@
     :Keep note of what is being worked on here. PLEASE UPDATE BEFORE PUSHING:
 
 
-New Additions (Most recent on top):
-
-
-
 To do:
 
+    - Add block highlight (effects all blocks globally and isn't saved to the module unlike octamed)
+
+    - Implement channel mute.
+
+    - Add default note UI to disk op
+
+    - Do some general work on the disk op to make it function/look better from a UI standpoint
+
+    - Implement mouse wheel to sequence list
+
     - Copy/paste in sample edit doesn't transfer the sample rate. (sample rate is 0)
-
-    - Remove testing code for ctrl+s and ctrl+l in main window once finished
-
-    - Finish disk op window.
 
     - Add 'extend note input' feature to the skip function.
 
     - Add (append/insert to seq) buttons to block sub-window.
 
     - Add master speed and block length controls to track params sub-window.
-
-    - Add channel mute.
 
     - Add help sub-window to provide a detailed guide on how to use the program.
 

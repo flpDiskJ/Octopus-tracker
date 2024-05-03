@@ -338,9 +338,6 @@ int main(int argc, char* args[]) {
                             } else if (e.key.keysym.sym == SDLK_e)
                             {
                                 sample_editor.open();
-                            } else if (e.key.keysym.sym == SDLK_s)
-                            {
-                                module.export_wav("/home/jake/Desktop/test.wav");
                             }
                         }
                         tracker.keyboard(&e);
