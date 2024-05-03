@@ -365,9 +365,9 @@ int main(int argc, char* args[]) {
 
             SDL_SetRenderDrawColor(tracker_render, pallet.black.r, pallet.black.g, pallet.black.b, 0xFF); // Black
 
-            tracker.render_info();
-
             tracker.render_steps();
+
+            tracker.render_info();
 
             tracker.render_bars();
 

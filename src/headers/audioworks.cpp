@@ -355,6 +355,11 @@ void AudioW::audio_works() // fills audio buffer
                         generate_scope(c);
                     }
 
+                    if (sig_max[c] < temp * BIT_REDUCT)
+                    {sig_max[c] = temp * BIT_REDUCT;}
+
+                    temp *= AMP_LEV;
+                    temp *= BIT_REDUCT;
                     val += temp;
                     if (t->channel[c].reverse)
                     {
@@ -367,8 +372,6 @@ void AudioW::audio_works() // fills audio buffer
                     } else {
                         t->channel[c].pos += t->channel[c].pos_adv;
                     }
-                    if (sig_max[c] < temp * BIT_REDUCT)
-                    {sig_max[c] = temp * BIT_REDUCT;}
                 } else {
                     // handle looping
                     if (t->sample[t->channel[c].sample].loop == 1)
@@ -390,7 +393,6 @@ void AudioW::audio_works() // fills audio buffer
             }
         }
         temp = val / CHANNELS;
-        temp = temp * AMP_LEV * BIT_REDUCT;
         if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
         else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
         out = (Sint16)temp;
@@ -476,6 +478,7 @@ Uint32 AudioW::prepare_export()
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
                     temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    temp = temp * BIT_REDUCT;
                     val += temp;
                     if (t->channel[c].reverse)
                     {
@@ -504,8 +507,6 @@ Uint32 AudioW::prepare_export()
             }
         }
         temp = val / CHANNELS;
-        temp = temp * AMP_LEV * BIT_REDUCT;
-
         wav_data[buffer_len] = temp;
         buffer_len++;
         if (buffer_len >= buffer_size)

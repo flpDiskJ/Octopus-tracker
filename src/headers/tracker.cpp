@@ -50,6 +50,11 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     cursor.w = 39;
     cursor.h = 17;
 
+    block_highlight.r.x = skip_display.x + skip_display.w + 5;
+    block_highlight.r.y = 0;
+    block_highlight.r.w = 14 * 12;
+    block_highlight.r.h = 20;
+
     default_pitch.note = 'C';
     default_pitch.key = '-';
     default_pitch.octave = 3;
@@ -905,6 +910,25 @@ void Tracker::update_info()
     SDL_DestroyTexture(skip_display_tex);
     skip_display_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
+
+    text.clear();
+    text = "Highlight:";
+    text += to_string(highlight_iteration);
+    length = text.length();
+    if (length < 12)
+    {
+        for (int a = 0; a < 12 - length; a++)
+        {
+            text += " ";
+        }
+    }
+    surf = TTF_RenderText_Solid(font, text.c_str(), p->white);
+    if (block_highlight.t != NULL)
+    {
+        SDL_DestroyTexture(block_highlight.t);
+    }
+    block_highlight.t = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
 }
 
 void Tracker::move_cursor(int position, int chn, int direction)
@@ -1150,13 +1174,16 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, octave_display_tex, NULL, &octave_display);
     SDL_RenderCopy(renderer, sample_name_tex, NULL, &sample_name);
     SDL_RenderCopy(renderer, skip_display_tex, NULL, &skip_display);
-    SDL_RenderDrawRect(renderer, &cursor);
     if (round_skip)
     {
         SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
         SDL_RenderDrawRect(renderer, &skip_display);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
     }
+    SDL_RenderFillRect(renderer, &block_highlight.r);
+    SDL_RenderCopy(renderer, block_highlight.t, NULL, &block_highlight.r);
+    SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
+    SDL_RenderDrawRect(renderer, &cursor);
 }
 
 void Tracker::update_steps()
@@ -1191,7 +1218,19 @@ void Tracker::update_steps()
         } else {
             step_data = " "; // renders empty step if position is out of bounds
         }
-        if (step_pos == pos) // Renders the cursor positon red instead of black
+
+        if (highlight_iteration != 0 && (step_pos % highlight_iteration) == 0 && step_data.length() > 1)
+        {
+            if (edit_mode && step_pos == pos)
+            {
+                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->red, p->black);
+            } else if (step_pos == pos)
+            {
+                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->blue, p->black);
+            } else {
+                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->white, p->black);
+            }
+        } else if (step_pos == pos) // Renders the cursor positon red instead of black
         {
             if (edit_mode)
             {
@@ -1503,7 +1542,17 @@ void Tracker::keyboard(SDL_Event *e)
             }
             break;
         case SDLK_RIGHT:
-            if (SDL_GetModState() & KMOD_SHIFT)
+            if (SDL_GetModState() & KMOD_CTRL && SDL_GetModState() & KMOD_SHIFT)
+            {
+                if (highlight_iteration < 32)
+                {
+                    highlight_iteration++;
+                } else {
+                    highlight_iteration = 0;
+                }
+                update_info();
+                update_steps();
+            } else if (SDL_GetModState() & KMOD_SHIFT)
             {
                 sample_inc();
             } else if (SDL_GetModState() & KMOD_ALT){
@@ -1516,7 +1565,17 @@ void Tracker::keyboard(SDL_Event *e)
             }
             break;
         case SDLK_LEFT:
-            if (SDL_GetModState() & KMOD_SHIFT)
+            if (SDL_GetModState() & KMOD_CTRL && SDL_GetModState() & KMOD_SHIFT)
+            {
+                if (highlight_iteration > 0)
+                {
+                    highlight_iteration--;
+                } else {
+                    highlight_iteration = 32;
+                }
+                update_info();
+                update_steps();
+            } else if (SDL_GetModState() & KMOD_SHIFT)
             {
                 sample_dec();
             } else if (SDL_GetModState() & KMOD_ALT){

@@ -117,6 +117,8 @@ private:
     SDL_Texture *skip_display_tex;
     SDL_Rect cursor; // used to display cursor
     int trigger_bar_decay = 0;
+    Button block_highlight;
+    unsigned int highlight_iteration = 0;
 
     bool check_command(int c, const char *command);
 

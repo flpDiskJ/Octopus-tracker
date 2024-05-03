@@ -33,10 +33,11 @@ Main window:
         CTRL+SHIFT+0-9 Copy note to buffer
         SHIFT+0-9 = Paste note from buffer
 
-    Skip/Space:
+    Skip and Highlight:
         CTRL+LEFT/RIGHT = change skip amount
         tilde key = toggle skip between 1 and previously set amount
         click on skip with mouse to toggle skip mode
+        CTRL+SHIFT+LEFT/RIGHT = change highlight highlight iteration
 
     Sub-Windows:
         CTRL+O = open sequence order window

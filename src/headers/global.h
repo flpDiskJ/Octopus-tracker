@@ -14,7 +14,7 @@ using namespace std;
 //// Customable
 #define REFRESH_RATE 60
 #define AUDIO_LATENCY 6 // 4 to 8
-#define AMP_LEV 2 // master level
+#define AMP_LEV 6 // master level
 #define SAMPLE_RATE 48000 // output sample rate
 #define BUFF_SIZE 1024 // size of audio stream buffer
 #define SCOPE_CHUNK 800
