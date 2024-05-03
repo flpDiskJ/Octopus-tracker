@@ -224,10 +224,10 @@ int main(int argc, char* args[]) {
                     break;
 
                 case SDL_MOUSEWHEEL:
-                    if (sample_editor.get_state() & SDL_WINDOW_SHOWN)
+                    if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         sample_editor.mouse_wheel(&e);
-                    } else if (disk_op.get_state() & SDL_WINDOW_SHOWN)
+                    } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         disk_op.mouse_wheel(&e);
                     }
