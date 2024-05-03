@@ -828,14 +828,17 @@ void Sample_edit::refresh()
     render_struct(render, &quarter_rate_b, NULL);
     render_struct(render, &rev_b, NULL);
 
-    if (t->channel[0].play)
+    for (int c = 0; c < CHANNELS; c++)
     {
-        SDL_SetRenderDrawColor(render, pallet->green.r, pallet->green.g, pallet->green.b, 0xFF);
-        int pos = (int)t->channel[0].pos;
-        if (pos > wave_offset && pos < wave_offset + (waveform.r.w * wave_zoom))
+        if (t->channel[c].play && t->channel[c].sample == t->s_pos)
         {
-            int x = waveform.r.x + ((pos - wave_offset) / wave_zoom);
-            SDL_RenderDrawLine(render, x, waveform.r.y + 1, x, waveform.r.y + waveform.r.h - 2);
+            SDL_SetRenderDrawColor(render, pallet->green.r, pallet->green.g, pallet->green.b, 0xFF);
+            int pos = (int)t->channel[c].pos;
+            if (pos > wave_offset && pos < wave_offset + (waveform.r.w * wave_zoom))
+            {
+                int x = waveform.r.x + ((pos - wave_offset) / wave_zoom);
+                SDL_RenderDrawLine(render, x, waveform.r.y + 1, x, waveform.r.y + waveform.r.h - 2);
+            }
         }
     }
 

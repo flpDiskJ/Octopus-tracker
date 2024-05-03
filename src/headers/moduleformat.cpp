@@ -19,6 +19,7 @@ void ModuleFormat::setup_mod_head()
         header.module_name[19] = '\0';
     } else {
         strncpy(header.module_name, t->track_name.c_str(), t->track_name.length());
+        header.module_name[t->track_name.length()] = '\0';
     }
     if (t->track_artist.length() >= 20)
     {
@@ -26,6 +27,7 @@ void ModuleFormat::setup_mod_head()
         header.module_artist[19] = '\0';
     } else {
         strncpy(header.module_artist, t->track_artist.c_str(), t->track_artist.length());
+        header.module_artist[t->track_artist.length()] = '\0';
     }
     if (t->track_date.length() >= 20)
     {
@@ -33,6 +35,7 @@ void ModuleFormat::setup_mod_head()
         header.module_date[19] = '\0';
     } else {
         strncpy(header.module_date, t->track_date.c_str(), t->track_date.length());
+        header.module_date[t->track_date.length()] = '\0';
     }
 
     header.number_of_blocks = t->total_blocks;
