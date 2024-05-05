@@ -19,7 +19,7 @@ void AudioW::generate_scope(int index)
 {
     void *pixels;
     int pitch;
-    int scale = SAMPLE_PEAK / ((t->scope[index].r.h / 2) - 1);
+    int scale = (SAMPLE_PEAK * 2) / ((t->scope[index].r.h / 2) - 1);
     double pos = 0;
     double pos_adv = (double)t->scope[index].data_size / (double)(t->scope[index].r.w/2);
     int actual_pos = 0;
@@ -290,6 +290,8 @@ void AudioW::audio_works() // fills audio buffer
     Sint16 out;
     long int sig_max[CHANNELS];
     Sint32 temp;
+    Sint32 mix = 0;
+    int mix_div = 0;
     for (int c = 0; c < CHANNELS; c++)
     {
         sig_max[c] = 0;

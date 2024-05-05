@@ -32,7 +32,7 @@ const double VOLUME_SLIDE_AMOUNT = 0.01; // 0D
 #define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
 #define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
 
-const int BIT_REDUCT = 16;
+const int BIT_REDUCT = 12;
 const int refresh_delay_ms = 1000 / REFRESH_RATE;
 const int TICK_LEN = SAMPLE_RATE / 32;
 const double SEMITONE_MULTIPLIER = 1.0595555;
