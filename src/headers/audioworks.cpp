@@ -347,7 +347,15 @@ void AudioW::audio_works() // fills audio buffer
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
-                    temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    mix_div = 0;
+                    mix = 0;
+                    for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
+                    {
+                        mix += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                        mix_div++;
+                    }
+
+                    temp = mix / mix_div;
 
                     t->scope[c].data[t->scope[c].data_pos] = (int)temp;
                     t->scope[c].data_pos++;
@@ -422,6 +430,8 @@ Uint32 AudioW::prepare_export()
     tick_count = 0;
     Uint32 buffer_len = 0;
     Uint32 buffer_size = SAMPLE_RATE * 10;
+    Sint32 mix = 0;
+    int mix_div = 0;
     wav_data = (Sint32*)malloc(sizeof(Sint32)*buffer_size);
 
     for (int c = 0; c < CHANNELS; c++)
@@ -480,7 +490,15 @@ Uint32 AudioW::prepare_export()
                 actual_pos = (int)t->channel[c].pos;
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
-                    temp = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                    mix_div = 0;
+                    mix = 0;
+                    for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
+                    {
+                        mix += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                        mix_div++;
+                    }
+
+                    temp = mix / mix_div;
                     temp = temp * BIT_REDUCT;
                     val += temp;
                     if (t->channel[c].reverse)

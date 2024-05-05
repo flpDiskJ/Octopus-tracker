@@ -471,7 +471,8 @@ void Tracker::resample(int sample_slot, int old_rate, int new_rate, bool filter)
     int mix_div = 0;
     while (actual_pos < sample[sample_slot].len)
     {
-        mix_div = 1;
+        mix_div = 0;
+        mix = 0;
         for (int scan_p = actual_pos; scan_p <= (int)(pos+pos_adv); scan_p++)
         {
             if (scan_p < sample[sample_slot].len)
