@@ -531,12 +531,57 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
         }
         SDL_UnlockAudio();
         SDL_FreeWAV(data);
+    } else if (inputSpec.format == AUDIO_U8)
+    {
+        SDL_LockAudio();
+        if (sample[sample_slot].len != 0)
+        {
+            free(sample[sample_slot].data);
+        }
+        Uint8 val_8, val2_8;
+        Sint16 temp;
+        Sint32 mix_8;
+        sample[sample_slot].data = (Sint16*)malloc(length*sizeof(Sint16));
+        memset(sample[sample_slot].data, 0, length);
+        sample[sample_slot].len = length;
+        sample[sample_slot].tune = 0;
+        sample[sample_slot].fine_tune = 0;
+        sample[sample_slot].level = 100;
+        sample[sample_slot].name = name;
+        sample[sample_slot].sample_rate = getFreq(default_pitch.note, default_pitch.key, default_pitch.octave, -1);
+        if (inputSpec.channels == 1)
+        {
+            for (int x = 0, p = 0; x < length; x++, p++)
+            {
+                val_8 = data[x];
+                temp = (val_8 - 128) * (AUDIO_PEAK / 255);
+                sample[sample_slot].data[p] = temp / BIT_REDUCT;
+            }
+        } else {
+            for (int x = 0, p = 0; x < length; x += 2, p++)
+            {
+                val_8 = data[x];
+                val2_8 = data[x+1];
+                temp = (val_8 - 128) * (AUDIO_PEAK / 255);
+                mix_8 = temp + ((val2_8 - 128) * (AUDIO_PEAK / 255));
+                mix_8 /= 2;
+                sample[sample_slot].data[p] = mix_8 / BIT_REDUCT;
+            }
+            sample[sample_slot].len /= 2;
+        }
+        SDL_UnlockAudio();
+        SDL_FreeWAV(data);
     } else {
         printf("Invalid Audio Format!\n");
         SDL_FreeWAV(data);
         return false;
     }
-    resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate, filter);
+    if (inputSpec.freq > sample[sample_slot].sample_rate)
+    {
+        resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate, filter);
+    } else {
+        sample[sample_slot].sample_rate = inputSpec.freq;
+    }
     update_info();
     return true;
 }
