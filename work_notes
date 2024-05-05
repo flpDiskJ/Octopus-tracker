@@ -29,9 +29,10 @@ To do:
 
 Bugs:
 
-    - Following errors sometime pop up after quit:
-      1. corrupted size vs. prev_size while consolidating
+    -   Something causes this error after quit
+         corrupted size vs. prev_size while consolidating
          Aborted
 
-      2. double free or corruption (!prev)
+    - Inserting new block causes this error when program is quit
+         double free or corruption (!prev)
          Aborted
