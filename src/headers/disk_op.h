@@ -54,8 +54,18 @@ class DiskOp {
         string parent[3];
         Button parent_path_display;
         Entry file_name_entry;
+        Entry default_note_b;
+        Uint8 default_pitch_index = 0;
+        SDL_Rect note_cursor;
+        Button filter_b;
+        bool filter = true;
+
 
         ModuleFormat *module; // use this class to save and load the module
+
+        void update_default_note();
+
+        void set_default_note(const char* k, int index);
 
         // helper methods
         void fill_path_list();

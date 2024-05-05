@@ -47,6 +47,7 @@ private:
     Button rev_b; // reverse
     Button loop_on;
     Button loop_mode;
+    bool filter = false; // filter for resampling
 
     void setup_new_sample(); // sets inital values for zoom and selection
 

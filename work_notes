@@ -4,11 +4,7 @@
 
 To do:
 
-    - Add block highlight (effects all blocks globally and isn't saved to the module unlike octamed)
-
     - Implement channel mute.
-
-    - Add default note UI to disk op
 
     - Do some general work on the disk op to make it function/look better from a UI standpoint
 

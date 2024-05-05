@@ -1,6 +1,7 @@
 #include "tracker.h"
 
-Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet) { // default constructor with no arguments
+Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet)
+{ // default constructor with no arguments
     renderer = tracker_renderer;
     font = gFont;
     p = pallet;
@@ -440,7 +441,7 @@ void Tracker::low_pass(int sample_slot, int cutoff, int sample_rate)
     }
 }
 
-void Tracker::resample(int sample_slot, int old_rate, int new_rate)
+void Tracker::resample(int sample_slot, int old_rate, int new_rate, bool filter)
 {
     if (new_rate < 2000 || new_rate > 96000)
     {
@@ -448,7 +449,12 @@ void Tracker::resample(int sample_slot, int old_rate, int new_rate)
     }
     Sint16 *buffer = (Sint16*)malloc(sample[sample_slot].len*sizeof(Sint16));
     memset(buffer, 0, sample[sample_slot].len*sizeof(Sint16));
-    low_pass(sample_slot, new_rate/2, old_rate);
+    if (filter)
+    {
+        low_pass(sample_slot, new_rate/2, old_rate);
+    } else {
+        low_pass(sample_slot, new_rate/1.2, old_rate);
+    }
     double pos_adv = (double)old_rate / (double)new_rate;
     double pos = 0;
     int actual_pos = 0;
@@ -467,7 +473,7 @@ void Tracker::resample(int sample_slot, int old_rate, int new_rate)
     free(buffer);
 }
 
-bool Tracker::load_inst(string path, string name, int sample_slot)
+bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
 {
     SDL_AudioSpec inputSpec;
     Uint8 *data;
@@ -522,7 +528,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot)
         SDL_FreeWAV(data);
         return false;
     }
-    resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate);
+    resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate, filter);
     update_info();
     return true;
 }

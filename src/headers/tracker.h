@@ -229,9 +229,9 @@ public:
 
     void low_pass(int sample_slot, int cutoff, int sample_rate); // low pass filter
 
-    void resample(int sample_slot, int old_rate, int new_rate);
+    void resample(int sample_slot, int old_rate, int new_rate, bool filter);
 
-    bool load_inst(string path, string name, int sample_slot); // loads wav into instrument slot of s_pos | returns true if successful
+    bool load_inst(string path, string name, int sample_slot, bool filter); // loads wav into instrument slot of s_pos | returns true if successful
 
     int getFreq(char note, char key, int oct, int sample_id); // returns sample rate of note
     // pass -1 to sample_id to bypass tune and finetune

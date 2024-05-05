@@ -107,11 +107,76 @@ DiskOp::DiskOp(Tracker *tracker, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet
     file_name_entry.r.y = parent_path_display.r.y + parent_path_display.r.h + 5;
     file_name_entry.r.w = 400;
     file_name_entry.r.h = 28;
+
+    default_note_b.r.x = back_b.r.x + 6;
+    default_note_b.r.y = back_b.r.y + back_b.r.h + 10;
+    default_note_b.r.w = 3 * 14;
+    default_note_b.r.h = 28;
+
+    note_cursor.x = default_note_b.r.x;
+    note_cursor.y = default_note_b.r.y+1;
+    note_cursor.w = 14;
+    note_cursor.h = default_note_b.r.h-2;
+
+    filter_b.r.x = back_b.r.x;
+    filter_b.r.y = default_note_b.r.y + default_note_b.r.h + 10;
+    filter_b.r.w = 4 * 14;
+    filter_b.r.h = 28;
+
+    surf = TTF_RenderText_Solid(font, "Filter", pallet->blue);
+    filter_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+    update_default_note();
 }
 
 DiskOp::~DiskOp()
 {
 
+}
+
+void DiskOp::update_default_note()
+{
+    string temp;
+    temp += t->default_pitch.note;
+    temp += t->default_pitch.key;
+    temp += to_string(t->default_pitch.octave);
+    if (default_note_b.t != NULL)
+    {
+        SDL_DestroyTexture(default_note_b.t);
+    }
+    surf = TTF_RenderText_Solid(font, temp.c_str(), pallet->black);
+    default_note_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+    temp.clear();
+}
+
+void DiskOp::set_default_note(const char* k, int index)
+{
+    char key = k[0];
+    string temp;
+    int octave_num;
+    switch (index) {
+        case 0:
+            if (key == 'A' || key == 'B' || key == 'C' || key == 'D'
+                || key == 'E' || key == 'F' || key == 'G')
+                {
+                    t->default_pitch.note = key;
+                    update_default_note();
+                }
+            break;
+        case 2:
+            temp.clear();
+            temp += key;
+            octave_num = stoi(temp, 0, 10);
+            if (octave_num >= 0 && octave_num < 6)
+            {
+                t->default_pitch.octave = octave_num;
+                update_default_note();
+            }
+            break;
+        default:
+            break;
+    }
 }
 
 void DiskOp::fill_path_list() // for now pass "/", when this is used later in the program it will be different
@@ -278,7 +343,7 @@ void DiskOp::load_button()
             module->load_module(path);
             break;
         case SAMPLE_PATH:
-            t->load_inst(path, file_name_entry.text, t->s_pos);
+            t->load_inst(path, file_name_entry.text, t->s_pos, filter);
             break;
         default:
             break;
@@ -334,6 +399,29 @@ void DiskOp::refresh()
     SDL_RenderCopy(render, back_b.t, NULL, &back_b.r);
 
     SDL_RenderDrawRect(render, &file_border);
+
+    if (parent_index == SAMPLE_PATH)
+    {
+        SDL_RenderDrawRect(render, &default_note_b.r);
+        SDL_RenderCopy(render, default_note_b.t, NULL, &default_note_b.r);
+
+        SDL_SetRenderDrawColor(render, pallet->red.r, pallet->red.g, pallet->red.b, 0xFF);
+
+        if (default_note_b.active)
+        {
+            SDL_RenderDrawRect(render, &note_cursor);
+        }
+
+        if (filter)
+        {
+            SDL_RenderFillRect(render, &filter_b.r);
+            SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF);
+        } else {
+            SDL_SetRenderDrawColor(render, pallet->black.r, pallet->black.g, pallet->black.b, 0xFF);
+            SDL_RenderDrawRect(render, &filter_b.r);
+        }
+        SDL_RenderCopy(render, filter_b.t, NULL, &filter_b.r);
+    }
 
     // render subpaths
     for (int i = 0; i < FILE_LIST_SIZE; i++)
@@ -419,11 +507,13 @@ void DiskOp::mouse(int x, int y)
     } else if (checkButton(x, y, &octo_b.r))
     {
         parent_index = MOD_PATH;
+        default_note_b.active = false;
         list_offset = 0;
         fill_path_list();
     } else if (checkButton(x, y, &wave_b.r))
     {
         parent_index = EXPORT_PATH;
+        default_note_b.active = false;
         list_offset = 0;
         fill_path_list();
     } else if (checkButton(x, y, &file_name_entry.r))
@@ -438,6 +528,12 @@ void DiskOp::mouse(int x, int y)
     } else if (checkButton(x, y, &load_file.r))
     {
         load_button();
+    } else if (checkButton(x, y, &filter_b.r) && parent_index == SAMPLE_PATH)
+    {
+        filter = !filter;
+    } else if (checkButton(x, y, &default_note_b.r) && parent_index == SAMPLE_PATH)
+    {
+        default_note_b.active = !default_note_b.active;
     } else
     {
         for (int i = 0; i < FILE_LIST_SIZE; i++)
@@ -462,16 +558,44 @@ void DiskOp::keyboard(SDL_Event *e)
 {
     switch (e->key.keysym.sym)
     {
+        case SDLK_UP:
+            if (default_note_b.active && default_pitch_index == 1)
+            {
+                t->default_pitch.key = '#';
+                update_default_note();
+            }
+            break;
+        case SDLK_DOWN:
+            if (default_note_b.active && default_pitch_index == 1)
+            {
+                t->default_pitch.key = '-';
+                update_default_note();
+            }
+            break;
         case SDLK_RIGHT:
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 t->sample_inc();
+            } else if (default_note_b.active)
+            {
+                if (default_pitch_index < 2)
+                {
+                    default_pitch_index++;
+                    note_cursor.x = default_note_b.r.x + (14 * default_pitch_index);
+                }
             }
             break;
         case SDLK_LEFT:
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 t->sample_dec();
+            } else if (default_note_b.active)
+            {
+                if (default_pitch_index > 0)
+                {
+                    default_pitch_index--;
+                    note_cursor.x = default_note_b.r.x + (14 * default_pitch_index);
+                }
             }
             break;
         case SDLK_DELETE:
@@ -491,6 +615,7 @@ void DiskOp::keyboard(SDL_Event *e)
             break;
         case SDLK_RETURN:
             file_name_entry.active = false;
+            default_note_b.active = false;
             break;
         default:
             if (file_name_entry.active)
@@ -498,6 +623,9 @@ void DiskOp::keyboard(SDL_Event *e)
                 string keyname = SDL_GetKeyName(e->key.keysym.sym);
                 file_name_entry.text += keymap.sdl_getText(keyname, SDL_GetModState() & KMOD_SHIFT);
                 update_file_name();
+            } else if (default_note_b.active)
+            {
+                set_default_note(SDL_GetKeyName(e->key.keysym.sym), default_pitch_index);
             } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
             {
                 audioworks->play_sample(e, t->s_pos);

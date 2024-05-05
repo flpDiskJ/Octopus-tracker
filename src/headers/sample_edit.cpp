@@ -926,15 +926,17 @@ void Sample_edit::mouse(int x, int y, SDL_Event *e)
     } else if (checkButton(x, y, &vol_b.r)){
         change_vol();
     } else if (checkButton(x, y, &half_rate_b.r)){
-        t->resample(t->s_pos, t->sample[t->s_pos].sample_rate, t->sample[t->s_pos].sample_rate / 2);
+        t->resample(t->s_pos, t->sample[t->s_pos].sample_rate, t->sample[t->s_pos].sample_rate / 2, filter);
         update_selection_index();
     } else if (checkButton(x, y, &third_rate_b.r)){
         t->resample(t->s_pos, t->sample[t->s_pos].sample_rate,
-            t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.3333333333));
+            t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.3333333333),
+            filter);
         update_selection_index();
     } else if (checkButton(x, y, &quarter_rate_b.r)){
         t->resample(t->s_pos, t->sample[t->s_pos].sample_rate,
-            t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.25));
+            t->sample[t->s_pos].sample_rate - (t->sample[t->s_pos].sample_rate * 0.25),
+            filter);
         update_selection_index();
     } else if (checkButton(x, y, &rev_b.r)){
         reverse_selection();
