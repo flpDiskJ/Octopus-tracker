@@ -430,6 +430,7 @@ Uint32 AudioW::prepare_export()
 
     t->sq_pos = 0;
     t->b_pos = t->sequence[t->sq_pos];
+    t->pos = 0;
     t->tracker_running = true;
     t->run_sequence = true;
     t->sequence_end = false;

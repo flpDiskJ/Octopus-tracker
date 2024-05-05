@@ -291,6 +291,7 @@ int main(int argc, char* args[]) {
                             aworks.sample_count = 0;
                         } else if (SDL_GetModState() & KMOD_SHIFT)
                         {
+                            tracker.b_pos = tracker.sequence[tracker.sq_pos];
                             tracker.tracker_running = true;
                             tracker.run_sequence = true;
                             tracker.note_trigger();
