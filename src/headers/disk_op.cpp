@@ -334,12 +334,12 @@ void DiskOp::update_list_textures()
         item.clear();
         if (index >= 0 && index < path_list_strings.size())
         {
+            item += ' ';
+            item += path_list_strings[index];
             for (int f = path_list_strings[index].length(); f < 29; f++)
             {
                 item += ' ';
             }
-            item += path_list_strings[index];
-            item += ' ';
         } else {
             item = "   ";
         }
@@ -382,9 +382,11 @@ void DiskOp::save_button()
     {
         case MOD_PATH:
             module->save_module(path);
+            fill_path_list();
             break;
         case EXPORT_PATH:
             module->export_wav(path);
+            fill_path_list();
             break;
         default:
             break;
@@ -646,6 +648,7 @@ void DiskOp::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 t->sample_inc();
+                sampler_p->setup_new_sample();
             } else if (default_note_b.active)
             {
                 if (default_pitch_index < 2)
@@ -659,6 +662,7 @@ void DiskOp::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_SHIFT)
             {
                 t->sample_dec();
+                sampler_p->setup_new_sample();
             } else if (default_note_b.active)
             {
                 if (default_pitch_index > 0)

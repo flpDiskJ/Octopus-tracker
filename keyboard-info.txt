@@ -71,3 +71,6 @@ Sample Editor Sub-window:
 
 Disk Op Sub-window:
     UP/DOWN = scroll by 15
+    In inst mode. To set pitch, click on the pitch display-
+      -then use RIGHT/LEFT to select either the note, key, or octave.
+      Filter button toggles weither or not low pass is applied before downsampling.
