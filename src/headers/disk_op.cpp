@@ -168,12 +168,32 @@ void DiskOp::set_default_note(const char* k, int index)
         case 2:
             temp.clear();
             temp += key;
-            octave_num = stoi(temp, 0, 10);
-            if (octave_num >= 0 && octave_num < 6)
+            switch (key)
             {
-                t->default_pitch.octave = octave_num;
-                update_default_note();
+                case '0':
+                    octave_num = 0;
+                    break;
+                case '1':
+                    octave_num = 1;
+                    break;
+                case '2':
+                    octave_num = 2;
+                    break;
+                case '3':
+                    octave_num = 3;
+                    break;
+                case '4':
+                    octave_num = 4;
+                    break;
+                case '5':
+                    octave_num = 5;
+                    break;
+                default:
+                    octave_num = 3;
+                    break;
             }
+            t->default_pitch.octave = octave_num;
+            update_default_note();
             break;
         default:
             break;
@@ -665,6 +685,21 @@ void DiskOp::keyboard(SDL_Event *e)
         case SDLK_RETURN:
             file_name_entry.active = false;
             default_note_b.active = false;
+            break;
+        case SDLK_F1:
+            t->octave = 1; t->update_info();
+            break;
+        case SDLK_F2:
+            t->octave = 2; t->update_info();
+            break;
+        case SDLK_F3:
+            t->octave = 3; t->update_info();
+            break;
+        case SDLK_F4:
+            t->octave = 4; t->update_info();
+            break;
+        case SDLK_F5:
+            t->octave = 5; t->update_info();
             break;
         default:
             if (file_name_entry.active)

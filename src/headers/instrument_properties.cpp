@@ -297,6 +297,21 @@ void Instrument_properties::keyboard(SDL_Event *e)
         case SDLK_RETURN:
             samplename_entry.active = false;
             break;
+        case SDLK_F1:
+            t->octave = 1; t->update_info();
+            break;
+        case SDLK_F2:
+            t->octave = 2; t->update_info();
+            break;
+        case SDLK_F3:
+            t->octave = 3; t->update_info();
+            break;
+        case SDLK_F4:
+            t->octave = 4; t->update_info();
+            break;
+        case SDLK_F5:
+            t->octave = 5; t->update_info();
+            break;
         default:
             if (samplename_entry.active)
             {

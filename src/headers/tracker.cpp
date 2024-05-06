@@ -516,25 +516,29 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
     int big_endian = inputSpec.format & (1 << 12);
     int floating_point = inputSpec.format & (1 << 8);
     int bit_depth = inputSpec.format & 0x7F;
-    printf("Sample Specs:\n%dbit\n", bit_depth);
+    string message = name + ": ";
+    message += to_string(bit_depth);
+    message += "bit";
     if (is_signed != 0)
     {
-        printf("signed\n");
+        message += "/Signed";
     } else {
-        printf("unsigned\n");
+        message += "/Unsigned";
     }
     if (big_endian != 0)
     {
-        printf("big endian\n");
+        message += "/BigEndian";
     } else {
-        printf("little endian\n");
+        message += "/LittleEndian";
     }
     if (floating_point != 0)
     {
-        printf("float\n");
+        message += "/Float";
     } else {
-        printf("pcm\n");
+        message += "/PCM";
     }
+    printf("%s\n", message.c_str());
+    message.clear();
 
     // convert input format
     if (inputSpec.format == AUDIO_S16)
