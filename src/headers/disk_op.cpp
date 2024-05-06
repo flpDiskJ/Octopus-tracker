@@ -179,6 +179,24 @@ void DiskOp::set_default_note(const char* k, int index)
     }
 }
 
+bool DiskOp::check_file_extension(const char* ext, char* file)
+{
+    string file_name;
+    string extension;
+    file_name.clear();
+    extension.clear();
+    file_name += file;
+    extension += ext;
+    for (int x = file_name.length() - 1, y = extension.length() - 1; x > 0, y > 0; x--, y--)
+    {
+        if (file_name[x] != extension[y])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void DiskOp::fill_path_list() // for now pass "/", when this is used later in the program it will be different
 {
     // clean up path vector
@@ -194,8 +212,25 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
     {
         if (dp->d_name[0] != '.')
         {
-            path_list_strings.push_back(dp->d_name); // append path string to path list
-            path_list_types.push_back(dp->d_type);
+            if (parent_index == SAMPLE_PATH && check_file_extension(".wav\0", dp->d_name))
+            {
+                path_list_strings.push_back(dp->d_name); // append path string to path list
+                path_list_types.push_back(dp->d_type);
+            } else if (parent_index == MOD_PATH && check_file_extension(".octo\0", dp->d_name))
+            {
+                path_list_strings.push_back(dp->d_name); // append path string to path list
+                path_list_types.push_back(dp->d_type);
+            } else if (parent_index == EXPORT_PATH && check_file_extension(".wav\0", dp->d_name))
+            {
+                path_list_strings.push_back(dp->d_name); // append path string to path list
+                path_list_types.push_back(dp->d_type);
+            } else {
+                if (dp->d_type == DT_DIR)
+                {
+                    path_list_strings.push_back(dp->d_name); // append path string to path list
+                    path_list_types.push_back(dp->d_type);
+                }
+            }
         }
     }
 

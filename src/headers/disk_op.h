@@ -67,7 +67,8 @@ class DiskOp {
 
         void set_default_note(const char* k, int index);
 
-        // helper methods
+        bool check_file_extension(const char* ext, char* file);
+
         void fill_path_list();
 
         void set_parent_display();

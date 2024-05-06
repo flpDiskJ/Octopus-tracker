@@ -1030,7 +1030,7 @@ void Tracker::update_info()
             text += " ";
         }
     }
-    surf = TTF_RenderText_Solid(font, text.c_str(), p->white);
+    surf = TTF_RenderText_Solid(font, text.c_str(), p->black);
     if (block_highlight.t != NULL)
     {
         SDL_DestroyTexture(block_highlight.t);
@@ -1288,7 +1288,6 @@ void Tracker::render_info()
         SDL_RenderDrawRect(renderer, &skip_display);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
     }
-    SDL_RenderFillRect(renderer, &block_highlight.r);
     SDL_RenderCopy(renderer, block_highlight.t, NULL, &block_highlight.r);
     SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
     SDL_RenderDrawRect(renderer, &cursor);
