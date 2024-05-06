@@ -159,12 +159,12 @@ void AudioW::play_sample(SDL_Event *e, int sample, Uint32 range_start)
         {
             range_start = 0;
         }
-        t->channel[0].pos = range_start;
-        t->channel[0].sample = sample;
-        t->channel[0].pos_adv = (double)t->getFreq(note, key, oct, sample) / (double)SAMPLE_RATE;
-        t->channel[0].amplifier = (double)t->sample[sample].level / 100.0;
-        t->channel[0].play = true;
-        t->channel[0].reverse = false;
+        t->channel[CHANNELS-1].pos = range_start;
+        t->channel[CHANNELS-1].sample = sample;
+        t->channel[CHANNELS-1].pos_adv = (double)t->getFreq(note, key, oct, sample) / (double)SAMPLE_RATE;
+        t->channel[CHANNELS-1].amplifier = (double)t->sample[sample].level / 100.0;
+        t->channel[CHANNELS-1].play = true;
+        t->channel[CHANNELS-1].reverse = false;
     }
 }
 
