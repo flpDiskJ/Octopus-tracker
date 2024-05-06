@@ -19,7 +19,7 @@ void AudioW::generate_scope(int index)
 {
     void *pixels;
     int pitch;
-    int scale = (SAMPLE_PEAK * 2) / ((t->scope[index].r.h / 2) - 1);
+    int scale = (SAMPLE_PEAK * 1.8) / ((t->scope[index].r.h / 2) - 1);
     double pos = 0;
     double pos_adv = (double)t->scope[index].data_size / (double)(t->scope[index].r.w/2);
     int actual_pos = 0;

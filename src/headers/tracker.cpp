@@ -512,6 +512,30 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
         return false;
     }
 
+    int is_signed = inputSpec.format & (1 << 15);
+    int big_endian = inputSpec.format & (1 << 12);
+    int floating_point = inputSpec.format & (1 << 8);
+    int bit_depth = inputSpec.format & 0x7F;
+    printf("Sample Specs:\n%dbit\n", bit_depth);
+    if (is_signed != 0)
+    {
+        printf("signed\n");
+    } else {
+        printf("unsigned\n");
+    }
+    if (big_endian != 0)
+    {
+        printf("big endian\n");
+    } else {
+        printf("little endian\n");
+    }
+    if (floating_point != 0)
+    {
+        printf("float\n");
+    } else {
+        printf("pcm\n");
+    }
+
     // convert input format
     if (inputSpec.format == AUDIO_S16)
     {
