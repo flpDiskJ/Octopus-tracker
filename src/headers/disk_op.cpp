@@ -149,6 +149,7 @@ void DiskOp::update_default_note()
     default_note_b.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
     temp.clear();
+    default_note_b.active = false;
 }
 
 void DiskOp::set_default_note(const char* k, int index)

@@ -628,6 +628,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
     {
         resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate, filter);
     } else {
+        printf("Note: Desired pitch rate exceeds the original file's sample rate. No downsampling has been applied.\n");
         sample[sample_slot].sample_rate = inputSpec.freq;
     }
     update_info();
