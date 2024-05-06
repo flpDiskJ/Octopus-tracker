@@ -52,6 +52,7 @@ int main(int argc, char* args[]) {
     pallet.blue = {0, 0, 180};
     pallet.green = {0, 100, 0};
     pallet.white = {255, 255, 255};
+    pallet.highlight = {100, 100, 100};
 
     TTF_Font* Font = NULL;
 

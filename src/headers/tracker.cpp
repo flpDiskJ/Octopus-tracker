@@ -1331,12 +1331,12 @@ void Tracker::update_steps()
         {
             if (edit_mode && step_pos == pos)
             {
-                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->red, p->black);
+                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->red, p->highlight);
             } else if (step_pos == pos)
             {
-                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->blue, p->black);
+                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->blue, p->highlight);
             } else {
-                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->white, p->black);
+                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->black, p->highlight);
             }
         } else if (step_pos == pos) // Renders the cursor positon red instead of black
         {

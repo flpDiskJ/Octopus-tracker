@@ -73,6 +73,7 @@ struct Pallet{ // global color pallet
     SDL_Color blue;
     SDL_Color green;
     SDL_Color white;
+    SDL_Color highlight;
 };
 
 struct Button{
