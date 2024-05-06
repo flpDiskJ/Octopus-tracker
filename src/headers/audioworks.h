@@ -22,7 +22,7 @@ public:
 
     void play_note(SDL_Event *e); // plays note from keyboard
 
-    void play_sample(SDL_Event *e, int sample); // plays note from keyboard of specific sample only and always to channel 0
+    void play_sample(SDL_Event *e, int sample, Uint32 range_start); // plays note from keyboard of specific sample only and always to channel 0
 
     void tick();
 

@@ -160,11 +160,11 @@ int main(int argc, char* args[]) {
 
     ModuleFormat module(&tracker, &aworks);
 
-    DiskOp disk_op(&tracker, &aworks, &module, Font, &pallet);
+    Sample_edit sample_editor(&aworks, &tracker, Font, &pallet);
+
+    DiskOp disk_op(&tracker, &sample_editor, &aworks, &module, Font, &pallet);
 
     Instrument_properties inst_prop(&tracker, &aworks, Font, &pallet);
-
-    Sample_edit sample_editor(&aworks, &tracker, Font, &pallet);
 
     SDL_Event e;
     int xM, yM; // mouse cords

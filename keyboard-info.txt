@@ -68,3 +68,6 @@ Sample Editor Sub-window:
     LEFT/RIGHT/MIDDLE MOUSE BUTTONS = set waveform selection
     SHIFT+LEFT/RIGHT = change sample/instrument
     CTRL+LeftMouse = set loop point
+
+Disk Op Sub-window:
+    UP/DOWN = scroll by 15

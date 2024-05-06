@@ -49,8 +49,6 @@ private:
     Button loop_mode;
     bool filter = false; // filter for resampling
 
-    void setup_new_sample(); // sets inital values for zoom and selection
-
     void draw_wave();
 
     void get_sample_postions(int x, bool front); // calculates sample positions for selection
@@ -98,6 +96,8 @@ public:
     Sample_edit(AudioW *audio, Tracker *tracker, TTF_Font *f, Pallet *p);
 
     ~Sample_edit();
+
+    void setup_new_sample(); // sets inital values for zoom and selection
 
     void de_init();  // call before SDL_Quit in main
 

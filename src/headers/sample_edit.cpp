@@ -1057,7 +1057,7 @@ void Sample_edit::keyboard(SDL_Event *e)
             default:
                 if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
                 {
-                    audioworks->play_sample(e, t->s_pos);
+                    audioworks->play_sample(e, t->s_pos, selection.sample_front);
                 }
                 break;
         }

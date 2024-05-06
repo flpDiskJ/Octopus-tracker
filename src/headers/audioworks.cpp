@@ -105,7 +105,7 @@ void AudioW::play_note(SDL_Event *e)
     }
 }
 
-void AudioW::play_sample(SDL_Event *e, int sample)
+void AudioW::play_sample(SDL_Event *e, int sample, Uint32 range_start)
 {
     // figure out note data
     char note = '-';
@@ -155,7 +155,11 @@ void AudioW::play_sample(SDL_Event *e, int sample)
     }
     if (note != '-' && t->sample[sample].len != 0)
     {
-        t->channel[0].pos = 0;
+        if (range_start >= t->sample[sample].len)
+        {
+            range_start = 0;
+        }
+        t->channel[0].pos = range_start;
         t->channel[0].sample = sample;
         t->channel[0].pos_adv = (double)t->getFreq(note, key, oct, sample) / (double)SAMPLE_RATE;
         t->channel[0].amplifier = (double)t->sample[sample].level / 100.0;

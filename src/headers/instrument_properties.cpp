@@ -305,7 +305,7 @@ void Instrument_properties::keyboard(SDL_Event *e)
                 update_instname();
             } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
             {
-                audioworks->play_sample(e, t->s_pos);
+                audioworks->play_sample(e, t->s_pos, 0);
             }
             break;
     }

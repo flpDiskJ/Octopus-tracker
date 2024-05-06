@@ -5,6 +5,7 @@
 #include <vector>
 #include "moduleformat.h"
 #include "sdl_keymap.h"
+#include "sample_edit.h"
 
 #define FILE_LIST_SIZE 16
 #define MOD_PATH 0
@@ -30,6 +31,7 @@ class DiskOp {
         const char os_slash = '/'; // swap to \ for Windows
 
         Tracker *t; // pointer to instance of the tracker class
+        Sample_edit *sampler_p;
         AudioW *audioworks; // pointer to audioworks instance
         SDL_Window *window = NULL;
         SDL_Renderer *render = NULL;
@@ -87,7 +89,7 @@ class DiskOp {
 
 
     public:
-        DiskOp(Tracker *tracker, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p);
+        DiskOp(Tracker *tracker, Sample_edit *sampler, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p);
 
         ~DiskOp();
 

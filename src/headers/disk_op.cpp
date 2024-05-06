@@ -1,9 +1,10 @@
 #include "disk_op.h"
 
-DiskOp::DiskOp(Tracker *tracker, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p)
+DiskOp::DiskOp(Tracker *tracker, Sample_edit *sampler, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p)
 {
     // get pointers from main function
     t = tracker;
+    sampler_p = sampler;
     audioworks = a;
     module = m;
     font = f;
@@ -379,6 +380,7 @@ void DiskOp::load_button()
             break;
         case SAMPLE_PATH:
             t->load_inst(path, file_name_entry.text, t->s_pos, filter);
+            sampler_p->setup_new_sample();
             break;
         default:
             break;
@@ -598,6 +600,12 @@ void DiskOp::keyboard(SDL_Event *e)
             {
                 t->default_pitch.key = '#';
                 update_default_note();
+            } else {
+                if (list_offset > 14)
+                {
+                    list_offset -= 15;
+                    update_list_textures();
+                }
             }
             break;
         case SDLK_DOWN:
@@ -605,6 +613,12 @@ void DiskOp::keyboard(SDL_Event *e)
             {
                 t->default_pitch.key = '-';
                 update_default_note();
+            } else {
+                if (list_offset + 15 < path_list_strings.size())
+                {
+                    list_offset += 15;
+                    update_list_textures();
+                }
             }
             break;
         case SDLK_RIGHT:
@@ -663,7 +677,7 @@ void DiskOp::keyboard(SDL_Event *e)
                 set_default_note(SDL_GetKeyName(e->key.keysym.sym), default_pitch_index);
             } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
             {
-                audioworks->play_sample(e, t->s_pos);
+                audioworks->play_sample(e, t->s_pos, 0);
             }
             break;
     }
