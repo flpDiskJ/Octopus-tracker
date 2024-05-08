@@ -1,6 +1,7 @@
 #pragma once
 
 #include "global.h"
+#include "help.h"
 
 class Tracker
 {
@@ -119,6 +120,8 @@ private:
     int trigger_bar_decay = 0;
     Button block_highlight;
     unsigned int highlight_iteration = 0;
+    Button help_b;
+    HelpWindow *help;
 
     bool check_command(int c, const char *command);
 
@@ -212,7 +215,7 @@ public:
     Scope scope[CHANNELS];
     SDL_Texture *scope_idle_t;
 
-    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet);
+    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object

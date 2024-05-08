@@ -6,17 +6,13 @@ To do:
 
     - Implement channel mute.
 
-    - Do some general work on the disk op to make it function/look better from a UI standpoint
+    - Display dirs separately from files in disk op
 
     - Implement mouse wheel to sequence list
 
     - Add command to temporarily change sample loop point (19 command but for loop point)
 
     - Copy/paste in sample edit doesn't transfer the sample rate. (sample rate is 0)
-
-    - Add 'extend note input' feature to the skip function.
-
-    - Add (append/insert to seq) buttons to block sub-window.
 
     - Add master speed and block length controls to track params sub-window.
 

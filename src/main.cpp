@@ -10,6 +10,7 @@
 #include "headers/disk_op.h"
 #include "headers/sample_edit.h"
 #include "headers/moduleformat.h"
+#include "headers/help.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1280;
@@ -96,7 +97,9 @@ int main(int argc, char* args[]) {
         return 3;
     }
 
-    Tracker tracker(tracker_render, Font, &pallet);
+    HelpWindow help(Font, &pallet);
+
+    Tracker tracker(tracker_render, Font, &pallet, &help);
 
     SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(tracker_window));
 
@@ -201,6 +204,9 @@ int main(int argc, char* args[]) {
                         } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
                         {
                             sample_editor.close();
+                        } else if (help.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                        {
+                            help.close();
                         } else {
                             util.open("Quit?", 0);
                         }
@@ -428,6 +434,7 @@ int main(int argc, char* args[]) {
     inst_prop.de_init();
     disk_op.de_init();
     sample_editor.de_init();
+    help.de_init();
     free(audio_buffer.data);
     SDL_FreeFormat(fmt);
     SDL_CloseAudio();

@@ -21,6 +21,7 @@ add_executable(octopus
 	${SRC}/headers/sample_edit.cpp
 	${SRC}/headers/sdl_keymap.cpp
 	${SRC}/headers/moduleformat.cpp
+	${SRC}/headers/help.cpp
 )
 target_include_directories(
 	octopus PUBLIC

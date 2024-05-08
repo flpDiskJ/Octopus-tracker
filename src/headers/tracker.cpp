@@ -1,10 +1,11 @@
 #include "tracker.h"
 
-Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet)
+Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h)
 { // default constructor with no arguments
     renderer = tracker_renderer;
     font = gFont;
     p = pallet;
+    help = h;
 
     tracker_box.x = 10;
     tracker_box.y = 20;
@@ -55,6 +56,15 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     block_highlight.r.y = 0;
     block_highlight.r.w = 14 * 12;
     block_highlight.r.h = 20;
+
+    help_b.r.x = block_highlight.r.x + block_highlight.r.w + 5;
+    help_b.r.y = 0;
+    help_b.r.w = 14 * 4;
+    help_b.r.h = 20;
+
+    surf = TTF_RenderText_Shaded(font, "Help", pallet->green, pallet->black);
+    help_b.t = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
 
     default_pitch.note = 'C';
     default_pitch.key = '-';
@@ -1287,6 +1297,8 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, octave_display_tex, NULL, &octave_display);
     SDL_RenderCopy(renderer, sample_name_tex, NULL, &sample_name);
     SDL_RenderCopy(renderer, skip_display_tex, NULL, &skip_display);
+    SDL_RenderDrawRect(renderer, &help_b.r);
+    SDL_RenderCopy(renderer, help_b.t, NULL, &help_b.r);
     if (round_skip)
     {
         SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
@@ -1620,6 +1632,9 @@ void Tracker::mouse(int x, int y)
     if (checkButton(&skip_display, x, y))
     {
         round_skip = !round_skip;
+    } else if (checkButton(&help_b.r, x, y))
+    {
+        help->open();
     }
 }
 
