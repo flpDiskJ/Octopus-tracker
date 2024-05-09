@@ -387,7 +387,12 @@ int main(int argc, char* args[]) {
                 } else {
                     SDL_RenderCopy(tracker_render, tracker.scope_idle_t, NULL, &tracker.scope[c].r);
                 }
+                if (tracker.mute[c])
+                {
+                    SDL_SetRenderDrawColor(tracker_render, pallet.red.r, pallet.red.g, pallet.red.b, 0xFF);
+                }
                 SDL_RenderDrawRect(tracker_render, &tracker.scope[c].r);
+                SDL_SetRenderDrawColor(tracker_render, pallet.black.r, pallet.black.g, pallet.black.b, 0xFF);
             }
 
             SDL_RenderPresent(tracker_render); // Present image to screen

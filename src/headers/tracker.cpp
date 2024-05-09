@@ -1635,6 +1635,14 @@ void Tracker::mouse(int x, int y)
     } else if (checkButton(&help_b.r, x, y))
     {
         help->open();
+    } else {
+        for (int c = 0; c < CHANNELS; c++)
+        {
+            if (checkButton(&scope[c].r, x, y))
+            {
+                mute[c] = !mute[c];
+            }
+        }
     }
 }
 
