@@ -66,6 +66,11 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     help_b.t = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
 
+    timer.r.w = 12 * 5;
+    timer.r.x = tracker_box.x + tracker_box.w - timer.r.w;
+    timer.r.y = 0;
+    timer.r.h = 20;
+
     default_pitch.note = 'C';
     default_pitch.key = '-';
     default_pitch.octave = 3;
@@ -156,6 +161,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     update_steps();
 
     set_timing_delay();
+    update_timer();
 }
 
 Tracker::~Tracker()
@@ -368,6 +374,30 @@ Uint8 Tracker::get_command(int c)
     }
 
     return type;
+}
+
+void Tracker::update_timer()
+{
+    string temp;
+    if (timer_minute < 10)
+    {
+        temp += '0';
+    }
+    temp += to_string(timer_minute);
+    temp += ':';
+    if (timer_second < 10)
+    {
+        temp += '0';
+    }
+    temp += to_string(timer_second);
+    surf = TTF_RenderText_Solid(font, temp.c_str(), p->black);
+    if (timer.t != NULL)
+    {
+        SDL_DestroyTexture(timer.t);
+    }
+    timer.t = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+    temp.clear();
 }
 
 void Tracker::note_trigger()
@@ -1306,6 +1336,7 @@ void Tracker::render_info()
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF); // Black
     }
     SDL_RenderCopy(renderer, block_highlight.t, NULL, &block_highlight.r);
+    SDL_RenderCopy(renderer, timer.t, NULL, &timer.r);
     SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
     SDL_RenderDrawRect(renderer, &cursor);
 }

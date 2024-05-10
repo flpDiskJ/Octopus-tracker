@@ -311,6 +311,29 @@ void AudioW::audio_works() // fills audio buffer
     }
     while (b->write_pos != b->read_pos)
     {
+        // timer
+        if (t->tracker_running)
+        {
+            timer_count++;
+            if (timer_count >= SAMPLE_RATE)
+            {
+                timer_count = 0;
+                if (t->timer_second < 59)
+                {
+                    t->timer_second++;
+                } else {
+                    t->timer_second = 0;
+                    if (t->timer_minute < 99)
+                    {
+                        t->timer_minute++;
+                    } else {
+                        t->timer_minute = 0;
+                    }
+                }
+                t->update_timer();
+            }
+        }
+
         // timing
         if (sample_count >= t->timing_delay)
         {

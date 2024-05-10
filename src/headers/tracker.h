@@ -214,11 +214,16 @@ public:
 
     Scope scope[CHANNELS];
     SDL_Texture *scope_idle_t;
+    Uint32 timer_minute = 0;
+    Uint32 timer_second = 0;
+    Button timer;
 
     Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object
+
+    void update_timer();
 
     void note_trigger(); // triggers all valid notes in step positon
 

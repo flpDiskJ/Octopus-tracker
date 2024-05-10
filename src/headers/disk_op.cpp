@@ -404,6 +404,7 @@ void DiskOp::load_button()
             t->sq_pos = 0;
             t->b_pos = t->sequence[0];
             t->update_info();
+            close();
             break;
         case SAMPLE_PATH:
             t->load_inst(path, file_name_entry.text, t->s_pos, filter);

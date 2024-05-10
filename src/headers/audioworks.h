@@ -9,6 +9,7 @@ private:
     SDL_PixelFormat *fmt;
     Pallet *pallet;
     Uint32 tick_count; // counts ticks for effects commands
+    Uint16 timer_count = 0;
 
     void generate_scope(int index);
 

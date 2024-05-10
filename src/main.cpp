@@ -284,6 +284,9 @@ int main(int argc, char* args[]) {
                             tracker.pos = 0;
                             tracker.sq_pos = 0;
                             tracker.b_pos = tracker.sequence[0];
+                            tracker.timer_second = 0;
+                            tracker.timer_minute = 0;
+                            tracker.update_timer();
                             tracker.set_timing_delay();
                             tracker.update_info();
                             tracker.sequence_update = true;
