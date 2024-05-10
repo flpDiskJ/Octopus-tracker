@@ -400,6 +400,10 @@ void DiskOp::load_button()
     {
         case MOD_PATH:
             module->load_module(path);
+            t->pos = 0;
+            t->sq_pos = 0;
+            t->b_pos = t->sequence[0];
+            t->update_info();
             break;
         case SAMPLE_PATH:
             t->load_inst(path, file_name_entry.text, t->s_pos, filter);
