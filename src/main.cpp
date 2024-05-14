@@ -304,6 +304,7 @@ int main(int argc, char* args[]) {
                             tracker.b_pos = tracker.sequence[tracker.sq_pos];
                             tracker.tracker_running = true;
                             tracker.run_sequence = true;
+                            tracker.update_info();
                             tracker.note_trigger();
                             aworks.sample_count = 0;
                         } else {

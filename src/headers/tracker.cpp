@@ -1031,7 +1031,7 @@ void Tracker::delete_block(int blk)
     }
     for (int s = 0; s < sequence_len; s++)
     {
-        if (sequence[s] > 0)
+        if (sequence[s] > 0 && sequence[s] >= blk)
         {
             sequence[s]--;
         }
