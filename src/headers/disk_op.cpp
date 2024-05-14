@@ -752,6 +752,19 @@ void DiskOp::keyboard(SDL_Event *e)
                 overwrite = true;
                 overwrite_prompt = false;
                 save_button();
+            } else {
+                if (file_name_entry.active)
+                {
+                    string keyname = SDL_GetKeyName(e->key.keysym.sym);
+                    file_name_entry.text += keymap.sdl_getText(keyname, SDL_GetModState() & KMOD_SHIFT);
+                    update_file_name();
+                } else if (default_note_b.active)
+                {
+                    set_default_note(SDL_GetKeyName(e->key.keysym.sym), default_pitch_index);
+                } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+                {
+                    audioworks->play_sample(e, t->s_pos, 0);
+                }
             }
             break;
         case SDLK_n:
@@ -761,6 +774,19 @@ void DiskOp::keyboard(SDL_Event *e)
                 overwrite = false;
                 file_name_entry.text.clear();
                 update_file_name();
+            } else {
+                if (file_name_entry.active)
+                {
+                    string keyname = SDL_GetKeyName(e->key.keysym.sym);
+                    file_name_entry.text += keymap.sdl_getText(keyname, SDL_GetModState() & KMOD_SHIFT);
+                    update_file_name();
+                } else if (default_note_b.active)
+                {
+                    set_default_note(SDL_GetKeyName(e->key.keysym.sym), default_pitch_index);
+                } else if (!(SDL_GetModState() & KMOD_CTRL) && !(SDL_GetModState() & KMOD_SHIFT))
+                {
+                    audioworks->play_sample(e, t->s_pos, 0);
+                }
             }
             break;
         default:
