@@ -1403,8 +1403,23 @@ void Tracker::render_info()
     }
     SDL_RenderCopy(renderer, block_highlight.t, NULL, &block_highlight.r);
     SDL_RenderCopy(renderer, timer.t, NULL, &timer.r);
-    SDL_SetRenderDrawColor(renderer, 128, 0, 0, 0xFF); // Red
-    SDL_RenderDrawRect(renderer, &cursor);
+
+    SDL_SetRenderDrawColor(renderer, p->highlight.r, p->highlight.g, p->highlight.b, 0xFF);
+    for (int i = 0; i < DISPLAYRECTS; i++)
+    {
+        if (highlighted[i])
+        {
+            SDL_RenderFillRect(renderer, &displayrects[i]);
+        }
+    }
+
+    if (edit_mode)
+    {
+        SDL_SetRenderDrawColor(renderer, p->blue.r, p->blue.g, p->blue.b-50, 0xFF);
+    } else {
+        SDL_SetRenderDrawColor(renderer, p->red.r-50, p->red.g, p->red.b, 0xFF);
+    }
+    SDL_RenderFillRect(renderer, &cursor);
 }
 
 void Tracker::update_steps()
@@ -1436,22 +1451,18 @@ void Tracker::update_steps()
                 if (chan < CHANNELS-1) {step_data += " | ";}
             }
             step_data += "<";
+            if (highlight_iteration != 0 && (step_pos % highlight_iteration) == 0)
+            {
+                highlighted[step] = true;
+            } else {
+                highlighted[step] = false;
+            }
         } else {
             step_data = " "; // renders empty step if position is out of bounds
+            highlighted[step] = false;
         }
 
-        if (highlight_iteration != 0 && (step_pos % highlight_iteration) == 0 && step_data.length() > 1)
-        {
-            if (edit_mode && step_pos == pos)
-            {
-                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->red, p->highlight);
-            } else if (step_pos == pos)
-            {
-                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->blue, p->highlight);
-            } else {
-                surf = TTF_RenderText_Shaded(font, step_data.c_str(), p->black, p->highlight);
-            }
-        } else if (step_pos == pos) // Renders the cursor positon red instead of black
+        if (step_pos == pos) // Renders the cursor positon red instead of black
         {
             if (edit_mode)
             {
@@ -1459,6 +1470,9 @@ void Tracker::update_steps()
             } else {
                 surf = TTF_RenderText_Solid(font, step_data.c_str(), p->blue); // Makes surface with text
             }
+        } else if (step_data.length() > 1)
+        {
+            surf = TTF_RenderText_Solid(font, step_data.c_str(), p->black); // Makes surface with text
         } else {
             surf = TTF_RenderText_Solid(font, step_data.c_str(), p->black);
         }

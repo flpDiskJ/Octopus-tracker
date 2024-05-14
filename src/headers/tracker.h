@@ -9,6 +9,7 @@ private:
     SDL_Surface *surf = NULL;
     Pallet *p;
     SDL_Rect displayrects[DISPLAYRECTS]; // Used to display sequence steps
+    bool highlighted[DISPLAYRECTS];
     SDL_Texture *displaytextures[DISPLAYRECTS];
     SDL_Renderer *renderer;
     TTF_Font *font;
