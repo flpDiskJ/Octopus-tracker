@@ -30,3 +30,8 @@ Bugs:
     - Inserting new block causes this error when program is quit
          double free or corruption (!prev)
          Aborted
+
+    - Loading an OCTO file without selecting anything will clear all of the main tracker window and do some
+    weird stuff
+
+    - Loading the same OCTO file multiple times crashes the program and outputs a seg fault in the terminal
