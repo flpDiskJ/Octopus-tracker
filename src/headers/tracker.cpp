@@ -663,6 +663,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
         int new_length = length / 2;
         Sint32 val_32, val2_32;
         Sint32 mix_32;
+        Sint16 out_val;
         sample[sample_slot].data = (Sint16*)malloc(new_length*sizeof(Sint16));
         memset(sample[sample_slot].data, 0, new_length);
         sample[sample_slot].len = new_length;
@@ -681,7 +682,8 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
                     val_32 += data[x+i] << (i*8);
                 }
                 val_32 /= 32770;
-                sample[sample_slot].data[p] = val_32 / BIT_REDUCT;
+                out_val = (Sint16)val_32;
+                sample[sample_slot].data[p] = out_val / BIT_REDUCT;
             }
         } else {
             for (int x = 0, p = 0; x < length; x += 8, p++)
@@ -696,8 +698,8 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
                 val_32 /= 32770;
                 val2_32 /= 32770;
                 mix_32 = (val_32 + val2_32) / 2;
-                val_32 = (Sint16)mix_32;
-                sample[sample_slot].data[p] = val_32 / BIT_REDUCT;
+                out_val = (Sint16)mix_32;
+                sample[sample_slot].data[p] = out_val / BIT_REDUCT;
             }
             sample[sample_slot].len /= 2;
         }
