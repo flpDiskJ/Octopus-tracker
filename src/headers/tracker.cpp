@@ -580,10 +580,11 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
     printf("%s\n", message.c_str());
     message.clear();
 
+    SDL_LockAudio();
+
     // convert input format
     if (inputSpec.format == AUDIO_S16)
     {
-        SDL_LockAudio();
         if (sample[sample_slot].len != 0)
         {
             free(sample[sample_slot].data);
@@ -617,11 +618,8 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
             }
             sample[sample_slot].len /= 2;
         }
-        SDL_UnlockAudio();
-        SDL_FreeWAV(data);
     } else if (inputSpec.format == AUDIO_U8)
     {
-        SDL_LockAudio();
         if (sample[sample_slot].len != 0)
         {
             free(sample[sample_slot].data);
@@ -657,13 +655,58 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
             }
             sample[sample_slot].len /= 2;
         }
-        SDL_UnlockAudio();
-        SDL_FreeWAV(data);
+    } else if (inputSpec.format == AUDIO_S32) {
+        if (sample[sample_slot].len != 0)
+        {
+            free(sample[sample_slot].data);
+        }
+        int new_length = length / 2;
+        Sint32 val_32, val2_32;
+        Sint32 mix_32;
+        sample[sample_slot].data = (Sint16*)malloc(new_length*sizeof(Sint16));
+        memset(sample[sample_slot].data, 0, new_length);
+        sample[sample_slot].len = new_length;
+        sample[sample_slot].tune = 0;
+        sample[sample_slot].fine_tune = 0;
+        sample[sample_slot].level = 100;
+        sample[sample_slot].name = name;
+        sample[sample_slot].sample_rate = getFreq(default_pitch.note, default_pitch.key, default_pitch.octave, -1);
+        if (inputSpec.channels == 1)
+        {
+            for (int x = 0, p = 0; x < length; x += 4, p++)
+            {
+                val_32 = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    val_32 += data[x+i] << (i*8);
+                }
+                val_32 /= 32768;
+                sample[sample_slot].data[p] = val_32 / BIT_REDUCT;
+            }
+        } else {
+            for (int x = 0, p = 0; x < length; x += 8, p++)
+            {
+                val_32 = 0;
+                val2_32 = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    val_32 += data[x+i] << (i*8);
+                    val2_32 += data[x+i+4] << (i*8);
+                }
+                mix_32 = (val_32 + val2_32) / 2;
+                mix_32 /= 32768;
+                val_32 = (Sint16)mix_32;
+                sample[sample_slot].data[p] = val_32 / BIT_REDUCT;
+            }
+            sample[sample_slot].len /= 2;
+        }
     } else {
         printf("Invalid Audio Format!\n");
-        SDL_FreeWAV(data);
         return false;
     }
+
+    SDL_FreeWAV(data);
+
     if (inputSpec.freq > sample[sample_slot].sample_rate)
     {
         resample(sample_slot, inputSpec.freq, sample[sample_slot].sample_rate, filter);
@@ -671,6 +714,9 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
         printf("Note: Desired pitch rate exceeds the original file's sample rate. No downsampling has been applied.\n");
         sample[sample_slot].sample_rate = inputSpec.freq;
     }
+
+    SDL_UnlockAudio();
+
     update_info();
     return true;
 }
