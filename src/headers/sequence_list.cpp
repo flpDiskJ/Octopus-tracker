@@ -126,7 +126,11 @@ void Sequencer::update_list()
         if (p >= 0 && p < t->sequence_len)
         {
             text += to_string(p);
-            text += "> Blk: ";
+            for (int x = text.length(); x < 3; x++)
+            {
+                text += ' ';
+            }
+            text += ' ';
             text += to_string(t->sequence[p]);
             text += " : ";
             text += t->block[t->sequence[p]].name;
