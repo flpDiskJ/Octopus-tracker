@@ -1834,8 +1834,10 @@ void Tracker::keyboard(SDL_Event *e)
         case SDLK_TAB:
             if (SDL_GetModState() & KMOD_SHIFT)
             {
+                cursor_pos = 0;
                 move_cursor(0, 1, 0);
             } else {
+                cursor_pos = 0;
                 move_cursor(0, 1, 1);
             }
             break;
