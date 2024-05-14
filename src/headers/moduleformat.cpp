@@ -102,7 +102,6 @@ void ModuleFormat::setup_sample_head(int index)
 bool ModuleFormat::save_module(string path)
 {
     setup_mod_head();
-
     FILE *fp = fopen(path.c_str(), "wb");
     if (fp == NULL)
     {

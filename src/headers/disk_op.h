@@ -61,9 +61,14 @@ class DiskOp {
         SDL_Rect note_cursor;
         Button filter_b;
         bool filter = true;
+        bool overwrite = false;
+        bool overwrite_prompt = false;
+        string filename_store;
 
 
         ModuleFormat *module; // use this class to save and load the module
+
+        bool file_exist(string filename);
 
         void update_default_note();
 

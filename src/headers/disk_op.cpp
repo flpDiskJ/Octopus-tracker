@@ -135,6 +135,18 @@ DiskOp::~DiskOp()
 
 }
 
+bool DiskOp::file_exist(string filename)
+{
+    for (int i = 0; i < path_list_strings.size(); i++)
+    {
+        if (path_list_strings[i] == filename)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void DiskOp::update_default_note()
 {
     string temp;
@@ -377,7 +389,21 @@ void DiskOp::revert_dir()
 
 void DiskOp::save_button()
 {
-    string path = parent[parent_index] + file_name_entry.text;
+    string path;
+    if (file_exist(file_name_entry.text) && !overwrite)
+    {
+        filename_store = file_name_entry.text;
+        file_name_entry.text = "Overwrite? Y/N";
+        update_file_name();
+        overwrite_prompt = true;
+        return;
+    }
+    if (overwrite)
+    {
+        path = parent[parent_index] + filename_store;
+    } else {
+        path = parent[parent_index] + file_name_entry.text;
+    }
     switch (parent_index)
     {
         case MOD_PATH:
@@ -391,6 +417,7 @@ void DiskOp::save_button()
         default:
             break;
     }
+    overwrite = false;
 }
 
 void DiskOp::load_button()
@@ -718,6 +745,23 @@ void DiskOp::keyboard(SDL_Event *e)
             break;
         case SDLK_F5:
             t->octave = 5; t->update_info();
+            break;
+        case SDLK_y:
+            if (overwrite_prompt)
+            {
+                overwrite = true;
+                overwrite_prompt = false;
+                save_button();
+            }
+            break;
+        case SDLK_n:
+            if (overwrite_prompt)
+            {
+                overwrite_prompt = false;
+                overwrite = false;
+                file_name_entry.text.clear();
+                update_file_name();
+            }
             break;
         default:
             if (file_name_entry.active)

@@ -30,5 +30,3 @@ Bugs:
     - Inserting new block causes this error when program is quit
          double free or corruption (!prev)
          Aborted
-
-    - Loading the same OCTO file multiple times crashes the program and outputs a seg fault in the terminal
