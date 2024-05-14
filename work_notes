@@ -4,19 +4,17 @@
 
 To do:
 
-    - Display dirs separately from files in disk op
+    - Organize files alphabetically in disk op.
 
-    - Implement mouse wheel to sequence list
+    - Implement mouse wheel to sequence list.
 
-    - Add command to temporarily change sample loop point (19 command but for loop point)
+    - Add command to temporarily change sample loop point. (19 command but for loop point)
 
     - Copy/paste in sample edit doesn't transfer the sample rate. (sample rate is 0)
 
-    - Add master speed and block length controls to track params sub-window.
-
     - Add master level to track params window.
 
-    - Add help sub-window to provide a detailed guide on how to use the program.
+    - Finish help sub-window.
 
     - Add config sub-window and move all the customable values in global.h to the config file.
 

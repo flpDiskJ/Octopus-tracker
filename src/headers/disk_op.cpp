@@ -240,6 +240,9 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
     file_name_entry.text.clear();
     list_offset = 0;
 
+    vector<string> dir_list;
+    vector<string> file_list;
+
     d_op_path = opendir(parent[parent_index].c_str());
 
     while (dp = readdir(d_op_path))// if dp is null no more content to list
@@ -248,25 +251,35 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
         {
             if (parent_index == SAMPLE_PATH && check_file_extension(".wav\0", dp->d_name))
             {
-                path_list_strings.push_back(dp->d_name); // append path string to path list
-                path_list_types.push_back(dp->d_type);
+                file_list.push_back(dp->d_name);
             } else if (parent_index == MOD_PATH && check_file_extension(".octo\0", dp->d_name))
             {
-                path_list_strings.push_back(dp->d_name); // append path string to path list
-                path_list_types.push_back(dp->d_type);
+                file_list.push_back(dp->d_name);
             } else if (parent_index == EXPORT_PATH && check_file_extension(".wav\0", dp->d_name))
             {
-                path_list_strings.push_back(dp->d_name); // append path string to path list
-                path_list_types.push_back(dp->d_type);
+                file_list.push_back(dp->d_name);
             } else {
                 if (dp->d_type == DT_DIR)
                 {
-                    path_list_strings.push_back(dp->d_name); // append path string to path list
-                    path_list_types.push_back(dp->d_type);
+                    dir_list.push_back(dp->d_name);
                 }
             }
         }
     }
+
+    for (int i = 0; i < dir_list.size(); i++)
+    {
+        path_list_strings.push_back(dir_list[i]);
+        path_list_types.push_back(DT_DIR);
+    }
+    for (int i = 0; i < file_list.size(); i++)
+    {
+        path_list_strings.push_back(file_list[i]);
+        path_list_types.push_back(DT_REG);
+    }
+
+    dir_list.clear();
+    file_list.clear();
 
     closedir(d_op_path);
     set_parent_display();
