@@ -395,20 +395,28 @@ void DiskOp::save_button()
 
 void DiskOp::load_button()
 {
+    if (file_name_entry.text.size() == 0)
+    {
+        return;
+    }
     string path = parent[parent_index] + file_name_entry.text;
     switch (parent_index)
     {
         case MOD_PATH:
-            module->load_module(path);
-            t->pos = 0;
-            t->sq_pos = 0;
-            t->b_pos = t->sequence[0];
-            t->update_info();
-            close();
+            if (module->load_module(path))
+            {
+                t->pos = 0;
+                t->sq_pos = 0;
+                t->b_pos = t->sequence[0];
+                t->update_info();
+                close();
+            }
             break;
         case SAMPLE_PATH:
-            t->load_inst(path, file_name_entry.text, t->s_pos, filter);
-            sampler_p->setup_new_sample();
+            if (t->load_inst(path, file_name_entry.text, t->s_pos, filter))
+            {
+                sampler_p->setup_new_sample();
+            }
             break;
         default:
             break;
