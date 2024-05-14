@@ -1415,9 +1415,9 @@ void Tracker::render_info()
 
     if (edit_mode)
     {
-        SDL_SetRenderDrawColor(renderer, p->blue.r, p->blue.g, p->blue.b-50, 0xFF);
+        SDL_SetRenderDrawColor(renderer, p->red.r, p->red.g, p->red.b, 0xFF);
     } else {
-        SDL_SetRenderDrawColor(renderer, p->red.r-50, p->red.g, p->red.b, 0xFF);
+        SDL_SetRenderDrawColor(renderer, p->white.r, p->white.g, p->white.b, 0xFF);
     }
     SDL_RenderFillRect(renderer, &cursor);
 }
@@ -1464,12 +1464,7 @@ void Tracker::update_steps()
 
         if (step_pos == pos) // Renders the cursor positon red instead of black
         {
-            if (edit_mode)
-            {
-                surf = TTF_RenderText_Solid(font, step_data.c_str(), p->red); // Makes surface with text
-            } else {
-                surf = TTF_RenderText_Solid(font, step_data.c_str(), p->blue); // Makes surface with text
-            }
+            surf = TTF_RenderText_Solid(font, step_data.c_str(), p->blue); // Makes surface with text
         } else if (step_data.length() > 1)
         {
             surf = TTF_RenderText_Solid(font, step_data.c_str(), p->black); // Makes surface with text
