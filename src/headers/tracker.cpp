@@ -1542,7 +1542,7 @@ int Tracker::getFreq(char note, char key, int oct, int sample_id)
 
 void Tracker::get_note(SDL_Event *e)
 {
-    if (!edit_mode)
+    if (!edit_mode || SDL_GetModState() & KMOD_CTRL)
     {
         return;
     }

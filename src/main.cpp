@@ -330,7 +330,6 @@ int main(int argc, char* args[]) {
                     } else {
                         if (SDL_GetModState() & KMOD_CTRL) // control key press
                         {
-                            tracker.edit_mode = false;
                             if (e.key.keysym.sym == SDLK_b) // open block params
                             {
                                 util.open("Block List", 1);
