@@ -22,6 +22,8 @@ private:
     bool selected = false;
     int scroll_pos = 0;
     string file_name;
+    Button info_bar;
+
     bool set_seq_pos(int entry); // sets sq_pos in tracker class
 
 public:

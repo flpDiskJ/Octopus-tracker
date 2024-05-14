@@ -43,6 +43,15 @@ Sequencer::Sequencer(Tracker *tracker, Util *util, TTF_Font *f, Pallet *p)
     delete_btn.r.w = 168;
     delete_btn.r.h = 30;
 
+    info_bar.r.x = 20;
+    info_bar.r.y = 1;
+    info_bar.r.w = 12 * 11;
+    info_bar.r.h = 18;
+
+    surf = TTF_RenderText_Solid(font, "Pos: Block:", pallet->black);
+    info_bar.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     for (int index = 0; index < LIST_ENTRIES; index++)
     {
         list[index].r.w = list_box.w;
@@ -103,6 +112,7 @@ void Sequencer::refresh()
     SDL_RenderCopy(render, append_btn.t, NULL, &append_btn.r);
     SDL_RenderDrawRect(render, &delete_btn.r);
     SDL_RenderCopy(render, delete_btn.t, NULL, &delete_btn.r);
+    SDL_RenderCopy(render, info_bar.t, NULL, &info_bar.r);
 
     for (int i = 0; i < LIST_ENTRIES; i++)
     {
