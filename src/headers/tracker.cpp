@@ -680,7 +680,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
                 {
                     val_32 += data[x+i] << (i*8);
                 }
-                val_32 /= 32768;
+                val_32 /= 32770;
                 sample[sample_slot].data[p] = val_32 / BIT_REDUCT;
             }
         } else {
@@ -693,8 +693,9 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
                     val_32 += data[x+i] << (i*8);
                     val2_32 += data[x+i+4] << (i*8);
                 }
-                mix_32 = ((val_32 / 2) + (val2_32 / 2));
-                mix_32 /= 32768;
+                val_32 /= 32770;
+                val2_32 /= 32770;
+                mix_32 = (val_32 + val2_32) / 2;
                 val_32 = (Sint16)mix_32;
                 sample[sample_slot].data[p] = val_32 / BIT_REDUCT;
             }
