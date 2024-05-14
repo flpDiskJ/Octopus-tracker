@@ -682,8 +682,16 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
                     val_32 += data[x+i] << (i*8);
                 }
                 val_32 /= 32770;
+                val_32 /= BIT_REDUCT;
+                if (val_32 > SAMPLE_PEAK)
+                {
+                    val_32 = SAMPLE_PEAK;
+                } else if (val_32 < 0 - SAMPLE_PEAK)
+                {
+                    val_32 = 0 - SAMPLE_PEAK;
+                }
                 out_val = (Sint16)val_32;
-                sample[sample_slot].data[p] = out_val / BIT_REDUCT;
+                sample[sample_slot].data[p] = out_val;
             }
         } else {
             for (int x = 0, p = 0; x < length; x += 8, p++)
@@ -697,15 +705,23 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
                 }
                 val_32 /= 32770;
                 val2_32 /= 32770;
-                mix_32 = (val_32 + val2_32) / 2;
+                mix_32 = ((val_32 + val2_32) / 2) / BIT_REDUCT;
+                if (mix_32 > SAMPLE_PEAK)
+                {
+                    mix_32 = SAMPLE_PEAK;
+                } else if (mix_32 < 0 - SAMPLE_PEAK)
+                {
+                    mix_32 = 0 - SAMPLE_PEAK;
+                }
                 out_val = (Sint16)mix_32;
-                sample[sample_slot].data[p] = out_val / BIT_REDUCT;
+                sample[sample_slot].data[p] = out_val;
             }
             sample[sample_slot].len /= 2;
         }
     } else {
         printf("Invalid Audio Format!\n");
         SDL_FreeWAV(data);
+        SDL_UnlockAudio();
         return false;
     }
 
