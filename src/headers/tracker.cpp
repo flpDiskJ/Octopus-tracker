@@ -702,6 +702,7 @@ bool Tracker::load_inst(string path, string name, int sample_slot, bool filter)
         }
     } else {
         printf("Invalid Audio Format!\n");
+        SDL_FreeWAV(data);
         return false;
     }
 
