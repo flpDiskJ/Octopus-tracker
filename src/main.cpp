@@ -237,6 +237,9 @@ int main(int argc, char* args[]) {
                     } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         disk_op.mouse_wheel(&e);
+                    } else if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        sequence_list.mouse_wheel(&e);
                     }
                     break;
 

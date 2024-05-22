@@ -6,8 +6,6 @@ To do:
 
     - Organize files alphabetically in disk op.
 
-    - Implement mouse wheel to sequence list.
-
     - Add command to temporarily change sample loop point. (19 command but for loop point)
 
     - Add master level to track params window.
