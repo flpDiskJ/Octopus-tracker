@@ -40,6 +40,7 @@ private:
     Sint16 *copy_buffer = NULL;
     long int copy_buffer_size = 0;
     long int paste_size = 0;
+    Uint16 copied_sample_rate = 0;
     Button slice_b, fade_in_b, fade_out_b;
     Entry vol_e; Button vol_b;
     Button sample_rate_d;

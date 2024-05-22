@@ -506,6 +506,7 @@ void Sample_edit::cut_selection()
 
 void Sample_edit::copy_selection()
 {
+    copied_sample_rate = t->sample[t->s_pos].sample_rate;
     if (selection.sample_back >= t->sample[t->s_pos].len)
     {
         selection.sample_back = t->sample[t->s_pos].len - 1;
@@ -530,6 +531,10 @@ void Sample_edit::copy_selection()
 
 void Sample_edit::paste_buffer()
 {
+    if (t->sample[t->s_pos].len == 0)
+    {
+        t->sample[t->s_pos].sample_rate = copied_sample_rate;
+    }
     long int size = t->sample[t->s_pos].len + paste_size;
     Sint16 *buffer = (Sint16*)malloc(sizeof(Sint16)*size);
 

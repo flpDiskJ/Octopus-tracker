@@ -10,8 +10,6 @@ To do:
 
     - Add command to temporarily change sample loop point. (19 command but for loop point)
 
-    - Copy/paste in sample edit doesn't transfer the sample rate. (sample rate is 0)
-
     - Add master level to track params window.
 
     - Finish help sub-window.
