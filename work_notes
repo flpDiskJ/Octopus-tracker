@@ -20,11 +20,3 @@ To do:
 
 
 Bugs:
-
-    -   Something causes this error after quit
-         corrupted size vs. prev_size while consolidating
-         Aborted
-
-    - Inserting new block causes this error when program is quit
-         double free or corruption (!prev)
-         Aborted

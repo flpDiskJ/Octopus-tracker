@@ -166,13 +166,20 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
 
 Tracker::~Tracker()
 {
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        if (block_buffer.length > 0 || block_buffer.channel[c] != NULL)
+        {
+            free(block_buffer.channel[c]);
+        }
+    }
     for (int b = 0; b < total_blocks; b++)
     {
         for (int c = 0; c < CHANNELS; c++)
         {
-            if (block_buffer.length > 0 || block_buffer.channel[c] != NULL)
+            if (block[b].length > 0 || block[b].channel[c] != NULL)
             {
-                free(block_buffer.channel[c]);
+                free(block[b].channel[c]);
             }
         }
     }
@@ -984,17 +991,17 @@ void Tracker::paste_block(int blk)
 
 void Tracker::create_block(bool insert)
 {
-    block[total_blocks].length = block[total_blocks-1].length;
-    block[total_blocks].speed = block[total_blocks-1].speed;
     for (int c = 0; c < CHANNELS; c++)
     {
-        if (block[total_blocks].channel[c] != NULL)
+        if (block[total_blocks].length > 0)
         {
             free(block[total_blocks].channel[c]);
             block[total_blocks].channel[c] = NULL;
         }
-        block[total_blocks].channel[c] = (Note*)malloc(block[total_blocks].length*sizeof(Note));
+        block[total_blocks].channel[c] = (Note*)malloc(block[total_blocks-1].length*sizeof(Note));
     }
+    block[total_blocks].length = block[total_blocks-1].length;
+    block[total_blocks].speed = block[total_blocks-1].speed;
     clear_block(total_blocks);
     if (insert) // copy all blocks ahead of b_pos down and clear current block
     {
