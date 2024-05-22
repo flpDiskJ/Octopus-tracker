@@ -1293,6 +1293,7 @@ void Tracker::incpos()
         }
         // johnny code
     }
+    update_steps();
 }
 
 void Tracker::move_step() // used by timer to run tracker
@@ -1321,6 +1322,7 @@ void Tracker::move_step() // used by timer to run tracker
         }
         note_trigger();
     }
+    update_steps();
 }
 
 void Tracker::decpos()
@@ -1354,6 +1356,7 @@ void Tracker::decpos()
           }
         // johnny code
     }
+    update_steps();
 }
 
 void Tracker::clear_channel()
@@ -1396,6 +1399,10 @@ void Tracker::clear_block(int blk) // Clears indicated block
 
 void Tracker::render_info()
 {
+    if (enlighten)
+    {
+        SDL_RenderCopy(renderer, special, NULL, &tracker_box);
+    }
     SDL_RenderCopy(renderer, blkname_displaytex, NULL, &blkname_displayrect);
     SDL_RenderDrawRect(renderer, &tracker_box);
     SDL_RenderCopy(renderer, sequence_display_tex, NULL, &sequence_display);
@@ -1500,15 +1507,9 @@ void Tracker::render_bars()
 
 void Tracker::render_steps() // Renders block data to screen
 {
-    update_steps();
-    if (enlighten)
+    for (int step = 0; step < DISPLAYRECTS; step++)
     {
-        SDL_RenderCopy(renderer, special, NULL, &tracker_box);
-    } else {
-        for (int step = 0; step < DISPLAYRECTS; step++)
-        {
-            SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
-        }
+        SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
     }
 }
 
