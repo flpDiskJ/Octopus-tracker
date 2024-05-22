@@ -99,9 +99,9 @@ int main(int argc, char* args[]) {
 
     HelpWindow help(Font, &pallet);
 
-    Tracker tracker(tracker_render, Font, &pallet, &help);
-
     SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(tracker_window));
+
+    Tracker tracker(tracker_render, Font, &pallet, &help, fmt);
 
     for (int c = 0; c < CHANNELS; c++)
     {

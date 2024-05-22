@@ -1,11 +1,12 @@
 #include "tracker.h"
 
-Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h)
+Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h, SDL_PixelFormat *f)
 { // default constructor with no arguments
     renderer = tracker_renderer;
     font = gFont;
     p = pallet;
     help = h;
+    fmt = f;
 
     tracker_box.x = 10;
     tracker_box.y = 20;
@@ -157,6 +158,9 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     octave_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     sample_name_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
     skip_display_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, 2, 2);
+    special = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 100, 100);
+
+    set_it_up();
 
     update_steps();
 
@@ -1497,9 +1501,14 @@ void Tracker::render_bars()
 void Tracker::render_steps() // Renders block data to screen
 {
     update_steps();
-    for (int step = 0; step < DISPLAYRECTS; step++)
+    if (enlighten)
     {
-        SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
+        SDL_RenderCopy(renderer, special, NULL, &tracker_box);
+    } else {
+        for (int step = 0; step < DISPLAYRECTS; step++)
+        {
+            SDL_RenderCopy(renderer, displaytextures[step], NULL, &displayrects[step]); // Renderes texture to screen
+        }
     }
 }
 
@@ -1685,6 +1694,26 @@ void Tracker::get_note(SDL_Event *e)
         }
     }
     update_steps();
+}
+
+void Tracker::set_it_up()
+{
+    // 100 x 100
+    void *pixels;
+    int pitch;
+    int img_pos = 0;
+    SDL_LockTexture(special, NULL, &pixels, &pitch);
+
+    for (int y = 0; y < 100; y++)
+    {
+        for (int x = 0; x < 100; x++)
+        {
+            ((Uint32*)pixels)[x+(y*100)] = SDL_MapRGB(fmt, lord_arr[img_pos], lord_arr[img_pos+1], lord_arr[img_pos+2]);
+            img_pos += 3;
+        }
+    }
+
+    SDL_UnlockTexture(special);
 }
 
 void Tracker::clear_step()
@@ -1874,6 +1903,14 @@ void Tracker::keyboard(SDL_Event *e)
                 break;
             }
             get_note(e);
+            break;
+        case SDLK_r:
+            if (SDL_GetModState() & KMOD_CTRL)
+            {
+                enlighten = !enlighten;
+            } else {
+                get_note(e);
+            }
             break;
         case SDLK_c:
             if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_SHIFT))
