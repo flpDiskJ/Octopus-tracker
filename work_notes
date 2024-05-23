@@ -12,7 +12,5 @@ To do:
 
     - Finish help sub-window.
 
-    - Add config sub-window and move all the customable values in global.h to the config file.
-
 
 Bugs:
