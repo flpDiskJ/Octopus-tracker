@@ -124,6 +124,15 @@ DiskOp::DiskOp(Tracker *tracker, Sample_edit *sampler, AudioW *a, ModuleFormat *
     filter_b.r.w = 4 * 14;
     filter_b.r.h = 28;
 
+    stem_track_b.r.x = back_b.r.x;
+    stem_track_b.r.y = filter_b.r.y;
+    stem_track_b.r.w = 4 * 14;
+    stem_track_b.r.h = 28;
+
+    surf = TTF_RenderText_Solid(font, "Stem", pallet->red);
+    stem_track_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     set_paths_b.r.x = 1;
     set_paths_b.r.y = file_border.y + file_border.h - 28;
     set_paths_b.r.w = 6 * 14;
@@ -537,6 +546,35 @@ void DiskOp::load_button()
     }
 }
 
+void DiskOp::stem_button()
+{
+    string path = parent[parent_index] + file_name_entry.text;
+    string filename;
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        for (int i = 0; i < CHANNELS; i++)
+        {
+            if (i == c)
+            {
+                t->mute[i] = false;
+            } else {
+                t->mute[i] = true;
+            }
+        }
+        filename.clear();
+        filename = path;
+        filename += to_string(c);
+        filename += ".wav";
+        module->export_wav(filename);
+        fill_path_list();
+        refresh();
+    }
+    for (int i = 0; i < CHANNELS; i++)
+    {
+        t->mute[i] = false;
+    }
+}
+
 void DiskOp::de_init()
 {
     SDL_DestroyRenderer(render);
@@ -611,6 +649,10 @@ void DiskOp::refresh()
             SDL_RenderDrawRect(render, &filter_b.r);
         }
         SDL_RenderCopy(render, filter_b.t, NULL, &filter_b.r);
+    } else if (parent_index == EXPORT_PATH)
+    {
+        SDL_RenderDrawRect(render, &stem_track_b.r);
+        SDL_RenderCopy(render, stem_track_b.t, NULL, &stem_track_b.r);
     }
 
     // render subpaths
@@ -727,6 +769,9 @@ void DiskOp::mouse(int x, int y)
     } else if (checkButton(x, y, &set_paths_b.r))
     {
         save_default_paths();
+    } else if (checkButton(x, y, &stem_track_b.r) && parent_index == EXPORT_PATH)
+    {
+        stem_button();
     } else
     {
         for (int i = 0; i < FILE_LIST_SIZE; i++)

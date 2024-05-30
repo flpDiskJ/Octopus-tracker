@@ -66,6 +66,7 @@ class DiskOp {
         bool overwrite_prompt = false;
         string filename_store;
         Button set_paths_b;
+        Button stem_track_b;
 
 
         ModuleFormat *module; // use this class to save and load the module
@@ -91,6 +92,8 @@ class DiskOp {
         void save_button();
 
         void load_button();
+
+        void stem_button();
 
         void update_list_textures(); // this might end up being more similar to the update_sequence_list method from sequence_list.h
 
