@@ -548,8 +548,11 @@ void DiskOp::load_button()
 
 void DiskOp::stem_button()
 {
-    string path = parent[parent_index] + file_name_entry.text;
+    string filepath = parent[parent_index] + file_name_entry.text;
     string filename;
+    file_name_entry.text = "Please wait...";
+    update_file_name();
+    refresh();
     for (int c = 0; c < CHANNELS; c++)
     {
         for (int i = 0; i < CHANNELS; i++)
@@ -561,18 +564,22 @@ void DiskOp::stem_button()
                 t->mute[i] = true;
             }
         }
-        filename.clear();
-        filename = path;
+        filename = filepath;
         filename += to_string(c);
         filename += ".wav";
         module->export_wav(filename);
+        filename.clear();
         fill_path_list();
+        update_list_textures();
         refresh();
     }
     for (int i = 0; i < CHANNELS; i++)
     {
         t->mute[i] = false;
     }
+    file_name_entry.text = "Done!";
+    update_file_name();
+    refresh();
 }
 
 void DiskOp::de_init()
