@@ -30,10 +30,14 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboard_info.boundary.w = 200;
     keyboard_info.boundary.h = 45;
 
+    keyboard_info.clicked = true;
+
     tracker_commands.boundary.x = 500;
     tracker_commands.boundary.y = 5;
     tracker_commands.boundary.w = 200;
     tracker_commands.boundary.h = 45;
+
+    tracker_commands.clicked = false;
 
     // radio button text
     surf = TTF_RenderText_Solid(font, "Keyboard Info", pallet->black);
@@ -72,9 +76,8 @@ void HelpWindow::refresh()
     SDL_RenderDrawRect(render, &help_list);
 
     SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-    if (keyboard_info.clicked) 
+    if (keyboard_info.clicked)
     {
-        printf("test\n");
         SDL_RenderFillRect(render, &keyboard_info.boundary);
     } else if (tracker_commands.clicked)
     {
@@ -82,7 +85,7 @@ void HelpWindow::refresh()
     }
 
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
-    // button outlines 
+    // button outlines
     SDL_RenderDrawRect(render, &keyboard_info.boundary);
     SDL_RenderDrawRect(render, &tracker_commands.boundary);
 
@@ -127,11 +130,25 @@ void HelpWindow::mouse(int x, int y)
     {
         keyboard_info.clicked = true;
         tracker_commands.clicked = false;
-    } else if (checkButton(x, y, &tracker_commands.boundary)) 
+    } else if (checkButton(x, y, &tracker_commands.boundary))
     {
         tracker_commands.clicked = true;
         keyboard_info.clicked = false;
-    } 
+    }
+    refresh();
+}
+
+void HelpWindow::mouse_wheel(SDL_Event *e)
+{
+    if(e->wheel.y > 0) // scroll down
+    {
+
+    }
+    else if(e->wheel.y < 0) // scroll up
+    {
+
+    }
+    refresh();
 }
 
 void HelpWindow::keyboard(SDL_Event *e)

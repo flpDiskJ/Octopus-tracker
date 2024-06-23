@@ -240,6 +240,9 @@ int main(int argc, char* args[]) {
                     } else if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         sequence_list.mouse_wheel(&e);
+                    } else if (help.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        help.mouse_wheel(&e);
                     }
                     break;
 
@@ -260,7 +263,7 @@ int main(int argc, char* args[]) {
                     } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         sample_editor.mouse(xM, yM, &e);
-                    } else if (help.get_state() & SDL_WINDOW_INPUT_FOCUS) 
+                    } else if (help.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         help.mouse(xM, yM);
                     } else {

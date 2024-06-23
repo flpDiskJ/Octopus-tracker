@@ -1,5 +1,5 @@
 #pragma once
-#include "global.h" 
+#include "global.h"
 
 struct radio_button {
   SDL_Rect boundary;
@@ -37,6 +37,8 @@ public:
     bool checkButton(int mouseX, int mouseY, SDL_Rect *button);
 
     void mouse(int x, int y);
+
+    void mouse_wheel(SDL_Event *e);
 
     void keyboard(SDL_Event *e);
 
