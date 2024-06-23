@@ -257,6 +257,9 @@ int main(int argc, char* args[]) {
                     } else if (sample_editor.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         sample_editor.mouse(xM, yM, &e);
+                    } else if (help.get_state() & SDL_WINDOW_INPUT_FOCUS) 
+                    {
+                        help.mouse(xM, yM);
                     } else {
                         tracker.mouse(xM, yM);
                     }

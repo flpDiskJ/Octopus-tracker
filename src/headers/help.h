@@ -1,13 +1,21 @@
 #pragma once
-#include "global.h"
+#include "global.h" 
+
+struct radio_button {
+  SDL_Rect boundary;
+  SDL_Texture *text;
+  bool clicked = false;
+};
 
 class HelpWindow {
  private:
   SDL_Window *window = NULL;
   SDL_Renderer *render = NULL;
   SDL_Surface *surf;
+  SDL_Rect help_list;
   TTF_Font *font;
   Pallet *pallet;
+  radio_button keyboard_info, tracker_commands;
 
 public:
     HelpWindow(TTF_Font *f, Pallet *p);
