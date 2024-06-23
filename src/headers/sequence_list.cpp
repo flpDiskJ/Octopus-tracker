@@ -135,12 +135,24 @@ void Sequencer::update_list()
     {
         if (p >= 0 && p < t->sequence_len)
         {
+            if (p < 100)
+            {
+                text += '0';
+            }
+            if (p < 10)
+            {
+                text += '0';
+            }
             text += to_string(p);
-            for (int x = text.length(); x < 3; x++)
+            text += ' ';
+            if (t->sequence[p] < 100)
             {
                 text += ' ';
             }
-            text += ' ';
+            if (t->sequence[p] < 10)
+            {
+                text += ' ';
+            }
             text += to_string(t->sequence[p]);
             text += " : ";
             text += t->block[t->sequence[p]].name;
@@ -228,6 +240,35 @@ void Sequencer::mouse(int x, int y)
         }
     }
     update_list();
+}
+
+void Sequencer::mouse_wheel(SDL_Event *e)
+{
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    if (checkButton(x, y, &list_box))
+    {
+        if(e->wheel.y > 0) // scroll down
+        {
+            if (scroll_pos > 0)
+            {
+                scroll_pos--;
+            } else {
+                scroll_pos = t->sequence_len-1;
+            }
+        }
+        else if(e->wheel.y < 0) // scroll up
+        {
+            if (scroll_pos < t->sequence_len-1)
+            {
+                scroll_pos++;
+            } else {
+                scroll_pos = 0;
+            }
+        }
+        selected = false;
+        update_list();
+    }
 }
 
 void Sequencer::keyboard(SDL_Event *e)

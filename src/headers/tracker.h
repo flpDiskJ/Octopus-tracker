@@ -2,6 +2,7 @@
 
 #include "global.h"
 #include "help.h"
+#include "lord.h"
 
 class Tracker
 {
@@ -12,6 +13,7 @@ private:
     bool highlighted[DISPLAYRECTS];
     SDL_Texture *displaytextures[DISPLAYRECTS];
     SDL_Renderer *renderer;
+    SDL_PixelFormat *fmt;
     TTF_Font *font;
 
     struct Note{ // holds data for single note
@@ -123,6 +125,8 @@ private:
     unsigned int highlight_iteration = 0;
     Button help_b;
     HelpWindow *help;
+    SDL_Texture *special;
+    bool enlighten = false;
 
     bool check_command(int c, const char *command);
 
@@ -162,6 +166,8 @@ private:
     void copy_note(int buff); // copy/paste note to/from note_buffer
 
     void paste_note(int buff); // copy/paste note to/from note_buffer
+
+    void set_it_up();
 
 public:
 
@@ -219,7 +225,7 @@ public:
     Uint32 timer_second = 0;
     Button timer;
 
-    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h);
+    Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet, HelpWindow *h, SDL_PixelFormat *f);
     // default constructor, sets up rects, textures, and copies renderer and font pointers
 
     ~Tracker(); // default destructor, cleans up memory for Tracker object

@@ -124,15 +124,98 @@ DiskOp::DiskOp(Tracker *tracker, Sample_edit *sampler, AudioW *a, ModuleFormat *
     filter_b.r.w = 4 * 14;
     filter_b.r.h = 28;
 
+    stem_track_b.r.x = back_b.r.x;
+    stem_track_b.r.y = filter_b.r.y;
+    stem_track_b.r.w = 4 * 14;
+    stem_track_b.r.h = 28;
+
+    surf = TTF_RenderText_Solid(font, "Stem", pallet->red);
+    stem_track_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    set_paths_b.r.x = 1;
+    set_paths_b.r.y = file_border.y + file_border.h - 28;
+    set_paths_b.r.w = 6 * 14;
+    set_paths_b.r.h = 28;
+
+    surf = TTF_RenderText_Solid(font, "Set Paths", pallet->red);
+    set_paths_b.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
     surf = TTF_RenderText_Solid(font, "Filter", pallet->blue);
     filter_b.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
     update_default_note();
+    load_default_paths();
 }
 
 DiskOp::~DiskOp()
 {
 
+}
+
+bool DiskOp::save_default_paths()
+{
+    char file_path[INPUT_MAX];
+    strcpy(file_path, getenv("HOME"));
+    strncat(file_path, "/.octopus_paths", 16);
+    FILE *fp = fopen(file_path, "wb");
+    if (fp == NULL)
+    {
+        printf("Error saving default paths config!\n");
+        return false;
+    }
+
+    // size of parent string 0, 1, 2. 2 bytes each
+    Uint16 size = parent[0].length();
+    fwrite(&size, 2, 1, fp);
+    size = parent[1].length();
+    fwrite(&size, 2, 1, fp);
+    size = parent[2].length();
+    fwrite(&size, 2, 1, fp);
+
+    fwrite(parent[0].c_str(), 1, parent[0].length(), fp);
+    fwrite(parent[1].c_str(), 1, parent[1].length(), fp);
+    fwrite(parent[2].c_str(), 1, parent[2].length(), fp);
+
+    fclose(fp);
+    file_name_entry.text = "Paths set to default.";
+    update_file_name();
+    return true;
+}
+
+bool DiskOp::load_default_paths()
+{
+    char file_path[INPUT_MAX];
+    strcpy(file_path, getenv("HOME"));
+    strncat(file_path, "/.octopus_paths", 16);
+    FILE *fp = fopen(file_path, "rb");
+    if (fp == NULL)
+    {
+        printf("Error loading default paths config! (This can be ignored if you haven't set default paths)\n");
+        return false;
+    }
+
+    // size of parent string 0, 1, 2. 2 bytes each
+    Uint16 size[3];
+    for (int i = 0; i < 3; i++)
+    {
+        fread(&size[i], 2, 1, fp);
+    }
+
+    char buff;
+    for (int i = 0; i < 3; i++)
+    {
+        parent[i].clear();
+        for (int c = 0; c < size[i]; c++)
+        {
+            fread(&buff, 1, 1, fp);
+            parent[i] += buff;
+        }
+    }
+
+    fclose(fp);
+    return true;
 }
 
 bool DiskOp::file_exist(string filename)
@@ -463,6 +546,42 @@ void DiskOp::load_button()
     }
 }
 
+void DiskOp::stem_button()
+{
+    string filepath = parent[parent_index] + file_name_entry.text;
+    string filename;
+    file_name_entry.text = "Please wait...";
+    update_file_name();
+    refresh();
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        for (int i = 0; i < CHANNELS; i++)
+        {
+            if (i == c)
+            {
+                t->mute[i] = false;
+            } else {
+                t->mute[i] = true;
+            }
+        }
+        filename = filepath;
+        filename += to_string(c);
+        filename += ".wav";
+        module->export_wav(filename);
+        filename.clear();
+        fill_path_list();
+        update_list_textures();
+        refresh();
+    }
+    for (int i = 0; i < CHANNELS; i++)
+    {
+        t->mute[i] = false;
+    }
+    file_name_entry.text = "Done!";
+    update_file_name();
+    refresh();
+}
+
 void DiskOp::de_init()
 {
     SDL_DestroyRenderer(render);
@@ -511,6 +630,9 @@ void DiskOp::refresh()
     SDL_RenderDrawRect(render, &back_b.r);
     SDL_RenderCopy(render, back_b.t, NULL, &back_b.r);
 
+    SDL_RenderDrawRect(render, &set_paths_b.r);
+    SDL_RenderCopy(render, set_paths_b.t, NULL, &set_paths_b.r);
+
     SDL_RenderDrawRect(render, &file_border);
 
     if (parent_index == SAMPLE_PATH)
@@ -534,6 +656,10 @@ void DiskOp::refresh()
             SDL_RenderDrawRect(render, &filter_b.r);
         }
         SDL_RenderCopy(render, filter_b.t, NULL, &filter_b.r);
+    } else if (parent_index == EXPORT_PATH)
+    {
+        SDL_RenderDrawRect(render, &stem_track_b.r);
+        SDL_RenderCopy(render, stem_track_b.t, NULL, &stem_track_b.r);
     }
 
     // render subpaths
@@ -647,6 +773,12 @@ void DiskOp::mouse(int x, int y)
     } else if (checkButton(x, y, &default_note_b.r) && parent_index == SAMPLE_PATH)
     {
         default_note_b.active = !default_note_b.active;
+    } else if (checkButton(x, y, &set_paths_b.r))
+    {
+        save_default_paths();
+    } else if (checkButton(x, y, &stem_track_b.r) && parent_index == EXPORT_PATH)
+    {
+        stem_button();
     } else
     {
         for (int i = 0; i < FILE_LIST_SIZE; i++)

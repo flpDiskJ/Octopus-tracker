@@ -11,6 +11,7 @@
 #define MOD_PATH 0
 #define EXPORT_PATH 1
 #define SAMPLE_PATH 2
+#define INPUT_MAX 500
 
 /**
 NOTE FROM JAKE
@@ -64,6 +65,8 @@ class DiskOp {
         bool overwrite = false;
         bool overwrite_prompt = false;
         string filename_store;
+        Button set_paths_b;
+        Button stem_track_b;
 
 
         ModuleFormat *module; // use this class to save and load the module
@@ -90,8 +93,13 @@ class DiskOp {
 
         void load_button();
 
+        void stem_button();
+
         void update_list_textures(); // this might end up being more similar to the update_sequence_list method from sequence_list.h
 
+        bool save_default_paths();
+
+        bool load_default_paths();
 
     public:
         DiskOp(Tracker *tracker, Sample_edit *sampler, AudioW *a, ModuleFormat *m, TTF_Font *f, Pallet *p);

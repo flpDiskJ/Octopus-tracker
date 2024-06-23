@@ -99,9 +99,9 @@ int main(int argc, char* args[]) {
 
     HelpWindow help(Font, &pallet);
 
-    Tracker tracker(tracker_render, Font, &pallet, &help);
-
     SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_GetWindowPixelFormat(tracker_window));
+
+    Tracker tracker(tracker_render, Font, &pallet, &help, fmt);
 
     for (int c = 0; c < CHANNELS; c++)
     {
@@ -237,6 +237,9 @@ int main(int argc, char* args[]) {
                     } else if (disk_op.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         disk_op.mouse_wheel(&e);
+                    } else if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        sequence_list.mouse_wheel(&e);
                     }
                     break;
 
