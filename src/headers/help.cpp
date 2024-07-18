@@ -49,10 +49,6 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     SDL_FreeSurface(surf);
 
     // populate trackerCommand vector with text info
-
-    set_text("00 = arpeggio\0", trackerCommands[0].t);
-
-    /**
     trackerCommands.push_back("00 = arpeggio");
     trackerCommands.push_back("01 = pitch up");
     trackerCommands.push_back("02 = pitch down");
@@ -73,7 +69,12 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     trackerCommands.push_back("19 = sample offset (Octamed style)");
     trackerCommands.push_back(" ");
     trackerCommands.push_back("0FFF = stop sound in channel");
-    **/
+
+    // populate keyboardLines vector with info needed to render in refresh()
+    for (unsigned int i = 0; i < trackerCommands.size(); i++) {
+        keyboardLines.push_back(getLine(trackerCommands[i], i));
+    }
+
 }
 
 HelpWindow::~HelpWindow()
@@ -111,10 +112,17 @@ void HelpWindow::refresh()
     SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
     if (keyboard_info.clicked)
     {
+        // render button selection for keyboard info
         SDL_RenderFillRect(render, &keyboard_info.boundary);
     } else if (tracker_commands.clicked)
     {
+        // render button selection for tracker commands
         SDL_RenderFillRect(render, &tracker_commands.boundary);
+
+        // render text to tracker commands submenu
+        for (unsigned int i = 0; i < keyboardLines.size(); i++) {
+            SDL_RenderCopy(render, keyboardLines[i].t, NULL, &keyboardLines[i].r);
+        }
 
     }
 
@@ -137,6 +145,18 @@ void HelpWindow::open()
     SDL_RaiseWindow(window);
     SDL_SetWindowInputFocus(window);
     refresh();
+}
+
+line HelpWindow::getLine(string s, unsigned int y) {
+    line l;
+    surf = TTF_RenderText_Solid(font, s.c_str(), pallet->black);
+    l.t = SDL_CreateTextureFromSurface(render, surf); // add texture to list struct
+    SDL_FreeSurface(surf);
+    l.r.w = s.length() * CHAR_WIDTH;
+    l.r.h = 20;
+    l.r.x = 60;
+    l.r.y = (y * 25) + 60;
+    return l;
 }
 
 void HelpWindow::close()

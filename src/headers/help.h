@@ -1,4 +1,7 @@
 #pragma once
+
+#define CHAR_WIDTH 10
+
 #include "global.h"
 #include <vector>
 
@@ -6,6 +9,11 @@ struct radio_button {
   SDL_Rect boundary;
   SDL_Texture *text;
   bool clicked = false;
+};
+
+struct line {
+  SDL_Rect r;
+  SDL_Texture *t;
 };
 
 class HelpWindow {
@@ -17,10 +25,10 @@ class HelpWindow {
   TTF_Font *font;
   Pallet *pallet;
   radio_button keyboard_info, tracker_commands;
-  //vector<string> keyboardInfo;
-  //vector<string> trackerCommands;
-  Button keyboardInfo[50];
-  Button trackerCommands[20];
+  vector<string> keyboardInfo;
+  vector<string> trackerCommands;
+  vector<line> keyboardLines;
+  line getLine(string s, unsigned int y);
 
 
 public:
