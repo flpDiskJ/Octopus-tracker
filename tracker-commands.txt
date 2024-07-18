@@ -1,22 +1,20 @@
-XX = parameter
+00 = arpeggio
+01 = pitch up
+02 = pitch down
+03 = portamento
+04 = vibrato
+05 = echo (param 1 = number of re-triggers  param 2 = speed)
+06 = multi-trigger
+07 = tremolo
+08 = hold and decay
+09 = sample offset (scaled to sample size)
+0A = reverse playback with offset
+0B = playing sequence position jump
+0C = set channel volume
+0D = volume slide (param 1 = increase, param 2 = decrease)
 
-00XX = arpeggio
-01XX = pitch up
-02XX = pitch down
-03XX = portamento
-04XX = vibrato
-05XX = delay (level 1 = number of retriggers  level 2 = speed)
-06XX = retrigger
-07XX = Tremolo
-08XX = Hold and Decay
-09XX = sample offset (scaled to sample size)
-0AXX = reverse playback with sample offset
-0BXX = playing sequence position jump
-0CXX = set volume
-0DXX = volume slide (param 1 = increase, param 2 = decrease)
+18 = set volume (relative to sample volume)
 
-18XX = set volume (relative to sample volume)
+19 = sample offset (Octamed style)
 
-19XX = sample offset (Octamed style)
-
-0FFF = kill sound in channel
+0FFF = stop sound in channel

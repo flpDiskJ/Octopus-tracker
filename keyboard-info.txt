@@ -1,25 +1,19 @@
-
-X marks non-functional (still needs to be implemented)
-
-Note for Stephen: These need to be documented in the help window.
-
 Playback (global):
     CNTRL+SPACE = loop block (resume)
-    CNTRL+ALT = loop block (restart)
+    CNTRL+ALT = loop block (from top)
     SHIFT+SPACE = play track (resume)
     CNTRL+SHIFT+SPACE = play track from the start
-    SPACE = stop all
+    SPACE = stop
 
 Main window:
 
     Navigation:
-        Arrows = navigation
+        Arrows = navigate steps and entry points
         TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel
         SHIFT+UP/DOWN = change block
         SHIFT+LEFT/RIGHT = change instrument/sample
         FUNC1-5 = change octave
         FUNC6-10 or CTRL+1-5 = navigate block
-      X PGUP/PGDOWN = navigate block
 
     Editing:
         ESC = toggle edit mode
@@ -30,16 +24,16 @@ Main window:
         CTRL+SHIFT+N = insert new block
         CTRL+C/V = Copy/Paste channel
         CTRL+SHIFT+C/V = Copy/Paste block
-        CTRL+SHIFT+0-9 Copy note to buffer
+        SHIFT+ALT+0-9 Copy note to buffer
         SHIFT+0-9 = Paste note from buffer
 
     Skip and Highlight:
         CTRL+LEFT/RIGHT = change skip amount
-        tilde key = toggle skip between 1 and previously set amount
-        click on skip with mouse to toggle skip mode
-        CTRL+SHIFT+LEFT/RIGHT = change highlight highlight iteration
+        tilde key = toggle skip between 1 and previously set amount-
+        -click on skip with mouse to toggle skip mode (nearest multiple / absolute)
+        CTRL+SHIFT+LEFT/RIGHT = change highlight iteration
 
-    Sub-Windows:
+    Open Sub-Windows:
         CTRL+O = open sequence order window
         CTRL+H = open track properties window (bpm, speed, and such)
         CTRL+B = open block list window (block length, speed, and such)
@@ -60,7 +54,7 @@ Sequence Sub-window:
     UP/DOWN = scroll sequence list
     LEFT/RIGHT = change block number in sequence element (only effects selected element)
     SHIFT+UP/DOWN = change block
-    CNTRL+B = open block list sub-window
+    CTRL+B = open block list sub-window
 
 Sample Editor Sub-window:
     LEFT/RIGHT = move waveform
@@ -72,5 +66,5 @@ Sample Editor Sub-window:
 Disk Op Sub-window:
     UP/DOWN = scroll by 15
     In inst mode. To set pitch, click on the pitch display-
-      -then use RIGHT/LEFT to select either the note, key, or octave.
-      Filter button toggles weither or not low pass is applied before downsampling.
+      -then use RIGHT/LEFT arrows to select either the note, key, or octave.
+      Filter button toggles wether or not low pass is applied before down-sampling.
