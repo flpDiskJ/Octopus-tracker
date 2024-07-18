@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(octopus)
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-
-message(${SDL2_ttf_FOUND})
-message(h=${SDL2_TTF_LIBRARIES})
+INCLUDE(FindPkgConfig)
+PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
+PKG_SEARCH_MODULE(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
 
 
 set(SRC ${CMAKE_SOURCE_DIR}/src)
