@@ -17,8 +17,10 @@ class HelpWindow {
   TTF_Font *font;
   Pallet *pallet;
   radio_button keyboard_info, tracker_commands;
-  vector<string> keyboardInfo;
-  vector<string> trackerCommands;
+  //vector<string> keyboardInfo;
+  //vector<string> trackerCommands;
+  Button keyboardInfo[50];
+  Button trackerCommands[20];
 
 
 public:
@@ -28,7 +30,7 @@ public:
 
     void de_init();  // call before SDL_Quit in main
 
-    void update();
+    void set_text(const char *text, SDL_Texture *texture);
 
     void refresh(); // render everything to the window
 

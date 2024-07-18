@@ -49,6 +49,10 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     SDL_FreeSurface(surf);
 
     // populate trackerCommand vector with text info
+
+    set_text("00 = arpeggio\0", trackerCommands[0].t);
+
+    /**
     trackerCommands.push_back("00 = arpeggio");
     trackerCommands.push_back("01 = pitch up");
     trackerCommands.push_back("02 = pitch down");
@@ -67,8 +71,9 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     trackerCommands.push_back("18 = set volume (relative to sample volume");
     trackerCommands.push_back(" ");
     trackerCommands.push_back("19 = sample offset (Octamed style)");
-    trackerCommands.push_back("");
+    trackerCommands.push_back(" ");
     trackerCommands.push_back("0FFF = stop sound in channel");
+    **/
 }
 
 HelpWindow::~HelpWindow()
@@ -82,9 +87,15 @@ void HelpWindow::de_init()
     SDL_DestroyWindow(window);
 }
 
-void HelpWindow::update()
+void HelpWindow::set_text(const char *text, SDL_Texture *texture)
 {
-
+    surf = TTF_RenderText_Solid(font, text, pallet->black);
+    if (texture != NULL)
+    {
+        SDL_DestroyTexture(texture);
+    }
+    texture = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
 }
 
 // need to clean this code up
@@ -104,6 +115,7 @@ void HelpWindow::refresh()
     } else if (tracker_commands.clicked)
     {
         SDL_RenderFillRect(render, &tracker_commands.boundary);
+
     }
 
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
