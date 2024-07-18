@@ -28,8 +28,8 @@ class HelpWindow {
   vector<string> keyboardInfo;
   vector<string> trackerCommands;
   vector<line> keyboardLines;
-  line getLine(string s, unsigned int y);
 
+  line getLine(string s, unsigned int y);
 
 public:
     HelpWindow(TTF_Font *f, Pallet *p);
