@@ -18,6 +18,8 @@ private:
     Pallet *p;
     Tracker *tracker;
     int mode = 0; // 0 = quit? yes/no // 1 = block parameters // 2 = track parameters
+    Slider master_level;
+    Button master_level_lable;
 
     struct Buttons{
         SDL_Rect yes; SDL_Texture *yes_tex;

@@ -208,6 +208,7 @@ public:
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()
     bool sequence_end = false; // set to true when entire sequence has elapsed
+    double mix_level_adjust = 1.0; // set using level slider in track parameter window
 
     struct Scope{
         SDL_Texture *t = NULL;
