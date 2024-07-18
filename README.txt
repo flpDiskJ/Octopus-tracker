@@ -1,5 +1,7 @@
-Octopus is a music tracker program that is inspired by both octamed 5 and fasttracker 2.
-It is designed to make effiecient use of the keyboard.
+Octopus is a music tracker that is inspired by both octamed and fasttracker.
+There are many useful key-commands to make for an efficient keyboard oriented workflow. (Is a bit of a learning curve but should be pretty easy for octamed users)
+The audio processing is bare bones in order to provide a gritty sound. 
+Samples are converted to 12bit resolution as a middle ground between 8bit grime and 16bit shimmer.
 
 Required Libraries:
 
