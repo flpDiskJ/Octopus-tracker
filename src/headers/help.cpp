@@ -47,6 +47,28 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     surf = TTF_RenderText_Solid(font, "Tracker Commands", pallet->black);
     tracker_commands.text = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
+
+    // populate trackerCommand vector with text info
+    trackerCommands.push_back("00 = arpeggio");
+    trackerCommands.push_back("01 = pitch up");
+    trackerCommands.push_back("02 = pitch down");
+    trackerCommands.push_back("03 = portament");
+    trackerCommands.push_back("04 = vibrato");
+    trackerCommands.push_back("05 = echo (param 1 = number of re-triggers  param 2 = speed)");
+    trackerCommands.push_back("06 = multi-trigger");
+    trackerCommands.push_back("07 = tremolo");
+    trackerCommands.push_back("08 = hold and decay");
+    trackerCommands.push_back("09 = sample offset (scaled to sample size)");
+    trackerCommands.push_back("0A = reverse playback with offset");
+    trackerCommands.push_back("0B = playing sequence position jump");
+    trackerCommands.push_back("0C = set channel volume");
+    trackerCommands.push_back("0D = volume slide (param 1 = increase, param 2 = decrease)");
+    trackerCommands.push_back(" ");
+    trackerCommands.push_back("18 = set volume (relative to sample volume");
+    trackerCommands.push_back(" ");
+    trackerCommands.push_back("19 = sample offset (Octamed style)");
+    trackerCommands.push_back("");
+    trackerCommands.push_back("0FFF = stop sound in channel");
 }
 
 HelpWindow::~HelpWindow()

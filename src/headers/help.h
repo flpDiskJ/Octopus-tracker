@@ -1,5 +1,6 @@
 #pragma once
 #include "global.h"
+#include <vector>
 
 struct radio_button {
   SDL_Rect boundary;
@@ -16,6 +17,9 @@ class HelpWindow {
   TTF_Font *font;
   Pallet *pallet;
   radio_button keyboard_info, tracker_commands;
+  vector<string> keyboardInfo;
+  vector<string> trackerCommands;
+
 
 public:
     HelpWindow(TTF_Font *f, Pallet *p);
