@@ -430,6 +430,7 @@ void AudioW::audio_works() // fills audio buffer
             }
         }
         temp = val / CHANNELS;
+        temp = temp * t->mix_level_adjust;
         if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
         else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
         out = (Sint16)temp;
@@ -555,6 +556,9 @@ Uint32 AudioW::prepare_export()
             }
         }
         temp = val / CHANNELS;
+        temp = temp * t->mix_level_adjust;
+        if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
+        else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
         wav_data[buffer_len] = temp;
         buffer_len++;
         if (buffer_len >= buffer_size)

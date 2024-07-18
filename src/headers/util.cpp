@@ -62,6 +62,25 @@ Util::Util(Tracker *t, TTF_Font *gfont, Pallet *pallet)
     bpm_display.w = 100;
     bpm_display.h = 30;
 
+    master_level.slide.x = 200;
+    master_level.slide.y = 200;
+    master_level.slide.w = 200;
+    master_level.slide.h = 30;
+
+    master_level.pos.x = master_level.slide.x + (tracker->mix_level_adjust * 100);
+    master_level.pos.y = 201;
+    master_level.pos.w = 5;
+    master_level.pos.h = 28;
+
+    master_level_lable.r.x = 100;
+    master_level_lable.r.y = 200;
+    master_level_lable.r.w = 80;
+    master_level_lable.r.h = 30;
+
+    surf = TTF_RenderText_Solid(font, "Level", p->black);
+    master_level_lable.t = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
     surf = TTF_RenderText_Solid(font, "Yes", p->green);
     button.yes_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -307,6 +326,9 @@ void Util::render()
             SDL_RenderCopy(renderer, track_artist_tex, NULL, &track_artist);
             SDL_RenderCopy(renderer, bpm_display_tex, NULL, &bpm_display);
             SDL_RenderCopy(renderer, track_date_tex, NULL, &track_date);
+            SDL_RenderDrawRect(renderer, &master_level.slide);
+            SDL_RenderFillRect(renderer, &master_level.pos);
+            SDL_RenderCopy(renderer, master_level_lable.t, NULL, &master_level_lable.r);
             if (bpm_mode)
             {
                 SDL_RenderDrawRect(renderer, &bpm_display);
@@ -418,6 +440,18 @@ void Util::mouse(int x, int y)
             if (checkButton(x, y, &bpm_display))
             {
                 bpm_mode = true;
+            }
+            if (checkButton(x, y, &master_level.slide))
+            {
+                master_level.pos.x = x;
+                if (master_level.pos.x < 1)
+                {
+                    master_level.pos.x = 1;
+                } else if (master_level.pos.x > master_level.slide.x + master_level.slide.w - master_level.pos.w)
+                {
+                    master_level.pos.x = master_level.slide.x + master_level.slide.w - master_level.pos.w;
+                }
+                tracker->mix_level_adjust = (double)(x - master_level.slide.x) / 100.0;
             }
             update();
             break;
