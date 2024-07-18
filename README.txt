@@ -4,8 +4,8 @@ It is designed to make effiecient use of the keyboard.
 Required Libraries:
 
 Debian:
-sudo apt install libsdl2-ttf-dev
-sudo apt install libsdl-ttf2.0-dev
+sudo apt install libsdl2-dev
+sudo apt install libsdl-ttf-dev
 
 fedora:
 sudo dmf install SDL2 SDL2-devel
