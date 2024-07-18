@@ -75,6 +75,78 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
         keyboardLines.push_back(getLine(trackerCommands[i], i));
     }
 
+    // populate keyboardInfo vector with text info
+    keyboardInfo.push_back("Playback (global):");
+    keyboardInfo.push_back("  CNTRL+SPACE = loop block (resume)");
+    keyboardInfo.push_back("  CNTRL+ALT = loop block (from top)");
+    keyboardInfo.push_back("  SHIFT+SPACE = play track (resume)");
+    keyboardInfo.push_back("  CNTRL+SHIFT+SPACE = play track from the start");
+    keyboardInfo.push_back("  SPACE = stop");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("Main window:");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("  Navigation:");
+    keyboardInfo.push_back("    Arrows = navigate steps and entry points");
+    keyboardInfo.push_back("    TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel");
+    keyboardInfo.push_back("    SHIFT+UP/DOWN = change block");
+    keyboardInfo.push_back("    SHIFT+LEFT/RIGHT = change instrument/sample");
+    keyboardInfo.push_back("    FUNC1-5 = change octave");
+    keyboardInfo.push_back("    FUNC6-10 or CTRL+1-5 = navigate block");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("  Editing:");
+    keyboardInfo.push_back("    ESC = toggle edit mode");
+    keyboardInfo.push_back("    CTRL+X = clear channel");
+    keyboardInfo.push_back("    CTRL+SHIFT+X = clear block");
+    keyboardInfo.push_back("    Delete or Backspace = delete step");
+    keyboardInfo.push_back("    CTRL+N = append new block");
+    keyboardInfo.push_back("    CTRL+SHIFT+N = insert new block");
+    keyboardInfo.push_back("    CTRL+C/V = Copy/Paste channel");
+    keyboardInfo.push_back("    CTRL+SHIFT+C/V = Copy/Paste block");
+    keyboardInfo.push_back("    SHIFT+ALT+0-9 Copy note to buffer");
+    keyboardInfo.push_back("    SHIFT+0-9 = Paste note from buffer");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("  Skip and Highlight:");
+    keyboardInfo.push_back("    CTRL+LEFT/RIGHT = change skip amount");
+    keyboardInfo.push_back("    tilde key = toggle skip between 1 and previously set amount-");
+    keyboardInfo.push_back("    -click on skip with mouse to toggle skip mode (nearest multiple / absolute)");
+    keyboardInfo.push_back("    CTRL+SHIFT+LEFT/RIGHT = change highlight iteration");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("  Open Sub-Windows:");
+    keyboardInfo.push_back("    CTRL+O = open sequence order window");
+    keyboardInfo.push_back("    CTRL+H = open track properties window (bpm, speed, and such)");
+    keyboardInfo.push_back("    CTRL+B = open block list window (block length, speed, and such)");
+    keyboardInfo.push_back("    CTRL+F = open disk op window (load/save module)");
+    keyboardInfo.push_back("    CTRL+I = open instrument window");
+    keyboardInfo.push_back("    CTRL+E = open sample edit window");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("  Quit:");
+    keyboardInfo.push_back("    CTRL+SHIFT+Q = quit");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("Block sub-window:");
+    keyboardInfo.push_back("  UP/DOWN = scroll block list");
+    keyboardInfo.push_back("  SHIFT+UP/DOWN = change block");
+    keyboardInfo.push_back("  - Click entry box with mouse to activate keyboard input.");
+    keyboardInfo.push_back("    Hit enter/return to exit keyboard input.");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("Sequence Sub-window:");
+    keyboardInfo.push_back("  UP/DOWN = scroll sequence list");
+    keyboardInfo.push_back("  LEFT/RIGHT = change block number in sequence element (only effects selected element)");
+    keyboardInfo.push_back("  SHIFT+UP/DOWN = change block");
+    keyboardInfo.push_back("  CTRL+B = open block list sub-window");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("Sample Editor Sub-window:");
+    keyboardInfo.push_back("  LEFT/RIGHT = move waveform");
+    keyboardInfo.push_back("  MOUSE SCROLL = zoom waveform");
+    keyboardInfo.push_back("  LEFT/RIGHT/MIDDLE MOUSE BUTTONS = set waveform selection");
+    keyboardInfo.push_back("  SHIFT+LEFT/RIGHT = change sample/instrument");
+    keyboardInfo.push_back("  CTRL+LeftMouse = set loop point");
+    keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("Disk Op Sub-window:");
+    keyboardInfo.push_back("  UP/DOWN = scroll by 15");
+    keyboardInfo.push_back("  In inst mode. To set pitch, click on the pitch display-");
+    keyboardInfo.push_back("    -then use RIGHT/LEFT arrows to select either the note, key, or octave.");
+    keyboardInfo.push_back("    Filter button toggles wether or not low pass is applied before down-sampling.");
+
 }
 
 HelpWindow::~HelpWindow()
@@ -86,17 +158,6 @@ void HelpWindow::de_init()
 {
     SDL_DestroyRenderer(render);
     SDL_DestroyWindow(window);
-}
-
-void HelpWindow::set_text(const char *text, SDL_Texture *texture)
-{
-    surf = TTF_RenderText_Solid(font, text, pallet->black);
-    if (texture != NULL)
-    {
-        SDL_DestroyTexture(texture);
-    }
-    texture = SDL_CreateTextureFromSurface(render, surf);
-    SDL_FreeSurface(surf);
 }
 
 // need to clean this code up
