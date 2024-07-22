@@ -19,8 +19,6 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
         printf("Failed to create renderer for help window!\n");
     }
 
-    scroll_cursor = 0; 
-
     // rectangle boundary for text initialization
     help_list.x = 50;
     help_list.y = 60;
@@ -153,14 +151,14 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     // generate all textures for text in keyboardInfo subwindow
     for (unsigned int i = 0; i < keyboardInfo.size(); i++) {
         surf = TTF_RenderText_Solid(font, keyboardInfo[i].c_str(), pallet->black);
-        keyboardInfoTextures.push_back(SDL_CreateTextureFromSurface(render, surf));  
+        keyboardInfoTextures.push_back(SDL_CreateTextureFromSurface(render, surf));
         SDL_FreeSurface(surf);
     }
 
     // initialize rectangles that will be used in rendering text to keyboardInfo subwindow
     for (unsigned int i = 0; i < KEYBOARD_LINES; i++) {
-        keyboardInfoRects[i].x = 60; 
-        keyboardInfoRects[i].y = (i * 25) + 60; 
+        keyboardInfoRects[i].x = 60;
+        keyboardInfoRects[i].y = (i * 25) + 60;
         keyboardInfoRects[i].h = 20;
         keyboardInfoRects[i].w = keyboardInfo[i].length() * CHAR_WIDTH; // calculate this from text length for window startup
     }
@@ -195,10 +193,13 @@ void HelpWindow::refresh()
         SDL_RenderFillRect(render, &keyboard_info.boundary);
 
         // render text, rectangles will be updated in update_rectangles() method which is called from the mouse_wheel() method
-        for (unsigned int i = 0; i < KEYBOARD_LINES; i++) {
-            SDL_RenderCopy(render, keyboardInfoTextures[i], NULL, &keyboardInfoRects[i]);
+        for (unsigned int r = 0, t = scroll_offset; r < KEYBOARD_LINES; r++, t++) {
+            if (t < keyboardInfoTextures.size())
+            {
+                SDL_RenderCopy(render, keyboardInfoTextures[t], NULL, &keyboardInfoRects[r]);
+            }
         }
-        
+
     } else if (tracker_commands.clicked)
     {
         // render button selection for tracker commands
@@ -281,11 +282,17 @@ void HelpWindow::mouse_wheel(SDL_Event *e)
 {
     if(e->wheel.y > 0) // scroll down
     {
-
+        if (scroll_offset < keyboardInfoTextures.size() - KEYBOARD_LINES)
+        {
+            scroll_offset++;
+        }
     }
     else if(e->wheel.y < 0) // scroll up
     {
-
+        if (scroll_offset > 0)
+        {
+            scroll_offset--;
+        }
     }
     refresh();
 }
