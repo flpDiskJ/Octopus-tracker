@@ -53,7 +53,7 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     trackerCommands.push_back("00 = arpeggio");
     trackerCommands.push_back("01 = pitch up");
     trackerCommands.push_back("02 = pitch down");
-    trackerCommands.push_back("03 = portament");
+    trackerCommands.push_back("03 = portamento");
     trackerCommands.push_back("04 = vibrato");
     trackerCommands.push_back("05 = echo (param 1 = number of re-triggers  param 2 = speed)");
     trackerCommands.push_back("06 = multi-trigger");
@@ -65,11 +65,11 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     trackerCommands.push_back("0C = set channel volume");
     trackerCommands.push_back("0D = volume slide (param 1 = increase, param 2 = decrease)");
     trackerCommands.push_back(" ");
-    trackerCommands.push_back("18 = set volume (relative to sample volume");
+    trackerCommands.push_back("18 = set volume (relative to sample volume)");
     trackerCommands.push_back(" ");
     trackerCommands.push_back("19 = sample offset (Octamed style)");
     trackerCommands.push_back(" ");
-    trackerCommands.push_back("0FFF = stop sound in channel");
+    trackerCommands.push_back("0FFF = Mute channel");
 
     // populate keyboardLines vector with info needed to render in refresh()
     for (unsigned int i = 0; i < trackerCommands.size(); i++) {
@@ -286,14 +286,14 @@ void HelpWindow::mouse(int x, int y)
 
 void HelpWindow::mouse_wheel(SDL_Event *e)
 {
-    if(e->wheel.y > 0) // scroll down
+    if(e->wheel.y < 0)
     {
         if (scroll_offset < keyboardInfoTextures.size() - KEYBOARD_LINES)
         {
             scroll_offset++;
         }
     }
-    else if(e->wheel.y < 0) // scroll up
+    else if(e->wheel.y > 0)
     {
         if (scroll_offset > 0)
         {
