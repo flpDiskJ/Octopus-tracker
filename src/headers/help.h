@@ -1,7 +1,7 @@
 #pragma once
 
 #define CHAR_WIDTH 10
-#define KEYBOARD_LINES 20
+#define KEYBOARD_LINES 21
 
 #include "global.h"
 #include <vector>

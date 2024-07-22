@@ -88,7 +88,8 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back(" ");
     keyboardInfo.push_back("  Navigation:");
     keyboardInfo.push_back("    Arrows = navigate steps and entry points");
-    keyboardInfo.push_back("    TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next channel");
+    keyboardInfo.push_back("    TAB/SHIFT+TAB or ALT+LEFT/RIGHT = move cursor to prev/next chann");
+    keyboardInfo.push_back("    -el");
     keyboardInfo.push_back("    SHIFT+UP/DOWN = change block");
     keyboardInfo.push_back("    SHIFT+LEFT/RIGHT = change instrument/sample");
     keyboardInfo.push_back("    FUNC1-5 = change octave");
@@ -109,7 +110,8 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back("  Skip and Highlight:");
     keyboardInfo.push_back("    CTRL+LEFT/RIGHT = change skip amount");
     keyboardInfo.push_back("    tilde key = toggle skip between 1 and previously set amount-");
-    keyboardInfo.push_back("    -click on skip with mouse to toggle skip mode (nearest multiple / absolute)");
+    keyboardInfo.push_back("    -click on skip with mouse to toggle skip mode (nearest multiple");
+    keyboardInfo.push_back("    -/ absolute)");
     keyboardInfo.push_back("    CTRL+SHIFT+LEFT/RIGHT = change highlight iteration");
     keyboardInfo.push_back(" ");
     keyboardInfo.push_back("  Open Sub-Windows:");
@@ -131,7 +133,8 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back(" ");
     keyboardInfo.push_back("Sequence Sub-window:");
     keyboardInfo.push_back("  UP/DOWN = scroll sequence list");
-    keyboardInfo.push_back("  LEFT/RIGHT = change block number in sequence element (only effects selected element)");
+    keyboardInfo.push_back("  LEFT/RIGHT = change block number in sequence element (only effects");
+    keyboardInfo.push_back("  -selected element)");
     keyboardInfo.push_back("  SHIFT+UP/DOWN = change block");
     keyboardInfo.push_back("  CTRL+B = open block list sub-window");
     keyboardInfo.push_back(" ");
@@ -145,8 +148,10 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back("Disk Op Sub-window:");
     keyboardInfo.push_back("  UP/DOWN = scroll by 15");
     keyboardInfo.push_back("  In inst mode. To set pitch, click on the pitch display-");
-    keyboardInfo.push_back("    -then use RIGHT/LEFT arrows to select either the note, key, or octave.");
-    keyboardInfo.push_back("    Filter button toggles wether or not low pass is applied before down-sampling.");
+    keyboardInfo.push_back("    -then use RIGHT/LEFT arrows to select either the note, key, or oc");
+    keyboardInfo.push_back("    -tave.");
+    keyboardInfo.push_back("    Filter button toggles wether or not low pass is applied before do");
+    keyboardInfo.push_back("    -wn-sampling.");
 
     // generate all textures for text in keyboardInfo subwindow
     for (unsigned int i = 0; i < keyboardInfo.size(); i++) {
@@ -196,6 +201,7 @@ void HelpWindow::refresh()
         for (unsigned int r = 0, t = scroll_offset; r < KEYBOARD_LINES; r++, t++) {
             if (t < keyboardInfoTextures.size())
             {
+                keyboardInfoRects[r].w = keyboardInfo[t].length() * CHAR_WIDTH;
                 SDL_RenderCopy(render, keyboardInfoTextures[t], NULL, &keyboardInfoRects[r]);
             }
         }
