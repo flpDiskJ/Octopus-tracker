@@ -1,6 +1,7 @@
 #pragma once
 
 #define CHAR_WIDTH 10
+#define KEYBOARD_LINES 20
 
 #include "global.h"
 #include <vector>
@@ -27,6 +28,9 @@ class HelpWindow {
   radio_button keyboard_info, tracker_commands;
   vector<string> keyboardInfo;
   vector<string> trackerCommands;
+  vector<SDL_Texture*> keyboardInfoTextures; // stores ttf textures of each line of text (only a subset of this will be displayed onto the window)
+  SDL_Rect keyboardInfoRects[KEYBOARD_LINES]; // rectangles for rendering ttf textures to window (used in conjunction with above textures, x and y coordinates are constant but width changes with text being displayed)
+  unsigned int scroll_cursor;
   vector<line> keyboardLines;
 
   line getLine(string s, unsigned int y);

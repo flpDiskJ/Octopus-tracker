@@ -19,6 +19,9 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
         printf("Failed to create renderer for help window!\n");
     }
 
+    scroll_cursor = 0; 
+
+    // rectangle boundary for text initialization
     help_list.x = 50;
     help_list.y = 60;
     help_list.h = 520;
@@ -147,6 +150,21 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back("    -then use RIGHT/LEFT arrows to select either the note, key, or octave.");
     keyboardInfo.push_back("    Filter button toggles wether or not low pass is applied before down-sampling.");
 
+    // generate all textures for text in keyboardInfo subwindow
+    for (unsigned int i = 0; i < keyboardInfo.size(); i++) {
+        surf = TTF_RenderText_Solid(font, keyboardInfo[i].c_str(), pallet->black);
+        keyboardInfoTextures.push_back(SDL_CreateTextureFromSurface(render, surf));  
+        SDL_FreeSurface(surf);
+    }
+
+    // initialize rectangles that will be used in rendering text to keyboardInfo subwindow
+    for (unsigned int i = 0; i < KEYBOARD_LINES; i++) {
+        keyboardInfoRects[i].x = 60; 
+        keyboardInfoRects[i].y = (i * 25) + 60; 
+        keyboardInfoRects[i].h = 20;
+        keyboardInfoRects[i].w = keyboardInfo[i].length() * CHAR_WIDTH; // calculate this from text length for window startup
+    }
+
 }
 
 HelpWindow::~HelpWindow()
@@ -175,6 +193,12 @@ void HelpWindow::refresh()
     {
         // render button selection for keyboard info
         SDL_RenderFillRect(render, &keyboard_info.boundary);
+
+        // render text, rectangles will be updated in update_rectangles() method which is called from the mouse_wheel() method
+        for (unsigned int i = 0; i < KEYBOARD_LINES; i++) {
+            SDL_RenderCopy(render, keyboardInfoTextures[i], NULL, &keyboardInfoRects[i]);
+        }
+        
     } else if (tracker_commands.clicked)
     {
         // render button selection for tracker commands
