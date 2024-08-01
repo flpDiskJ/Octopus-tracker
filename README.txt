@@ -16,3 +16,12 @@ sudo dnf install SDL2_ttf SDL2_ttf-devel
 mac:
 brew install SDL2
 brew install SDL2_ttf
+
+Compilation:
+  git clone https://github.com/flpDiskJ/Octopus-tracker.git
+  cd Octopus-tracker
+  mkdir build && cd build
+  Note: make sure SDL2, SDL_ttf, and cmake are properly installed
+  cmake ..
+  make
+  ./octopus
