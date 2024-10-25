@@ -12,6 +12,7 @@
 0B = playing sequence position jump
 0C = set channel volume
 0D = volume slide (param 1 = increase, param 2 = decrease)
+0E = set channel pan. (param 1 = left level, param 2 = right level)
 
 18 = set volume (relative to sample volume)
 

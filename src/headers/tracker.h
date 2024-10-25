@@ -93,6 +93,10 @@ private:
         unsigned int retrig_freq = 0;
         unsigned int retrig_count = 0;
 
+        // Panning
+        double left_level = 1.0;
+        double right_level = 1.0;
+
         // 0A
         bool reverse = false;
 

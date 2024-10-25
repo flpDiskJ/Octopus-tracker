@@ -380,6 +380,11 @@ Uint8 Tracker::get_command(int c)
             channel[c].total_triggers = timing_delay / channel[c].retriggers;
             channel[c].trigger_pos = (int)channel[c].pos;
             break;
+        case 14:
+            type = COM_NONE;
+            channel[c].left_level = (double)channel[c].command_param[0] / 15.0;
+            channel[c].right_level = (double)channel[c].command_param[1] / 15.0;
+            break;
         default:
             break;
     }

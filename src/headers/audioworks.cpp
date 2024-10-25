@@ -378,8 +378,8 @@ void AudioW::audio_works() // fills audio buffer
                     mix_2 = 0;
                     for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
                     {
-                        mix_1 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
-                        mix_2 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                        mix_1 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].left_level;
+                        mix_2 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].right_level;
                         mix_div++;
                     }
 
