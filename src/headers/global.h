@@ -13,7 +13,7 @@ using namespace std;
 
 //// Customable
 #define REFRESH_RATE 60
-#define AUDIO_LATENCY 6 // 4 to 8
+#define AUDIO_LATENCY 3 // 2 to 4
 #define AMP_LEV 6 // master level
 #define SAMPLE_RATE 48000 // output sample rate
 #define BUFF_SIZE 1024 // size of audio stream buffer
@@ -29,8 +29,8 @@ const double VOLUME_SLIDE_AMOUNT = 0.01; // 0D
 #define DISPLAYRECTS 40 // number of rects used to display steps
 #define MAXSAMPLES 100 // max number of samples that can be used
 #define MAXBLOCKS 200 // max number of blocks that can be used
-#define BYTES_IN_SAMPLE 2 // number of bytes that makes up each sample (2 for 16bit format)
-#define AUDIO_CHANNELS 1 // 1 for mono // 2 for stereo
+#define BYTES_IN_SAMPLE 4 // number of bytes that makes up each sample (2 for 16bit format)
+#define AUDIO_CHANNELS 2 // 1 for mono // 2 for stereo
 
 const int BIT_REDUCT = 16;
 const int refresh_delay_ms = 1000 / REFRESH_RATE;

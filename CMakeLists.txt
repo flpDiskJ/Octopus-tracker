@@ -37,3 +37,14 @@ configure_file(
 	${CMAKE_CURRENT_BINARY_DIR}/font.TTF
 	COPYONLY
 )
+
+install(TARGETS octopus
+    COMPONENT linapp
+    RUNTIME DESTINATION "/bin/"
+    LIBRARY DESTINATION "/lib/"
+    DESTINATION "/bin/"
+)
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "KK") #required
+INCLUDE(CPack)

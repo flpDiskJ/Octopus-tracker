@@ -290,11 +290,11 @@ void AudioW::tick()
 void AudioW::audio_works() // fills audio buffer
 {
     long unsigned int actual_pos;
-    Sint32 val;
+    Sint32 val_1 = 0, val_2 = 0;
     Sint16 out;
     long int sig_max[CHANNELS];
     Sint32 temp;
-    Sint32 mix = 0;
+    Sint32 mix_1 = 0, mix_2 = 0;
     int mix_div = 0;
     for (int c = 0; c < CHANNELS; c++)
     {
@@ -352,7 +352,6 @@ void AudioW::audio_works() // fills audio buffer
             tick_count++;
         }
 
-        val = 0;
         for (int c = 0; c < CHANNELS; c++) // c for channel
         {
             // retrigger
@@ -375,14 +374,18 @@ void AudioW::audio_works() // fills audio buffer
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
                     mix_div = 0;
-                    mix = 0;
+                    mix_1 = 0;
+                    mix_2 = 0;
                     for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
                     {
-                        mix += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                        mix_1 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                        mix_2 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
                         mix_div++;
                     }
 
-                    temp = mix / mix_div;
+                    mix_1 = mix_1 / mix_div;
+                    mix_2 = mix_2 / mix_div;
+                    temp = (mix_1 + mix_2) / 2;
 
                     t->scope[c].data[t->scope[c].data_pos] = (int)temp;
                     t->scope[c].data_pos++;
@@ -395,9 +398,12 @@ void AudioW::audio_works() // fills audio buffer
                     if (sig_max[c] < temp * BIT_REDUCT)
                     {sig_max[c] = temp * BIT_REDUCT;}
 
-                    temp *= AMP_LEV;
-                    temp *= BIT_REDUCT;
-                    val += temp;
+                    mix_1 *= AMP_LEV;
+                    mix_1 *= BIT_REDUCT;
+                    mix_2 *= AMP_LEV;
+                    mix_2 *= BIT_REDUCT;
+                    val_1 += mix_1;
+                    val_2 += mix_2;
                     if (t->channel[c].reverse)
                     {
                         // handles ping pong loop
@@ -429,19 +435,28 @@ void AudioW::audio_works() // fills audio buffer
                 }
             }
         }
-        temp = val / CHANNELS;
-        temp = temp * t->mix_level_adjust;
-        if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
-        else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
-        out = (Sint16)temp;
+        val_1 = val_1 / CHANNELS;
+        val_1 = val_1 * t->mix_level_adjust;
+        if (val_1 > AUDIO_PEAK){val_1 = AUDIO_PEAK;}
+        else if (val_1 < AUDIO_PEAK_LOW){val_1 = AUDIO_PEAK_LOW;}
+        val_2 = val_2 / CHANNELS;
+        val_2 = val_2 * t->mix_level_adjust;
+        if (val_2 > AUDIO_PEAK){val_2 = AUDIO_PEAK;}
+        else if (val_2 < AUDIO_PEAK_LOW){val_2 = AUDIO_PEAK_LOW;}
+        out = (Sint16)val_1;
         b->data[b->write_pos] = out & 0xFF;
         b->data[b->write_pos+1] = out >> 8 & 0xFF;
+        out = (Sint16)val_2;
+        b->data[b->write_pos+2] = out & 0xFF;
+        b->data[b->write_pos+3] = out >> 8 & 0xFF;
         if (b->write_pos >= b->len)
         {
             b->write_pos = 0;
         } else {
             b->write_pos += BYTES_IN_SAMPLE;
         }
+        val_1 = 0;
+        val_2 = 0;
     }
     for (int c = 0; c < CHANNELS; c++)
     {
