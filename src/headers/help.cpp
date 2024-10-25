@@ -64,6 +64,7 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     trackerCommands.push_back("0B = playing sequence position jump");
     trackerCommands.push_back("0C = set channel volume");
     trackerCommands.push_back("0D = volume slide (param 1 = increase, param 2 = decrease)");
+    trackerCommands.push_back("0E = set channel pan (param 1 = left, param 2 = right)");
     trackerCommands.push_back(" ");
     trackerCommands.push_back("18 = set volume (relative to sample volume)");
     trackerCommands.push_back(" ");
