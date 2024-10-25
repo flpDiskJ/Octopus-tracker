@@ -467,15 +467,15 @@ void AudioW::audio_works() // fills audio buffer
 Uint32 AudioW::prepare_export()
 {
     long unsigned int actual_pos = 0;
-    Sint32 val = 0;
+    Sint32 val_1 = 0, val_2 = 0;
     Sint32 temp = 0;
     sample_count = 0;
     tick_count = 0;
     Uint32 buffer_len = 0;
-    Uint32 buffer_size = SAMPLE_RATE * 10;
-    Sint32 mix = 0;
+    Uint32 buffer_size = SAMPLE_RATE * 30;
+    Sint32 mix_1 = 0, mix_2 = 0;
     int mix_div = 0;
-    wav_data = (Sint32*)malloc(sizeof(Sint32)*buffer_size);
+    wav_data = (Sint32*)malloc(sizeof(Sint32)*(buffer_size + 2));
 
     for (int c = 0; c < CHANNELS; c++)
     {
@@ -512,7 +512,6 @@ Uint32 AudioW::prepare_export()
             tick_count++;
         }
 
-        val = 0;
         for (int c = 0; c < CHANNELS; c++) // c for channel
         {
             // retrigger
@@ -534,16 +533,23 @@ Uint32 AudioW::prepare_export()
                 if (t->sample[t->channel[c].sample].len != 0 && actual_pos < t->sample[t->channel[c].sample].len && actual_pos >= 0)
                 {
                     mix_div = 0;
-                    mix = 0;
+                    mix_1 = 0;
+                    mix_2 = 0;
                     for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
                     {
-                        mix += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier;
+                        mix_1 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].left_level;
+                        mix_2 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].right_level;
                         mix_div++;
                     }
 
-                    temp = mix / mix_div;
-                    temp = temp * BIT_REDUCT;
-                    val += temp;
+                    mix_1 = mix_1 / mix_div;
+                    mix_2 = mix_2 / mix_div;
+                    mix_1 *= AMP_LEV;
+                    mix_1 *= BIT_REDUCT;
+                    mix_2 *= AMP_LEV;
+                    mix_2 *= BIT_REDUCT;
+                    val_1 += mix_1;
+                    val_2 += mix_2;
                     if (t->channel[c].reverse)
                     {
                         // handles ping pong loop
@@ -570,16 +576,21 @@ Uint32 AudioW::prepare_export()
                 }
             }
         }
-        temp = val / CHANNELS;
-        temp = temp * t->mix_level_adjust;
-        if (temp > AUDIO_PEAK){temp = AUDIO_PEAK;}
-        else if (temp < AUDIO_PEAK_LOW){temp = AUDIO_PEAK_LOW;}
-        wav_data[buffer_len] = temp;
-        buffer_len++;
+        val_1 = val_1 / CHANNELS;
+        val_1 = val_1 * t->mix_level_adjust;
+        if (val_1 > AUDIO_PEAK){val_1 = AUDIO_PEAK;}
+        else if (val_1 < AUDIO_PEAK_LOW){val_1 = AUDIO_PEAK_LOW;}
+        val_2 = val_2 / CHANNELS;
+        val_2 = val_2 * t->mix_level_adjust;
+        if (val_2 > AUDIO_PEAK){val_2 = AUDIO_PEAK;}
+        else if (val_2 < AUDIO_PEAK_LOW){val_2 = AUDIO_PEAK_LOW;}
+        wav_data[buffer_len] = val_1 * 200;
+        wav_data[buffer_len+1] = val_2 * 200;
+        buffer_len += 2;
         if (buffer_len >= buffer_size)
         {
-            buffer_size += SAMPLE_RATE * 10;
-            wav_data = (Sint32*)realloc(wav_data, sizeof(Sint32)*buffer_size);
+            buffer_size += SAMPLE_RATE * 30;
+            wav_data = (Sint32*)realloc(wav_data, sizeof(Sint32)*(buffer_size + 2));
         }
     }
 
@@ -594,5 +605,5 @@ Uint32 AudioW::prepare_export()
         t->channel[c].command_type = COM_NONE;
     }
 
-    return buffer_len;
+    return buffer_len / 2;
 }

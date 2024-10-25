@@ -230,12 +230,13 @@ void ModuleFormat::export_wav(string path)
 {
     AudioFile<int> audioFile;
     Uint32 signal_length = aworks->prepare_export();
-    audioFile.setAudioBufferSize (1, signal_length);
-    audioFile.setBitDepth (16);
+    audioFile.setAudioBufferSize (2, signal_length);
+    audioFile.setBitDepth (24);
     audioFile.setSampleRate (SAMPLE_RATE);
-    for (int x = 0; x < signal_length; x++)
+    for (int x = 0, y = 0; x < signal_length; x++, y += 2)
     {
-        audioFile.samples[0][x] = aworks->wav_data[x];
+        audioFile.samples[0][x] = aworks->wav_data[y];
+        audioFile.samples[1][x] = aworks->wav_data[y+1];
     }
     audioFile.save (path, AudioFileFormat::Wave);
     free(aworks->wav_data);
