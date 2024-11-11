@@ -321,7 +321,6 @@ void DiskOp::fill_path_list()
     path_list_types.clear();
     selected = -1;
     file_name_entry.text.clear();
-    list_offset = 0;
 
     vector<string> dir_list;
     vector<string> file_list;
@@ -398,6 +397,12 @@ void DiskOp::set_file_name()
         file_name_entry.text.clear();
         if (path_list_types[selected] == DT_DIR)
         {
+            if (parent_index == SAMPLE_PATH && dir_level < 8)
+            {
+                offset_preserve[dir_level] = list_offset;
+                dir_level++;
+            }
+            list_offset = 0;
             parent[parent_index] += path_list_strings[selected];
             parent[parent_index] += os_slash;
             fill_path_list();
@@ -477,6 +482,13 @@ void DiskOp::revert_dir()
     if (parent[parent_index].length() == 1)
     {
         return;
+    }
+    if (parent_index == SAMPLE_PATH && dir_level > 0)
+    {
+        dir_level--;
+        list_offset = offset_preserve[dir_level];
+    } else {
+        list_offset = 0;
     }
     parent[parent_index].pop_back();
     while (parent[parent_index].back() != os_slash)

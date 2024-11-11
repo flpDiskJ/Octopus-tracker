@@ -56,6 +56,10 @@ class DiskOp {
         Button set_paths_b;
         Button stem_track_b;
 
+        // preserve scroll offset in isnt mode
+        unsigned char dir_level = 0;
+        int offset_preserve[9];
+
 
         ModuleFormat *module; // use this class to save and load the module
 
