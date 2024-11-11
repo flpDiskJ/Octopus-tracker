@@ -28,6 +28,8 @@ private:
     };
     Buttons button;
 
+    unsigned char tab_select = 0; // tab select for quit popup. For the linux heads ;)
+
     // for block parameters (mode 1)
     SDL_Rect block_list;
     SDL_Rect block_name; SDL_Texture *block_name_tex;

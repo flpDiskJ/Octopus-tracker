@@ -284,7 +284,19 @@ void Util::render()
         case 0:
             SDL_RenderCopy(renderer, button.yes_tex, NULL, &button.yes);
             SDL_RenderCopy(renderer, button.no_tex, NULL, &button.no);
+            if (tab_select == 1)
+            {
+                SDL_SetRenderDrawColor(renderer, p->red.r, p->red.g, p->red.b, 0xFF); // Red
+            } else {
+                SDL_SetRenderDrawColor(renderer, p->black.r, p->black.g, p->black.b, 0xFF); // Black
+            }
             SDL_RenderDrawRect(renderer, &button.yes);
+            if (tab_select == 2)
+            {
+                SDL_SetRenderDrawColor(renderer, p->red.r, p->red.g, p->red.b, 0xFF); // Red
+            } else {
+                SDL_SetRenderDrawColor(renderer, p->black.r, p->black.g, p->black.b, 0xFF); // Black
+            }
             SDL_RenderDrawRect(renderer, &button.no);
             break;
         case 1:
@@ -471,6 +483,25 @@ void Util::input(SDL_Event *e)
     switch (mode)
     {
         case 0:
+            if (e->key.keysym.sym == SDLK_TAB)
+            {
+                if (tab_select < 2)
+                {
+                    tab_select++;
+                } else {
+                    tab_select = 0;
+                }
+            } else if (e->key.keysym.sym == SDLK_RETURN)
+            {
+                if (tab_select == 2)
+                {
+                    close();
+                } else if (tab_select == 1)
+                {
+                    command = 'Q';
+                }
+            }
+            render();
             break;
         case 1:
             if (e->key.keysym.sym == SDLK_DOWN)
