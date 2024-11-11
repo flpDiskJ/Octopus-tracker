@@ -66,6 +66,8 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     trackerCommands.push_back("0D = volume slide (param 1 = increase, param 2 = decrease)");
     trackerCommands.push_back("0E = set channel pan (param 1 = left, param 2 = right)");
     trackerCommands.push_back(" ");
+    trackerCommands.push_back("10 = set channel low pass filter (set to 0 to disable)");
+    trackerCommands.push_back(" ");
     trackerCommands.push_back("18 = set volume (relative to sample volume)");
     trackerCommands.push_back(" ");
     trackerCommands.push_back("19 = sample offset (Octamed style)");
@@ -126,6 +128,7 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back(" ");
     keyboardInfo.push_back("  Quit:");
     keyboardInfo.push_back("    CTRL+SHIFT+Q = quit");
+    keyboardInfo.push_back("    Linux heads: TAB to select yes/no then hit enter");
     keyboardInfo.push_back(" ");
     keyboardInfo.push_back("Block sub-window:");
     keyboardInfo.push_back("  UP/DOWN = scroll block list");

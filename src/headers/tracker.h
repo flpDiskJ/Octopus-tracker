@@ -208,6 +208,8 @@ public:
     int cursor_pos = 0; // which piece of data the cursor is on inside of the channel
     int octave = 2;
     bool mute[CHANNELS]; // used to mute channel
+    unsigned short low_pass_cutoff[CHANNELS]; // cutoff frequency for each channel's LP filter (0 = no filter)
+    long double filter_vals[CHANNELS]; // used for LP filter
     Channel channel[CHANNELS];
     SDL_Rect trigger_bars[CHANNELS];
     Uint64 timing_delay; // time delay in number of audio samples // calculate using set_timing_delay()

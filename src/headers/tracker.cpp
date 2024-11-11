@@ -132,6 +132,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     {
         block[0].channel[c] = (Note*)malloc(64*sizeof(Note));
         mute[c] = false;
+        low_pass_cutoff[c] = 0;
         channel[c].play = false;
         channel[c].command_type = COM_NONE;
         channel[c].vib_up = true;
@@ -291,6 +292,10 @@ Uint8 Tracker::get_command(int c)
                 channel[c].play = false;
                 channel[c].pos_adv = 0;
             }
+            break;
+        case 16: // 10
+            low_pass_cutoff[c] = channel[c].command_param[2] * 10;
+            filter_vals[c] = tanf(M_PI * (double)low_pass_cutoff[c] / (double)SAMPLE_RATE);
             break;
         case 1:
             type = COM_PITCH_UP;

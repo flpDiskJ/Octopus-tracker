@@ -8,6 +8,11 @@ AudioW::AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_PixelFormat *f, Pallet
     sample_count = 0;
     tick_count = 0;
     fmt = f;
+
+    for (int c = 0; c < CHANNELS; c++)
+    {
+        lp_output[c] = 0.0;
+    }
 }
 
 AudioW::~AudioW()
@@ -287,6 +292,15 @@ void AudioW::tick()
     }
 }
 
+Sint32 AudioW::low_pass(Sint32 input, int c)
+{
+    Sint32 out;
+    lp_output[c] = t->filter_vals[c] * input + t->filter_vals[c] * lp_output[c] - (t->filter_vals[c]-1) * lp_output[c];
+    lp_output[c] /= (t->filter_vals[c]+1);
+    out = (Sint32)lp_output[c];
+    return out;
+}
+
 void AudioW::audio_works() // fills audio buffer
 {
     long unsigned int actual_pos;
@@ -294,7 +308,7 @@ void AudioW::audio_works() // fills audio buffer
     Sint16 out;
     long int sig_max[CHANNELS];
     Sint32 temp;
-    Sint32 mix_1 = 0, mix_2 = 0;
+    Sint32 mix_1 = 0, mix_2 = 0, filter_1, filter_2;
     int mix_div = 0;
     for (int c = 0; c < CHANNELS; c++)
     {
@@ -378,8 +392,18 @@ void AudioW::audio_works() // fills audio buffer
                     mix_2 = 0;
                     for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
                     {
-                        mix_1 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].left_level;
-                        mix_2 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].right_level;
+                        filter_1 = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].left_level;
+                        filter_2 = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].right_level;
+
+                        // LP filtering
+                        if (t->low_pass_cutoff[c] != 0)
+                        {
+                            filter_1 = low_pass(filter_1, c);
+                            filter_2 = low_pass(filter_2, c);
+                        }
+
+                        mix_1 += filter_1;
+                        mix_2 += filter_2;
                         mix_div++;
                     }
 
@@ -473,7 +497,7 @@ Uint32 AudioW::prepare_export()
     tick_count = 0;
     Uint32 buffer_len = 0;
     Uint32 buffer_size = SAMPLE_RATE * 30;
-    Sint32 mix_1 = 0, mix_2 = 0;
+    Sint32 mix_1 = 0, mix_2 = 0, filter_1, filter_2;
     int mix_div = 0;
     wav_data = (Sint32*)malloc(sizeof(Sint32)*(buffer_size + 2));
 
@@ -537,8 +561,18 @@ Uint32 AudioW::prepare_export()
                     mix_2 = 0;
                     for (int scan_p = actual_pos; scan_p <= (int)(t->channel[c].pos+t->channel[c].pos_adv); scan_p++)
                     {
-                        mix_1 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].left_level;
-                        mix_2 += t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].right_level;
+                        filter_1 = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].left_level;
+                        filter_2 = t->sample[t->channel[c].sample].data[actual_pos] * t->channel[c].amplifier * t->channel[c].right_level;
+
+                        // LP filtering
+                        if (t->low_pass_cutoff[c] != 0)
+                        {
+                            filter_1 = low_pass(filter_1, c);
+                            filter_2 = low_pass(filter_2, c);
+                        }
+
+                        mix_1 += filter_1;
+                        mix_2 += filter_2;
                         mix_div++;
                     }
 

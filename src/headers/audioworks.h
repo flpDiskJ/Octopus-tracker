@@ -13,9 +13,12 @@ private:
 
     void generate_scope(int index);
 
+    Sint32 low_pass(Sint32 input, int c);
+
 public:
     Uint32 sample_count; // used to determine timing
     Sint32 *wav_data = NULL; // used for export
+    long double lp_output[CHANNELS]; // used for LPF
 
     AudioW(Tracker *tracker, AudioBuffer *buffer, SDL_PixelFormat *f, Pallet *plt);
 
