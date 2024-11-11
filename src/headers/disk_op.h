@@ -3,6 +3,7 @@
 #include "tracker.h"
 #include <dirent.h>
 #include <vector>
+#include <algorithm>
 #include "moduleformat.h"
 #include "sdl_keymap.h"
 #include "sample_edit.h"
@@ -12,19 +13,6 @@
 #define EXPORT_PATH 1
 #define SAMPLE_PATH 2
 #define INPUT_MAX 500
-
-/**
-NOTE FROM JAKE
-
-    Add a way for the user to change t->default_pitch (by default it is set to 'C-3')
-
-    when t->load_inst() is called it will now resample the audio to the pitch specified in default_pitch
-
-    only the note, key, and octave elements from default_pitch are used (check Note struct in tracker.h)
-
-    NEW: load_module(), save_module(), and export_wav() are ready for use. Check moduleformat.h
-
-**/
 
 class DiskOp {
     private:

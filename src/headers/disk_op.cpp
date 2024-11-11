@@ -314,7 +314,7 @@ bool DiskOp::check_file_extension(const char* ext, char* file)
     return true;
 }
 
-void DiskOp::fill_path_list() // for now pass "/", when this is used later in the program it will be different
+void DiskOp::fill_path_list()
 {
     // clean up path vector
     path_list_strings.clear();
@@ -349,6 +349,9 @@ void DiskOp::fill_path_list() // for now pass "/", when this is used later in th
             }
         }
     }
+
+    sort(dir_list.begin(), dir_list.end());
+    sort(file_list.begin(), file_list.end());
 
     for (int i = 0; i < dir_list.size(); i++)
     {
