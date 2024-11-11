@@ -1025,6 +1025,11 @@ void Sample_edit::mouse_wheel(SDL_Event *e)
 
 void Sample_edit::keyboard(SDL_Event *e)
 {
+    if (SDL_GetModState() & KMOD_CTRL && e->key.keysym.sym == SDLK_x)
+    {
+        close();
+        return;
+    }
     if (selection_front_entry.active)
     {
         text_entry(&selection_front_entry, e);

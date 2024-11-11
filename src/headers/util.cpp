@@ -462,6 +462,11 @@ void Util::mouse(int x, int y)
 
 void Util::input(SDL_Event *e)
 {
+    if (e->key.keysym.sym == SDLK_x && SDL_GetModState() & KMOD_CTRL)
+    {
+        close();
+        return;
+    }
     string key;
     switch (mode)
     {

@@ -115,13 +115,14 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back("    -/ absolute)");
     keyboardInfo.push_back("    CTRL+SHIFT+LEFT/RIGHT = change highlight iteration");
     keyboardInfo.push_back(" ");
-    keyboardInfo.push_back("  Open Sub-Windows:");
+    keyboardInfo.push_back("  Sub-Windows:");
     keyboardInfo.push_back("    CTRL+O = open sequence order window");
     keyboardInfo.push_back("    CTRL+H = open track properties window (bpm, speed, and such)");
     keyboardInfo.push_back("    CTRL+B = open block list window (block length, speed, and such)");
     keyboardInfo.push_back("    CTRL+F = open disk op window (load/save module)");
     keyboardInfo.push_back("    CTRL+I = open instrument window");
     keyboardInfo.push_back("    CTRL+E = open sample edit window");
+    keyboardInfo.push_back("    CTRL+X = close sub-window");
     keyboardInfo.push_back(" ");
     keyboardInfo.push_back("  Quit:");
     keyboardInfo.push_back("    CTRL+SHIFT+Q = quit");
@@ -306,5 +307,8 @@ void HelpWindow::mouse_wheel(SDL_Event *e)
 
 void HelpWindow::keyboard(SDL_Event *e)
 {
-
+    if (SDL_GetModState() & KMOD_CTRL && e->key.keysym.sym == SDLK_x)
+    {
+        close();
+    }
 }

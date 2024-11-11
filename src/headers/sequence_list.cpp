@@ -273,6 +273,11 @@ void Sequencer::mouse_wheel(SDL_Event *e)
 
 void Sequencer::keyboard(SDL_Event *e)
 {
+    if (SDL_GetModState() & KMOD_CTRL && e->key.keysym.sym == SDLK_x)
+    {
+        close();
+        return;
+    }
     switch (e->key.keysym.sym)
     {
         case SDLK_UP:

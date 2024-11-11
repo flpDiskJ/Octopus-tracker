@@ -337,6 +337,9 @@ int main(int argc, char* args[]) {
                     } else if (inst_prop.get_state() & SDL_WINDOW_INPUT_FOCUS)
                     {
                         inst_prop.keyboard(&e);
+                    } else if (help.get_state() & SDL_WINDOW_INPUT_FOCUS)
+                    {
+                        help.keyboard(&e);
                     } else {
                         if (SDL_GetModState() & KMOD_CTRL) // control key press
                         {
