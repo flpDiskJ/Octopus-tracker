@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdio.h>
-using namespace std;
 #include <SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
@@ -10,6 +9,7 @@ using namespace std;
 #include <sstream>
 #include <unistd.h>
 #include <iostream>
+using namespace std;
 
 //// Customable
 #define REFRESH_RATE 60
