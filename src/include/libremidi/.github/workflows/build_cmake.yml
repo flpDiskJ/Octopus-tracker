@@ -1,0 +1,251 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        boost: [0, 1]
+        header_only: [0, 1]
+        config:
+        - {
+            name: "Windows (MSVC)",
+            os: windows-latest,
+            generator: "",
+            cmakeflags: "-DLIBREMIDI_NO_WINUWP=0 -DBOOST_ROOT=$PWD/boost_1_86_0",
+            test_target: "RUN_TESTS",
+            tests: 1,
+            examples: 1
+          }
+        - {
+            name: "Ubuntu (gcc)",
+            os: ubuntu-latest,
+            generator: "",
+            cmakeflags: "-DCMAKE_CXX_FLAGS='-Werror=return-type -fsanitize=address -fsanitize=undefined -D_GLIBCXX_DEBUG=1 -D_GLIBCXX_DEBUG_PEDANTIC=1 -D_GLIBCXX_ASSERTIONS=1 -D_GLIBCXX_SANITIZE_VECTOR=1'",
+            test_target: "test",
+            tests: 1,
+            examples: 1
+          }
+        - {
+            name: "Ubuntu (clang-18, libstdc++)",
+            os: ubuntu-latest,
+            generator: "",
+            cmakeflags: "-DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_CXX_FLAGS='-Werror=return-type -fsanitize=address -fsanitize=undefined'",
+            test_target: "test",
+            tests: 1,
+            examples: 1
+          }
+        - {
+            name: "Ubuntu (clang, libc++)",
+            os: ubuntu-latest,
+            generator: "",
+            cmakeflags: "-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS='-stdlib=libc++ -Werror=return-type'",
+            test_target: "test",
+            tests: 1,
+            examples: 1
+          }
+        - {
+            name: 'Tarball',
+            os: ubuntu-latest,
+            generator: "",
+            cmakeflags: "",
+            test_target: "test",
+            tests: 1,
+            examples: 1
+          }
+        - {
+            name: "macOS",
+            os: macos-14,
+            generator: "",
+            cmakeflags: "-DCMAKE_CXX_FLAGS=-Werror=return-type -DBOOST_ROOT=$PWD/boost_1_86_0",
+            test_target: "test",
+            tests: 1,
+            examples: 1
+          }
+        - {
+            name: "iOS",
+            os: macos-14,
+            generator: "-GXcode",
+            cmakeflags: "-DCMAKE_CXX_FLAGS=-Werror=return-type -DBOOST_ROOT=$PWD/boost_1_86_0 -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_XCODE_EFFECTIVE_PLATFORMS=-iphoneos",
+            test_target: "test",
+            tests: 0,
+            examples: 0
+          }
+
+        exclude:
+          - config: { name: "iOS" }
+            boost: 1
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get latest release version number
+      id: get_version
+      uses: battila7/get-version-action@v2
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      if: runner.os == 'macOS'
+      with:
+        xcode-version: latest-stable
+
+    - name: Install dependencies
+      if: matrix.config.name != 'Tarball'
+      run:  |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+          sudo apt update
+          sudo apt install cmake libboost-dev libasound-dev libjack-jackd2-dev clang libc++-dev
+        else
+          curl -L https://github.com/ossia/sdk/releases/download/sdk31/boost_1_86_0.tar.gz > boost.tar.gz
+          tar -xzf boost.tar.gz
+          rm boost.tar.gz
+        fi
+      shell: bash
+
+    - name: Configure
+      if: matrix.config.name != 'Tarball'
+      shell: bash
+      run: |
+        cmake -S . -B build \
+          ${{ matrix.config.generator }} \
+          ${{ matrix.config.cmakeflags }} \
+          -DLIBREMIDI_FIND_BOOST=${{ matrix.boost }} \
+          -DLIBREMIDI_HEADER_ONLY=${{ matrix.header_only }} \
+          -DLIBREMIDI_EXAMPLES=${{ matrix.config.examples }}  \
+          -DLIBREMIDI_TESTS=${{ matrix.config.tests }} \
+          -DLIBREMIDI_CI=1 \
+          -DCMAKE_CTEST_ARGUMENTS="--rerun-failed;--output-on-failure" \
+          -DCMAKE_INSTALL_PREFIX=install
+
+    - name: Build
+      if: matrix.config.name != 'Tarball'
+      run: |
+        cmake --build build --config Debug
+        cmake --build build --config Debug --target install
+
+    - name: Test
+      if: matrix.config.name != 'Tarball' && matrix.config.name != 'iOS'
+      run: |
+        # Not available on GH actions...
+        # if [ "$RUNNER_OS" == "Linux" ]; then
+        #   sudo modprobe snd-virmidi midi_devs=1
+        # fi
+
+        cmake --build build --config Debug --target ${{ matrix.config.test_target }}
+
+      shell: bash
+
+  build_bsd:
+    name: FreeBSD
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        boost: [0, 1]
+        header_only: [0, 1]
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        prepare: |
+          pkg install -y jackit boost-libs cmake git
+
+        run: |
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+
+          cmake -S . -B build \
+            -DLIBREMIDI_FIND_BOOST=${{ matrix.boost }} \
+            -DLIBREMIDI_HEADER_ONLY=${{ matrix.header_only }} \
+            -DLIBREMIDI_EXAMPLES=1 \
+            -DLIBREMIDI_TESTS=1 \
+            -DLIBREMIDI_CI=1 \
+            -DCMAKE_CTEST_ARGUMENTS="--rerun-failed;--output-on-failure" \
+            -DCMAKE_INSTALL_PREFIX=install
+
+          cmake --build build
+          cmake --build build --target install
+          cmake --build build --target test
+
+  build_debian:
+    name: Debian ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    container:
+      image: debian:${{ matrix.distro }}
+    strategy:
+      fail-fast: false
+      matrix:
+        boost: [0, 1]
+        header_only: [0, 1]
+        distro: [bullseye, bookworm, trixie]
+
+    steps:
+    - name: Add backports repo if necessary
+      if: matrix.distro == 'bullseye'
+      run: |
+        echo "deb http://ftp.debian.org/debian/ ${{ matrix.distro }}-backports main non-free contrib" > /etc/apt/sources.list.d/${{ matrix.distro }}-backports.list
+
+    - name: Install git
+      run: |
+        apt-get update -qq
+        apt-get install -qq --force-yes git
+
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      shell: bash
+      run:  |
+        bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+        apt-get update -qq
+        apt-get install -qq --force-yes \
+          build-essential binutils gcc g++ \
+          clang libc++-dev \
+          libboost-dev \
+          libasound-dev \
+          libjack-jackd2-dev \
+          libudev-dev \
+          libpipewire-0.3-dev
+
+        if [[ "${{matrix.distro}}" == 'bullseye' ]]; then
+          apt-get install -qq --force-yes cmake/bullseye-backports
+        else
+          apt-get install -qq --force-yes cmake
+        fi
+
+    - name: Configure
+      run: |
+        cmake -S . -B build \
+          -DLIBREMIDI_FIND_BOOST=${{ matrix.boost }} \
+          -DLIBREMIDI_HEADER_ONLY=${{ matrix.header_only }} \
+          -DLIBREMIDI_EXAMPLES=1 \
+          -DLIBREMIDI_TESTS=1 \
+          -DLIBREMIDI_CI=1 \
+          -DCMAKE_CTEST_ARGUMENTS="--rerun-failed;--output-on-failure" \
+          -DCMAKE_INSTALL_PREFIX=install
+
+    - name: Build
+      run: |
+        cmake --build build --config Debug
+        cmake --build build --config Debug --target install
+
+    - name: Test
+      run: |
+        cmake --build build --config Debug --target test
+
+

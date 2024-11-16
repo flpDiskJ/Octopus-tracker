@@ -5,8 +5,9 @@ INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 PKG_SEARCH_MODULE(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
 
-
 set(SRC ${CMAKE_SOURCE_DIR}/src)
+
+add_subdirectory(${SRC}/include/libremidi)
 
 add_executable(octopus
 	${SRC}/main.cpp
@@ -32,6 +33,9 @@ target_link_libraries(
 	${SDL2_LIBRARIES}
 	SDL2_ttf
 )
+
+target_link_libraries(octopus PRIVATE libremidi)
+
 configure_file(
 	${CMAKE_SOURCE_DIR}/fonts/font.TTF
 	${CMAKE_CURRENT_BINARY_DIR}/font.TTF
