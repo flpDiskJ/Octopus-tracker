@@ -3,6 +3,7 @@
 #include "global.h"
 #include "help.h"
 #include "lord.h"
+#include <libremidi/libremidi-c.h>
 
 class Tracker
 {
