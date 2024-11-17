@@ -1746,6 +1746,46 @@ void Tracker::set_it_up()
     SDL_UnlockTexture(special);
 }
 
+void Tracker::midi_init()
+{
+    if (!midi_initiated)
+    {
+        midi_initiated = true;
+
+        for (auto& api : libremidi::available_apis())
+        {
+            string_view api_name = libremidi::get_api_display_name(api);
+            cout << "Displaying ports for: " << api_name << endl;
+
+            // On Windows 10, apparently the MIDI devices aren't exactly available as soon as the app open...
+            this_thread::sleep_for(chrono::milliseconds(100));
+
+            libremidi::observer midi{
+                {.track_hardware = true, .track_virtual = true},
+                libremidi::observer_configuration_for(api)};
+            {
+              // Check inputs.
+              auto ports = midi.get_input_ports();
+              cout << ports.size() << " MIDI input sources:\n";
+              int i = 0;
+              for (auto& port : ports)
+                cout << " - " << i++ << ": " << port << '\n';
+            }
+
+            {
+              // Check outputs.
+              auto ports = midi.get_output_ports();
+              cout << ports.size() << " MIDI output sinks:\n";
+              int i = 0;
+              for (auto& port : ports)
+                cout << " - " << i++ << ": " << port << '\n';
+            }
+
+            cout << "\n";
+            }
+        }
+}
+
 void Tracker::clear_step()
 {
     block[b_pos].channel[cursor_channel][pos].note = '-';

@@ -8,6 +8,7 @@
 #include <cmath>
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 
 //// Customable

@@ -3,6 +3,8 @@
 #include "global.h"
 #include "help.h"
 #include "lord.h"
+#include <thread>
+#include <chrono>
 #include <libremidi/libremidi-c.h>
 
 class Tracker
@@ -137,6 +139,7 @@ private:
     SDL_Rect midi_indicator;
     SDL_Texture *midi_indicator_t_active;
     SDL_Texture *midi_indicator_t_inactive;
+    bool midi_initiated = false;
 
     bool check_command(int c, const char *command);
 
@@ -178,6 +181,8 @@ private:
     void paste_note(int buff); // copy/paste note to/from note_buffer
 
     void set_it_up();
+
+    void midi_init();
 
 public:
 
