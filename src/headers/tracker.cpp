@@ -301,10 +301,18 @@ Uint8 Tracker::get_command(int c)
             break;
         case 15: // 0F
             type = COM_KILL;
-            if (channel[c].command_param[2] == 255)
+            if (channel[c].command_param[2] == 255) // KILL FFF
             {
                 channel[c].play = false;
                 channel[c].pos_adv = 0;
+                if (midi_active)
+                {
+                    midi_output.send_message(
+                        libremidi::channel_events::note_on(
+                            sample[channel[c].sample].midi,
+                            channel[c].active_midi_note,
+                            0));
+                }
             }
             break;
         case 16: // 10
@@ -446,7 +454,8 @@ void Tracker::note_trigger()
                 midi_send(block[b_pos].channel[c][pos].note,
                     block[b_pos].channel[c][pos].key,
                     block[b_pos].channel[c][pos].octave,
-                    block[b_pos].channel[c][pos].sample);
+                    block[b_pos].channel[c][pos].sample,
+                    c);
             }
             if (check_command(c, "03"))
             {
@@ -1776,7 +1785,7 @@ void Tracker::midi_init()
     }
 }
 
-void Tracker::midi_send(char note, char key, int octave, int inst)
+void Tracker::midi_send(char note, char key, int octave, int inst, int c)
 {
     if (note == '-') {return;}
     Uint8 midi_channel = sample[inst].midi;
@@ -1802,7 +1811,7 @@ void Tracker::midi_send(char note, char key, int octave, int inst)
     {
         midi_note += 12;
     }
-
+    channel[c].active_midi_note = midi_note;
     midi_output.send_message(libremidi::channel_events::note_on(midi_channel, midi_note, midi_velocity));
 }
 

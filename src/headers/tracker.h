@@ -106,6 +106,8 @@ private:
         double amplifier = 1; // control level. calculate: desired_level / 100.0
         //////
 
+        Uint8 active_midi_note = 0; // active note. needed for FFF
+
         int sample = 0; // sample to play.
         double pos = 0; // curent position of sample in channel
         double pos_adv = 0; // amount to advance pos // calculate: Desired rate / SAMPLE_RATE // multiplied by pitch_mod every advance
@@ -183,8 +185,6 @@ private:
 
     void set_it_up();
 
-    void midi_init();
-
 public:
 
     bool edit_mode = false;
@@ -252,7 +252,9 @@ public:
 
     void update_timer();
 
-    void midi_send(char note, char key, int octave, int inst);
+    void midi_init();
+
+    void midi_send(char note, char key, int octave, int inst, int c);
 
     void note_trigger(); // triggers all valid notes in step positon
 

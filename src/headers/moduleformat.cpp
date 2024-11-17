@@ -250,6 +250,12 @@ bool ModuleFormat::load_module(string path)
             t->sample[sample_spec_m.index].sample_rate = sample_spec_m.original_rate;
             t->sample[sample_spec_m.index].midi = sample_spec_m.midi;
 
+            if (sample_spec_m.midi > 0)
+            {
+                t->midi_active = true;
+                t->midi_init();
+            }
+
             if (t->sample[sample_spec_m.index].data != NULL)
             {
                 free(t->sample[sample_spec_m.index].data);
