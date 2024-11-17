@@ -1795,6 +1795,10 @@ void Tracker::midi_send(char note, char key, int octave, int inst, int c)
     }
     Uint8 midi_note;
     Uint8 midi_velocity = sample[inst].level * 2;
+    if (check_command(c, "0C"))
+    {
+        midi_velocity = (int)strtol(block[b_pos].channel[c][pos].parameter, NULL, 16);
+    }
     if (midi_velocity >= 128) {midi_velocity = 127;}
     switch (note)
     {
