@@ -1806,6 +1806,12 @@ void Tracker::midi_send(char note, char key, int octave, int inst, int c)
     {
         return;
     }
+    if (sample[channel[c].sample].midi > 0)
+    {
+        midi_output.send_message(libremidi::channel_events::note_on(sample[channel[c].sample].midi,
+            channel[c].active_midi_note,
+            0));
+    }
     Uint8 midi_note;
     Uint8 midi_velocity = sample[inst].level * 2;
     if (check_command(c, "0C"))
