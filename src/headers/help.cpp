@@ -126,6 +126,9 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
     keyboardInfo.push_back("    CTRL+E = open sample edit window");
     keyboardInfo.push_back("    CTRL+X = close sub-window");
     keyboardInfo.push_back(" ");
+    keyboardInfo.push_back("  Midi:");
+    keyboardInfo.push_back("    CTRL+M = toggle midi on/off");
+    keyboardInfo.push_back(" ");
     keyboardInfo.push_back("  Quit:");
     keyboardInfo.push_back("    CTRL+SHIFT+Q = quit");
     keyboardInfo.push_back("    Linux heads: TAB to select yes/no then hit enter");

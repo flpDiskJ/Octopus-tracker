@@ -63,6 +63,19 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
     help_b.r.w = 14 * 4;
     help_b.r.h = 20;
 
+    midi_indicator.x = help_b.r.x + help_b.r.w + 10;
+    midi_indicator.y = 0;
+    midi_indicator.w = 12 * 7;
+    midi_indicator.h = 20;
+
+    surf = TTF_RenderText_Shaded(font, "MIDI ON ", pallet->red, pallet->black);
+    midi_indicator_t_active = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "MIDI OFF", pallet->black);
+    midi_indicator_t_inactive = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
     surf = TTF_RenderText_Shaded(font, "Help", pallet->green, pallet->black);
     help_b.t = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -1422,6 +1435,12 @@ void Tracker::render_info()
     SDL_RenderCopy(renderer, sample_name_tex, NULL, &sample_name);
     SDL_RenderCopy(renderer, skip_display_tex, NULL, &skip_display);
     SDL_RenderDrawRect(renderer, &help_b.r);
+    if (midi_active)
+    {
+        SDL_RenderCopy(renderer, midi_indicator_t_active, NULL, &midi_indicator);
+    } else {
+        SDL_RenderCopy(renderer, midi_indicator_t_inactive, NULL, &midi_indicator);
+    }
     SDL_RenderCopy(renderer, help_b.t, NULL, &help_b.r);
     if (round_skip)
     {
@@ -1956,6 +1975,14 @@ void Tracker::keyboard(SDL_Event *e)
             {
                 create_block(false);
                 break;
+            }
+            get_note(e);
+            break;
+        case SDLK_m:
+            if (SDL_GetModState() & KMOD_CTRL)
+            {
+                midi_active = !midi_active;
+                render_info();
             }
             get_note(e);
             break;

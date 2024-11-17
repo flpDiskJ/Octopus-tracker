@@ -133,6 +133,11 @@ private:
     SDL_Texture *special;
     bool enlighten = false;
 
+    bool midi_active = false;
+    SDL_Rect midi_indicator;
+    SDL_Texture *midi_indicator_t_active;
+    SDL_Texture *midi_indicator_t_inactive;
+
     bool check_command(int c, const char *command);
 
     int hex2dec(char hex); // converts single hex digit to decimal
