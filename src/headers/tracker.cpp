@@ -1786,7 +1786,7 @@ void Tracker::midi_send(char note, char key, int octave, int inst)
     }
     Uint8 midi_note;
     Uint8 midi_velocity = sample[inst].level * 2;
-    if (midi_velocity == 128) {midi_velocity--;}
+    if (midi_velocity >= 128) {midi_velocity = 127;}
     switch (note)
     {
         case 'C': if (key == '#') {midi_note = 25;} else {midi_note = 24;} break;

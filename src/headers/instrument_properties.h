@@ -14,8 +14,8 @@ private:
     SDL_Surface *surf;
     TTF_Font *font; // pointer to the program font
     Pallet *pallet; // pointer to the program pallet
-    Slider transpose_sliderbox, finetune_sliderbox, volume_sliderbox;
-    Button inst_name_label, transpose_label, finetune_label, volume_label;
+    Slider transpose_sliderbox, finetune_sliderbox, volume_sliderbox, midi_sliderbox;
+    Button inst_name_label, transpose_label, finetune_label, volume_label, midi_label;
     Entry samplename_entry;
     SDL_KEYMAP keymap;
 
@@ -30,6 +30,8 @@ private:
     void set_transpose_slider(int x);
 
     void set_finetune_slider(int x);
+
+    void set_midi_slider(int x);
 
 public:
 

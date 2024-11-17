@@ -68,15 +68,30 @@ Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Fo
     volume_label.r.w = 84;
     volume_label.r.h = 30;
 
+    midi_label.r.x = 264;
+    midi_label.r.y = 240;
+    midi_label.r.w = 84;
+    midi_label.r.h = 30;
+
     volume_sliderbox.slide.x = 47;
     volume_sliderbox.slide.y = 210;
     volume_sliderbox.slide.w = 506;
     volume_sliderbox.slide.h = 30;
 
+    midi_sliderbox.slide.x = 60;
+    midi_sliderbox.slide.y = 270;
+    midi_sliderbox.slide.w = 480;
+    midi_sliderbox.slide.h = 30;
+
     volume_sliderbox.pos.w = volume_sliderbox.slide.w / 101;
     volume_sliderbox.pos.h = 28;
     volume_sliderbox.pos.x = volume_sliderbox.slide.x + (t->sample[t->s_pos].level * volume_sliderbox.pos.w);
     volume_sliderbox.pos.y = 211;
+
+    midi_sliderbox.pos.w = midi_sliderbox.slide.w / 17;
+    midi_sliderbox.pos.h = 28;
+    midi_sliderbox.pos.x = midi_sliderbox.slide.x + (t->sample[t->s_pos].midi * midi_sliderbox.pos.w);
+    midi_sliderbox.pos.y = 271;
 
     surf = TTF_RenderText_Solid(font, "Transpose", pallet->blue);
     transpose_label.t = SDL_CreateTextureFromSurface(render, surf);
@@ -88,6 +103,10 @@ Instrument_properties::Instrument_properties(Tracker *tracker, AudioW *a, TTF_Fo
 
     surf = TTF_RenderText_Solid(font, "Volume", pallet->blue);
     volume_label.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+
+    surf = TTF_RenderText_Solid(font, "Midi: 0", pallet->blue);
+    midi_label.t = SDL_CreateTextureFromSurface(render, surf);
     SDL_FreeSurface(surf);
 
     update();
@@ -140,6 +159,15 @@ void Instrument_properties::setup_tuning_sliders()
 {
     transpose_sliderbox.pos.x = transpose_sliderbox.slide.x + (transpose_sliderbox.pos.w * (t->sample[t->s_pos].tune + 12));
     finetune_sliderbox.pos.x = finetune_sliderbox.slide.x + (finetune_sliderbox.pos.w * (t->sample[t->s_pos].fine_tune + 12));
+    midi_sliderbox.pos.x = midi_sliderbox.slide.x + (midi_sliderbox.pos.w * t->sample[t->s_pos].midi);
+
+    string tmp = "Midi: ";
+    tmp += to_string(t->sample[t->s_pos].midi);
+    surf = TTF_RenderText_Solid(font, tmp.c_str(), pallet->blue);
+    SDL_DestroyTexture(midi_label.t);
+    midi_label.t = SDL_CreateTextureFromSurface(render, surf);
+    SDL_FreeSurface(surf);
+    refresh();
 }
 
 void Instrument_properties::set_transpose_slider(int x)
@@ -151,6 +179,14 @@ void Instrument_properties::set_transpose_slider(int x)
 void Instrument_properties::set_finetune_slider(int x)
 {
     t->sample[t->s_pos].fine_tune = ((x - finetune_sliderbox.slide.x) / (finetune_sliderbox.slide.w / 25)) - 12;
+    setup_tuning_sliders();
+}
+
+void Instrument_properties::set_midi_slider(int x)
+{
+    t->sample[t->s_pos].midi = ((x - midi_sliderbox.slide.x) / (midi_sliderbox.slide.w / 17));
+    if (t->sample[t->s_pos].midi > 16) {t->sample[t->s_pos].midi = 16;}
+    else if (t->sample[t->s_pos].midi < 0) {t->sample[t->s_pos].midi = 0;}
     setup_tuning_sliders();
 }
 
@@ -206,6 +242,9 @@ void Instrument_properties::refresh()
     SDL_RenderCopy(render, volume_label.t,    NULL, &volume_label.r);
     SDL_RenderDrawRect(render, &volume_sliderbox.slide);
     SDL_RenderFillRect(render, &volume_sliderbox.pos);
+    SDL_RenderCopy(render, midi_label.t,    NULL, &midi_label.r);
+    SDL_RenderDrawRect(render, &midi_sliderbox.slide);
+    SDL_RenderFillRect(render, &midi_sliderbox.pos);
 
     SDL_RenderPresent(render); // Present image to screen
 }
@@ -252,6 +291,8 @@ void Instrument_properties::mouse(int x, int y)
         set_transpose_slider(x);
     } else if (checkButton(x, y, &finetune_sliderbox.slide)) {
         set_finetune_slider(x);
+    } else if (checkButton(x, y, &midi_sliderbox.slide)) {
+        set_midi_slider(x);
     } else if (checkButton(x, y, &samplename_entry.r))
     {
         samplename_entry.active = true;

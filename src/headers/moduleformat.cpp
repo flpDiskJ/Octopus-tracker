@@ -43,7 +43,7 @@ void ModuleFormat::setup_mod_head()
     header.number_of_samples = 0;
     for (int x = 0; x < MAXSAMPLES; x++)
     {
-        if (t->sample[x].len > 0)
+        if (t->sample[x].len > 0 || t->sample[x].midi > 0)
         {
             header.number_of_samples++;
         }
@@ -108,6 +108,7 @@ bool ModuleFormat::save_module(string path)
     {
         return false;
     }
+    id.identifier[3] = 'M';
 
     fwrite(&id, sizeof(Octo_ID), 1, fp);
 
@@ -132,11 +133,14 @@ bool ModuleFormat::save_module(string path)
 
     for (int s = 0; s < MAXSAMPLES; s++)
     {
-        if (t->sample[s].len > 0)
+        if (t->sample[s].len > 0 || t->sample[s].midi > 0)
         {
             setup_sample_head(s);
             fwrite(&sample_spec_m, sizeof(SampleHead_MIDI), 1, fp);
-            fwrite(t->sample[s].data, sizeof(Sint16), sample_spec_m.length, fp);
+            if (t->sample[s].len > 0)
+            {
+                fwrite(t->sample[s].data, sizeof(Sint16), sample_spec_m.length, fp);
+            }
         }
     }
 
@@ -209,6 +213,7 @@ bool ModuleFormat::load_module(string path)
 
     if (old_type)
     {
+        cout << "pre-midi module\n";
         for (int s = 0; s < header.number_of_samples; s++)
         {
             fread(&sample_spec, sizeof(SampleHead), 1, fp);
@@ -249,8 +254,11 @@ bool ModuleFormat::load_module(string path)
             {
                 free(t->sample[sample_spec_m.index].data);
             }
-            t->sample[sample_spec_m.index].data = (Sint16*)malloc(sizeof(Sint16)*sample_spec_m.length);
-            fread(t->sample[sample_spec_m.index].data, sizeof(Sint16), sample_spec_m.length, fp);
+            if (sample_spec_m.length > 0)
+            {
+                t->sample[sample_spec_m.index].data = (Sint16*)malloc(sizeof(Sint16)*sample_spec_m.length);
+                fread(t->sample[sample_spec_m.index].data, sizeof(Sint16), sample_spec_m.length, fp);
+            }
         }
     }
 
