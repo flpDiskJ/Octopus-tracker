@@ -79,24 +79,25 @@ void ModuleFormat::setup_block_note(int b, int c, int s)
 
 void ModuleFormat::setup_sample_head(int index)
 {
-    sample_spec.index = (Uint8)index;
+    sample_spec_m.index = (Uint8)index;
 
     if (t->sample[index].name.length() >= 20)
     {
-        strncpy(sample_spec.name, t->sample[index].name.c_str(), 20);
-        sample_spec.name[19] = '\0';
+        strncpy(sample_spec_m.name, t->sample[index].name.c_str(), 20);
+        sample_spec_m.name[19] = '\0';
     } else {
-        strncpy(sample_spec.name, t->sample[index].name.c_str(), t->sample[index].name.length());
-        sample_spec.name[t->sample[index].name.length()] = '\0';
+        strncpy(sample_spec_m.name, t->sample[index].name.c_str(), t->sample[index].name.length());
+        sample_spec_m.name[t->sample[index].name.length()] = '\0';
     }
 
-    sample_spec.length = t->sample[index].len;
-    sample_spec.level = t->sample[index].level;
-    sample_spec.transpose = t->sample[index].tune;
-    sample_spec.finetune = t->sample[index].fine_tune;
-    sample_spec.loop = t->sample[index].loop;
-    sample_spec.loop_point = t->sample[index].loop_point;
-    sample_spec.original_rate = t->sample[index].sample_rate;
+    sample_spec_m.length = t->sample[index].len;
+    sample_spec_m.level = t->sample[index].level;
+    sample_spec_m.transpose = t->sample[index].tune;
+    sample_spec_m.finetune = t->sample[index].fine_tune;
+    sample_spec_m.loop = t->sample[index].loop;
+    sample_spec_m.loop_point = t->sample[index].loop_point;
+    sample_spec_m.original_rate = t->sample[index].sample_rate;
+    sample_spec_m.midi = t->sample[index].midi;
 }
 
 bool ModuleFormat::save_module(string path)
@@ -134,8 +135,8 @@ bool ModuleFormat::save_module(string path)
         if (t->sample[s].len > 0)
         {
             setup_sample_head(s);
-            fwrite(&sample_spec, sizeof(SampleHead), 1, fp);
-            fwrite(t->sample[s].data, sizeof(Sint16), sample_spec.length, fp);
+            fwrite(&sample_spec_m, sizeof(SampleHead_MIDI), 1, fp);
+            fwrite(t->sample[s].data, sizeof(Sint16), sample_spec_m.length, fp);
         }
     }
 
@@ -153,10 +154,16 @@ bool ModuleFormat::load_module(string path)
 
     fread(&id, sizeof(Octo_ID), 1, fp);
 
-    if (id.identifier[0] != 'O' || id.identifier[1] != 'C' || id.identifier[2] != 'T' || id.identifier[3] != 'O')
+    if (id.identifier[0] != 'O' || id.identifier[1] != 'C' || id.identifier[2] != 'T')
     {
         fclose(fp);
         return false;
+    }
+
+    bool old_type = false;
+    if (id.identifier[3] == 'O')
+    {
+        old_type = true;
     }
 
     fread(&header, sizeof(ModuleHead), 1, fp);
@@ -200,25 +207,51 @@ bool ModuleFormat::load_module(string path)
         }
     }
 
-    for (int s = 0; s < header.number_of_samples; s++)
+    if (old_type)
     {
-        fread(&sample_spec, sizeof(SampleHead), 1, fp);
-        t->sample[sample_spec.index].name.clear();
-        t->sample[sample_spec.index].name = string(sample_spec.name);
-        t->sample[sample_spec.index].len = sample_spec.length;
-        t->sample[sample_spec.index].level = sample_spec.level;
-        t->sample[sample_spec.index].tune = sample_spec.transpose;
-        t->sample[sample_spec.index].fine_tune = sample_spec.finetune;
-        t->sample[sample_spec.index].loop = sample_spec.loop;
-        t->sample[sample_spec.index].loop_point = sample_spec.loop_point;
-        t->sample[sample_spec.index].sample_rate = sample_spec.original_rate;
-
-        if (t->sample[sample_spec.index].data != NULL)
+        for (int s = 0; s < header.number_of_samples; s++)
         {
-            free(t->sample[sample_spec.index].data);
+            fread(&sample_spec, sizeof(SampleHead), 1, fp);
+            t->sample[sample_spec.index].name.clear();
+            t->sample[sample_spec.index].name = string(sample_spec.name);
+            t->sample[sample_spec.index].len = sample_spec.length;
+            t->sample[sample_spec.index].level = sample_spec.level;
+            t->sample[sample_spec.index].tune = sample_spec.transpose;
+            t->sample[sample_spec.index].fine_tune = sample_spec.finetune;
+            t->sample[sample_spec.index].loop = sample_spec.loop;
+            t->sample[sample_spec.index].loop_point = sample_spec.loop_point;
+            t->sample[sample_spec.index].sample_rate = sample_spec.original_rate;
+
+            if (t->sample[sample_spec.index].data != NULL)
+            {
+                free(t->sample[sample_spec.index].data);
+            }
+            t->sample[sample_spec.index].data = (Sint16*)malloc(sizeof(Sint16)*sample_spec.length);
+            fread(t->sample[sample_spec.index].data, sizeof(Sint16), sample_spec.length, fp);
         }
-        t->sample[sample_spec.index].data = (Sint16*)malloc(sizeof(Sint16)*sample_spec.length);
-        fread(t->sample[sample_spec.index].data, sizeof(Sint16), sample_spec.length, fp);
+    } else
+    {
+        for (int s = 0; s < header.number_of_samples; s++)
+        {
+            fread(&sample_spec_m, sizeof(SampleHead_MIDI), 1, fp);
+            t->sample[sample_spec_m.index].name.clear();
+            t->sample[sample_spec_m.index].name = string(sample_spec_m.name);
+            t->sample[sample_spec_m.index].len = sample_spec_m.length;
+            t->sample[sample_spec_m.index].level = sample_spec_m.level;
+            t->sample[sample_spec_m.index].tune = sample_spec_m.transpose;
+            t->sample[sample_spec_m.index].fine_tune = sample_spec_m.finetune;
+            t->sample[sample_spec_m.index].loop = sample_spec_m.loop;
+            t->sample[sample_spec_m.index].loop_point = sample_spec_m.loop_point;
+            t->sample[sample_spec_m.index].sample_rate = sample_spec_m.original_rate;
+            t->sample[sample_spec_m.index].midi = sample_spec_m.midi;
+
+            if (t->sample[sample_spec_m.index].data != NULL)
+            {
+                free(t->sample[sample_spec_m.index].data);
+            }
+            t->sample[sample_spec_m.index].data = (Sint16*)malloc(sizeof(Sint16)*sample_spec_m.length);
+            fread(t->sample[sample_spec_m.index].data, sizeof(Sint16), sample_spec_m.length, fp);
+        }
     }
 
     fclose(fp);

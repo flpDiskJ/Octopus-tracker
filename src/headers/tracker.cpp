@@ -106,6 +106,7 @@ Tracker::Tracker(SDL_Renderer *tracker_renderer, TTF_Font *gFont, Pallet *pallet
         sample[s].tune = 0;
         sample[s].fine_tune = 0;
         sample[s].data = NULL;
+        sample[s].midi = 0;
     }
 
     for (int b = 0; b < MAXBLOCKS; b++)
@@ -440,6 +441,13 @@ void Tracker::note_trigger()
     {
         if (block[b_pos].channel[c][pos].note != '-')
         {
+            if (midi_active)
+            {
+                midi_send(block[b_pos].channel[c][pos].note,
+                    block[b_pos].channel[c][pos].key,
+                    block[b_pos].channel[c][pos].octave,
+                    block[b_pos].channel[c][pos].sample);
+            }
             if (check_command(c, "03"))
             {
                 channel[c].slide_target = getFreq(block[b_pos].channel[c][pos].note,
@@ -1752,9 +1760,50 @@ void Tracker::midi_init()
     {
         midi_initiated = true;
 
-        
+        libremidi::observer obs;
+        bool i = true;
+        for (const libremidi::output_port& p : obs.get_output_ports())
+        {
+            if (i)
+            {
+                // Open default midi port.
+                midi_output.open_port(p);
+                i = false;
+            }
+            cout << p.port_name << "\n";
+        }
 
     }
+}
+
+void Tracker::midi_send(char note, char key, int octave, int inst)
+{
+    if (note == '-') {return;}
+    Uint8 midi_channel = sample[inst].midi;
+    if (midi_channel == 0)
+    {
+        return;
+    }
+    Uint8 midi_note;
+    Uint8 midi_velocity = sample[inst].level * 2;
+    if (midi_velocity == 128) {midi_velocity--;}
+    switch (note)
+    {
+        case 'C': if (key == '#') {midi_note = 25;} else {midi_note = 24;} break;
+        case 'D': if (key == '#') {midi_note = 27;} else {midi_note = 26;} break;
+        case 'E': midi_note = 28; break;
+        case 'F': if (key == '#') {midi_note = 30;} else {midi_note = 29;} break;
+        case 'G': if (key == '#') {midi_note = 32;} else {midi_note = 31;} break;
+        case 'A': if (key == '#') {midi_note = 34;} else {midi_note = 33;} break;
+        case 'B': midi_note = 35; break;
+        default: midi_note =  0; break;
+    }
+    for (int a = 1; a < octave; a++)
+    {
+        midi_note += 12;
+    }
+
+    midi_output.send_message(libremidi::channel_events::note_on(midi_channel, midi_note, midi_velocity));
 }
 
 void Tracker::clear_step()
@@ -1993,6 +2042,7 @@ void Tracker::keyboard(SDL_Event *e)
             if (SDL_GetModState() & KMOD_CTRL)
             {
                 midi_active = !midi_active;
+                midi_init();
                 render_info();
             }
             get_note(e);

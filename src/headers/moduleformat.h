@@ -28,7 +28,7 @@ class ModuleFormat{
 private:
 
     struct Octo_ID{
-        char identifier[5] = {'O', 'C', 'T', 'O'};
+        char identifier[5] = {'O', 'C', 'T', 'M'}; // "OCTO" = old pre-midi. "OCTM" = midi.
     };
 
     struct ModuleHead{
@@ -57,7 +57,7 @@ private:
         char parameter[3];
     };
 
-    struct SampleHead{
+    struct SampleHead{ // pre-midi for backwards compatibility
         Uint8 index; // sample slot
         char name[20];
         Uint32 length;
@@ -69,12 +69,26 @@ private:
         Uint16 original_rate;
     };
 
+    struct SampleHead_MIDI{
+        Uint8 index; // sample slot
+        char name[20];
+        Uint32 length;
+        Uint8 level;
+        Sint8 transpose;
+        Sint8 finetune;
+        Uint8 loop;
+        Uint32 loop_point;
+        Uint16 original_rate;
+        Uint8 midi;
+    };
+
     Tracker *t;
     AudioW *aworks;
     ModuleHead header;
     BlockHead block_spec;
     BlockNote note_data;
     SampleHead sample_spec;
+    SampleHead_MIDI sample_spec_m;
     Octo_ID id;
 
     void setup_mod_head();

@@ -49,6 +49,7 @@ private:
         Uint16 sample_rate = 0;
         Uint8 loop = 0; // 0 = no loop, 1 = normal loop, 2 = ping pong
         Uint32 loop_point = 0;
+        Uint8 midi = 0;
     };
 
     struct Channel{ // set these values when note is triggered
@@ -134,11 +135,12 @@ private:
     SDL_Texture *special;
     bool enlighten = false;
 
-    bool midi_active = false;
+    // midi
     SDL_Rect midi_indicator;
     SDL_Texture *midi_indicator_t_active;
     SDL_Texture *midi_indicator_t_inactive;
     bool midi_initiated = false;
+    libremidi::midi_out midi_output;
 
     bool check_command(int c, const char *command);
 
@@ -186,6 +188,7 @@ private:
 public:
 
     bool edit_mode = false;
+    bool midi_active = false;
     Block block[MAXBLOCKS]; // static array of blocks
     Block block_buffer; // used to copy blocks
     Buffer channel_buffer; // used to copy channels
@@ -248,6 +251,8 @@ public:
     ~Tracker(); // default destructor, cleans up memory for Tracker object
 
     void update_timer();
+
+    void midi_send(char note, char key, int octave, int inst);
 
     void note_trigger(); // triggers all valid notes in step positon
 

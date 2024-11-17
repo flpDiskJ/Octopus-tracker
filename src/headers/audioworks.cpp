@@ -99,6 +99,10 @@ void AudioW::play_note(SDL_Event *e)
             oct = 0;
             break;
     }
+    if (t->midi_active)
+    {
+        t->midi_send(note, key, oct, t->s_pos);
+    }
     if (oct != 0 && t->sample[t->s_pos].len != 0)
     {
         t->channel[t->cursor_channel].pos = 0;
@@ -157,6 +161,10 @@ void AudioW::play_sample(SDL_Event *e, int sample, Uint32 range_start)
         default:
             oct = 0;
             break;
+    }
+    if (t->midi_active)
+    {
+        t->midi_send(note, key, oct, sample);
     }
     if (note != '-' && t->sample[sample].len != 0)
     {
