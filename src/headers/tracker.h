@@ -254,6 +254,8 @@ public:
 
     void midi_init();
 
+    void midi_kill();
+
     void midi_send(char note, char key, int octave, int inst, int c);
 
     void note_trigger(); // triggers all valid notes in step positon

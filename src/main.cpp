@@ -320,6 +320,10 @@ int main(int argc, char* args[]) {
                             audio_buffer.stop = true;
                             tracker.tracker_running = false;
                             tracker.run_sequence = false;
+                            if (tracker.midi_active)
+                            {
+                                tracker.midi_kill();
+                            }
                         }
                     }
                     if (sequence_list.get_state() & SDL_WINDOW_INPUT_FOCUS)
