@@ -173,7 +173,7 @@ HelpWindow::HelpWindow(TTF_Font *f, Pallet *p)
         keyboardInfoRects[i].x = 60;
         keyboardInfoRects[i].y = (i * 25) + 60;
         keyboardInfoRects[i].h = 20;
-        keyboardInfoRects[i].w = keyboardInfo[i].length() * CHAR_WIDTH; // calculate this from text length for window startup
+        keyboardInfoRects[i].w = keyboardInfo[i].length() * CH_WIDTH; // calculate this from text length for window startup
     }
 
 }
@@ -209,7 +209,7 @@ void HelpWindow::refresh()
         for (unsigned int r = 0, t = scroll_offset; r < KEYBOARD_LINES; r++, t++) {
             if (t < keyboardInfoTextures.size())
             {
-                keyboardInfoRects[r].w = keyboardInfo[t].length() * CHAR_WIDTH;
+                keyboardInfoRects[r].w = keyboardInfo[t].length() * CH_WIDTH;
                 SDL_RenderCopy(render, keyboardInfoTextures[t], NULL, &keyboardInfoRects[r]);
             }
         }
@@ -252,7 +252,7 @@ line HelpWindow::getLine(string s, unsigned int y) {
     surf = TTF_RenderText_Solid(font, s.c_str(), pallet->black);
     l.t = SDL_CreateTextureFromSurface(render, surf); // add texture to list struct
     SDL_FreeSurface(surf);
-    l.r.w = s.length() * CHAR_WIDTH;
+    l.r.w = s.length() * CH_WIDTH;
     l.r.h = 20;
     l.r.x = 60;
     l.r.y = (y * 25) + 60;

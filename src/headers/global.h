@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
+#include <libremidi/libremidi.hpp>
 using namespace std;
 
 //// Customable

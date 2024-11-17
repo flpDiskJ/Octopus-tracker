@@ -5,7 +5,6 @@
 #include "lord.h"
 #include <thread>
 #include <chrono>
-#include <libremidi/libremidi-c.h>
 
 class Tracker
 {

@@ -5,6 +5,7 @@ INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 PKG_SEARCH_MODULE(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
 
+set(CMAKE_CXX_STANDARD 20)
 set(SRC ${CMAKE_SOURCE_DIR}/src)
 
 add_subdirectory(${SRC}/include/libremidi)

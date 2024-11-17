@@ -1,6 +1,6 @@
 #pragma once
 
-#define CHAR_WIDTH 10
+#define CH_WIDTH 10
 #define KEYBOARD_LINES 21
 
 #include "global.h"
