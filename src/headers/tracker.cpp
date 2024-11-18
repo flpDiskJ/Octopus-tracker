@@ -1791,7 +1791,7 @@ void Tracker::midi_kill()
     {
         if (sample[channel[c].sample].midi > 0)
         {
-            midi_output.send_message(libremidi::channel_events::note_on(sample[channel[c].sample].midi,
+            midi_output.send_message(libremidi::channel_events::note_off(sample[channel[c].sample].midi,
                 channel[c].active_midi_note,
                 0));
         }
@@ -1808,7 +1808,7 @@ void Tracker::midi_send(char note, char key, int octave, int inst, int c)
     }
     if (sample[channel[c].sample].midi > 0)
     {
-        midi_output.send_message(libremidi::channel_events::note_on(sample[channel[c].sample].midi,
+        midi_output.send_message(libremidi::channel_events::note_off(sample[channel[c].sample].midi,
             channel[c].active_midi_note,
             0));
     }
@@ -1835,6 +1835,7 @@ void Tracker::midi_send(char note, char key, int octave, int inst, int c)
         midi_note += 12;
     }
     channel[c].active_midi_note = midi_note;
+    channel[c].sample = inst;
     midi_output.send_message(libremidi::channel_events::note_on(midi_channel, midi_note, midi_velocity));
 }
 
