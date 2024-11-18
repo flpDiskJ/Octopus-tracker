@@ -1835,9 +1835,10 @@ void Tracker::midi_send(char note, char key, int octave, int inst, int c)
     {
         midi_note += 12;
     }
+    midi_output.send_message(libremidi::channel_events::note_on(midi_channel, midi_note, midi_velocity));
     channel[c].active_midi_note = midi_note;
     channel[c].sample = inst;
-    midi_output.send_message(libremidi::channel_events::note_on(midi_channel, midi_note, midi_velocity));
+    trigger_bars[c].h = 300;
 }
 
 void Tracker::clear_step()
