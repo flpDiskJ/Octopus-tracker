@@ -1801,6 +1801,7 @@ void Tracker::midi_kill()
 void Tracker::midi_send(char note, char key, int octave, int inst, int c)
 {
     if (note == '-') {return;}
+    if (mute[c]) {return;}
     Uint8 midi_channel = sample[inst].midi;
     if (midi_channel == 0)
     {
@@ -1906,6 +1907,15 @@ void Tracker::mouse(int x, int y)
             if (checkButton(&scope[c].r, x, y))
             {
                 mute[c] = !mute[c];
+                if (mute[c])
+                {
+                    if (sample[channel[c].sample].midi > 0)
+                    {
+                        midi_output.send_message(libremidi::channel_events::note_off(sample[channel[c].sample].midi,
+                            channel[c].active_midi_note,
+                            0));
+                    }
+                }
             }
         }
     }
