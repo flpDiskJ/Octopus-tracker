@@ -17,7 +17,7 @@ Midi:
 
 Debian:
 sudo apt install libsdl2-dev
-sudo apt install libsdl-ttf-dev
+sudo apt install libsdl2-ttf-dev
 
 fedora:
 sudo dmf install SDL2 SDL2-devel
