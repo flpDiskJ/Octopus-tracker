@@ -11,9 +11,9 @@ DiskOp::DiskOp(Tracker *tracker, Sample_edit *sampler, AudioW *a, ModuleFormat *
     pallet = p;
 
     // read from config eventually
-    parent[MOD_PATH] = "/home/";
-    parent[SAMPLE_PATH] = "/home/";
-    parent[EXPORT_PATH] = "/home/";
+    parent[MOD_PATH] = "/";
+    parent[SAMPLE_PATH] = "/";
+    parent[EXPORT_PATH] = "/";
 
     // initialize window and renderer
     window = SDL_CreateWindow("Disk Op", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -193,6 +193,7 @@ bool DiskOp::load_default_paths()
     if (fp == NULL)
     {
         printf("Error loading default paths config! (This can be ignored if you haven't set default paths)\n");
+	printf("path: %s\n", file_path);
         return false;
     }
 
