@@ -1,8 +1,10 @@
 #pragma once
 
+#if !defined(LIBREMIDI_USE_MODULES)
 #include <libremidi/libremidi.hpp>
 // Credits to https://raw.githubusercontent.com/atsushieno/cmidi2
 #include <libremidi/cmidi2.hpp>
+#endif
 #if LIBREMIDI_USE_NI_MIDI2
   #include <midi/universal_packet.h>
 #endif
@@ -10,7 +12,72 @@
 #include "3rdparty/args.hxx"
 
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
+#include <variant>
+
+inline std::ostream& operator<<(std::ostream& s, libremidi::port_information::port_type t)
+{
+  if (t & libremidi::transport_type::software)
+  {
+    s << "software";
+    if (t & libremidi::transport_type::loopback)
+      s << ", loopback";
+  }
+
+  if (t & libremidi::transport_type::hardware)
+  {
+    s << "hardware";
+    if (t & libremidi::transport_type::usb)
+      s << ", usb";
+    if (t & libremidi::transport_type::bluetooth)
+      s << ", bt";
+    if (t & libremidi::transport_type::pci)
+      s << ", pci";
+  }
+
+  if (t & libremidi::transport_type::network)
+    s << "network";
+  return s;
+}
+
+inline std::ostream& operator<<(std::ostream& s, const libremidi::container_identifier& id)
+{
+  struct
+  {
+    std::ostream& s;
+    void operator()(libremidi::uuid u) { s << "uuid"; }
+    void operator()(std::string u) { s << u; }
+    void operator()(uint64_t u) { s << u; }
+    void operator()(libremidi::monostate) { }
+  } vis{s};
+  visit(vis, id);
+  return s;
+}
+
+inline std::ostream& operator<<(std::ostream& s, const libremidi::device_identifier& id)
+{
+  struct
+  {
+    std::ostream& s;
+    void operator()(const std::string& u) { s << u; }
+    void operator()(libremidi::usb_device_identifier u)
+    {
+      s << u.vendor_id << ":" << u.product_id;
+    }
+    void operator()(uint64_t u)
+    {
+      auto res = static_cast<uint32_t>(u);
+      std::ios_base::fmtflags f(s.flags());
+      s << std::hex << std::setfill('0') << std::setw(4) << (res >> 16) << ":" << std::hex
+        << std::setfill('0') << std::setw(4) << (res & 0x0000FFFF);
+      s.flags(f);
+    }
+    void operator()(libremidi::monostate) { }
+  } vis{s};
+  visit(vis, id);
+  return s;
+}
 
 inline std::ostream& operator<<(std::ostream& s, const libremidi::message& message)
 {
@@ -28,24 +95,61 @@ inline std::ostream& operator<<(std::ostream& s, const libremidi::ump& message)
 {
   const cmidi2_ump* b = message;
   int bytes = cmidi2_ump_get_num_bytes(message.data[0]);
+  int mode = cmidi2_ump_get_message_type(b);
   int group = cmidi2_ump_get_group(b);
   int status = cmidi2_ump_get_status_code(b);
   int channel = cmidi2_ump_get_channel(b);
-  s << "[ " << bytes << " | " << group;
+  auto mode_to_str = [mode]() {
+    switch (mode)
+    {
+      case CMIDI2_MESSAGE_TYPE_UTILITY:
+        return "0=utility";
+      case CMIDI2_MESSAGE_TYPE_SYSTEM:
+        return "1=system";
+      case CMIDI2_MESSAGE_TYPE_MIDI_1_CHANNEL:
+        return "2=m1channel";
+      case CMIDI2_MESSAGE_TYPE_SYSEX7:
+        return "3=sysex7";
+      case CMIDI2_MESSAGE_TYPE_MIDI_2_CHANNEL:
+        return "4=m2channel";
+      case CMIDI2_MESSAGE_TYPE_SYSEX8_MDS:
+        return "5=sysex8";
+      case CMIDI2_MESSAGE_TYPE_FLEX_DATA:
+        return "D=flexdata";
+      case CMIDI2_MESSAGE_TYPE_UMP_STREAM:
+        return "F=stream";
+      default:
+        return "unknown";
+    }
+  };
+  s << "[ b:" << bytes << " | m:" << mode_to_str() << " | g:" << group;
 
   switch ((libremidi::message_type)status)
   {
     case libremidi::message_type::NOTE_ON:
-      s << " | note on: " << channel << (int)cmidi2_ump_get_midi2_note_note(b) << " | "
+      s << " | note on: c" << channel << " n" << (int)cmidi2_ump_get_midi2_note_note(b) << " v"
         << cmidi2_ump_get_midi2_note_velocity(b);
       break;
     case libremidi::message_type::NOTE_OFF:
-      s << " | note off: " << channel << (int)cmidi2_ump_get_midi2_note_note(b) << " | "
+      s << " | note off: c" << channel << " n" << (int)cmidi2_ump_get_midi2_note_note(b) << " v"
         << cmidi2_ump_get_midi2_note_velocity(b);
       break;
     case libremidi::message_type::CONTROL_CHANGE:
-      s << " | cc: " << channel << (int)cmidi2_ump_get_midi2_cc_index(b) << " | "
+      s << " | cc: c" << channel << " i" << (int)cmidi2_ump_get_midi2_cc_index(b) << " v"
         << cmidi2_ump_get_midi2_cc_data(b);
+      break;
+    case libremidi::message_type::PITCH_BEND:
+      s << " | pb: c" << channel << " v" << (int)cmidi2_ump_get_midi2_pitch_bend_data(b);
+      break;
+    case libremidi::message_type::POLY_PRESSURE:
+      s << " | pp: c" << channel << " n" << (int)cmidi2_ump_get_midi2_paf_note(b) << " v"
+        << (int)cmidi2_ump_get_midi2_paf_data(b);
+      break;
+    case libremidi::message_type::AFTERTOUCH:
+      s << " | at: c" << channel << " v" << (int)cmidi2_ump_get_midi2_caf_data(b);
+      break;
+    case libremidi::message_type::PROGRAM_CHANGE:
+      s << " | pc: c" << channel << " v" << (int)cmidi2_ump_get_midi2_program_program(b);
       break;
 
     default:
@@ -60,16 +164,29 @@ inline std::ostream& operator<<(std::ostream& s, const libremidi::ump& message)
 
 inline std::ostream& operator<<(std::ostream& s, const libremidi::port_information& rhs)
 {
-  s << "[ client: " << rhs.client << ", port: " << rhs.port;
+  s << "[ client: " << rhs.client;
+  if (rhs.container.index() > 0)
+    s << "\n    , container: " << rhs.container;
+  if (rhs.device.index() > 0)
+    s << "\n    , device_id: " << rhs.device;
+
+  s << "\n    , port: " << rhs.port;
+
   if (!rhs.manufacturer.empty())
-    s << ", manufacturer: " << rhs.manufacturer;
+    s << "\n    , manufacturer: " << rhs.manufacturer;
+  if (!rhs.product.empty())
+    s << "\n    , product: " << rhs.product;
+  if (!rhs.serial.empty())
+    s << "\n    , serial: " << rhs.serial;
   if (!rhs.device_name.empty())
-    s << ", device: " << rhs.device_name;
+    s << "\n    , device_name: " << rhs.device_name;
   if (!rhs.port_name.empty())
-    s << ", portname: " << rhs.port_name;
+    s << "\n    , port_name: " << rhs.port_name;
   if (!rhs.display_name.empty())
-    s << ", display: " << rhs.display_name;
-  return s << "]";
+    s << "\n    , display_name: " << rhs.display_name;
+  if (rhs.type != libremidi::transport_type::unknown)
+    s << "\n    , type: " << rhs.type;
+  return s << "\n  ]";
 }
 
 namespace libremidi::examples

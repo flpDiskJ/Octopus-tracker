@@ -4,13 +4,12 @@
 #include <libremidi/detail/midi_in.hpp>
 #include <libremidi/detail/midi_stream_decoder.hpp>
 
-#include <chrono>
-
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class midi_in_jack final
     : public midi1::in_api
     , public jack_helpers
+    , public jack_midi1
     , public error_handler
 {
 public:
@@ -46,15 +45,16 @@ public:
 
   stdx::error open_port(const input_port& port, std::string_view portName) override
   {
-    if (auto err = create_local_port(*this, portName, JackPortIsInput); err != stdx::error{})
+    if (auto err = create_local_port(*this, portName, port_type, JackPortIsInput);
+        err != stdx::error{})
       return err;
 
     if (int err = jack_connect(this->client, port.port_name.c_str(), jack_port_name(this->port));
         err != 0 && err != EEXIST)
     {
       libremidi_handle_error(
-          configuration, "could not connect to port: " + port.port_name + " -> "
-                             + jack_port_name(this->port));
+          configuration,
+          "could not connect to port: " + port.port_name + " -> " + jack_port_name(this->port));
       return from_errc(err);
     }
     return stdx::error{};
@@ -62,7 +62,7 @@ public:
 
   stdx::error open_virtual_port(std::string_view portName) override
   {
-    return create_local_port(*this, portName, JackPortIsInput);
+    return create_local_port(*this, portName, port_type, JackPortIsInput);
   }
 
   stdx::error close_port() override { return do_close_port(); }
@@ -96,8 +96,8 @@ public:
         this->client, &current_frames, &current_usecs, &next_usecs, &period_usecs);
 
     // We have midi events in buffer
-    uint32_t evCount = jack_midi_get_event_count(buff);
-    for (uint32_t j = 0; j < evCount; j++)
+    uint32_t ev_count = jack_midi_get_event_count(buff);
+    for (uint32_t j = 0; j < ev_count; j++)
     {
       jack_midi_event_t event{};
       jack_midi_event_get(&event, buff, j);

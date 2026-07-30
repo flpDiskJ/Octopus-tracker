@@ -1,13 +1,13 @@
 #pragma once
 #include <libremidi/api.hpp>
 #include <libremidi/config.hpp>
-#include <libremidi/observer_configuration.hpp>
 #include <libremidi/error_handler.hpp>
+#include <libremidi/observer_configuration.hpp>
 
 #include <memory>
 #include <vector>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class observer_api
 {

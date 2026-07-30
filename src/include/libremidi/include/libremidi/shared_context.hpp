@@ -1,10 +1,8 @@
 #pragma once
 #include <libremidi/api.hpp>
-#include <libremidi/config.hpp>
+#include <libremidi/configurations.hpp>
 
-#include <any>
-
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 
 class shared_context
@@ -24,7 +22,9 @@ public:
 struct shared_configurations
 {
   std::shared_ptr<shared_context> context;
-  std::any observer, in, out;
+  observer_api_configuration observer;
+  input_api_configuration in;
+  output_api_configuration out;
 };
 
 LIBREMIDI_EXPORT

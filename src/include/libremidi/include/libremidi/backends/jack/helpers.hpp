@@ -5,9 +5,11 @@
 #include <libremidi/detail/semaphore.hpp>
 
 #include <atomic>
-#include <semaphore>
+#include <cstdint>
+#include <cstring>
+#include <memory>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 struct jack_client
 {
@@ -39,31 +41,32 @@ struct jack_client
     }
   }
 
-  template <bool Input>
+  template <bool Input, libremidi::API Api>
   static auto to_port_info(jack_client_t* client, jack_port_t* port)
       -> std::conditional_t<Input, input_port, output_port>
   {
     return {{
+        .api = Api,
         .client = reinterpret_cast<std::uintptr_t>(client),
         .port = 0,
         .manufacturer = "",
-        .device_name = "",
+        .device_name = jack_get_client_name(client),
         .port_name = jack_port_name(port),
         .display_name = get_port_display_name(port),
     }};
   }
 
-  template <bool Input>
-  static auto
-  get_ports(jack_client_t* client, const char* pattern, const JackPortFlags flags) noexcept
-      -> std::vector<std::conditional_t<Input, input_port, output_port>>
+  template <bool Input, libremidi::API Api>
+  static auto get_ports(
+      jack_client_t* client, const char* pattern, const char* type, const JackPortFlags flags,
+      bool midi2) noexcept -> std::vector<std::conditional_t<Input, input_port, output_port>>
   {
     std::vector<std::conditional_t<Input, input_port, output_port>> ret;
 
     if (!client)
       return {};
 
-    const char** ports = jack_get_ports(client, pattern, JACK_DEFAULT_MIDI_TYPE, flags);
+    const char** ports = jack_get_ports(client, pattern, type, flags);
 
     if (ports == nullptr)
       return {};
@@ -73,7 +76,11 @@ struct jack_client
     {
       // FIXME this does not take into account filtering sw / hw ports
       auto port = jack_port_by_name(client, ports[i]);
-      ret.push_back(to_port_info<Input>(client, port));
+      if (port)
+      {
+        if (bool(midi2) == bool(jack_port_flags(port) & 0x20))
+          ret.push_back(to_port_info<Input, Api>(client, port));
+      }
       i++;
     }
 
@@ -131,13 +138,13 @@ struct jack_helpers : jack_client
       configuration.set_process_func(
           {.token = this_instance,
            .callback = [&self, p = std::weak_ptr{this->port.impl}](jack_nframes_t nf) -> int {
-             if (auto pt = p.lock())
-               if (auto ppt = pt->load())
-                 self.process(nf);
+        if (auto pt = p.lock())
+          if (pt->load())
+            self.process(nf);
 
-             self.thread_lock.check_client_released();
-             return 0;
-           }});
+        self.thread_lock.check_client_released();
+        return 0;
+      }});
 
       this->client = configuration.context;
       return jack_status_t{};
@@ -149,26 +156,25 @@ struct jack_helpers : jack_client
           = jack_client_open(configuration.client_name.c_str(), JackNoStartServer, &status);
       if (this->client != nullptr)
       {
-        if(status & JackNameNotUnique) {
-          self.libremidi_handle_warning(self.configuration, "JACK client with the same name already exists, renamed.");
+        if (status & JackNameNotUnique)
+        {
+          self.libremidi_handle_warning(
+              self.configuration, "JACK client with the same name already exists, renamed.");
         }
 
-        jack_set_process_callback(
-            this->client,
-            +[](jack_nframes_t nf, void* ctx) -> int {
-              auto& self = *static_cast<Self*>(ctx);
-              jack_port_t* port = self.port;
+        jack_set_process_callback(this->client, +[](jack_nframes_t nf, void* ctx) -> int {
+          auto& self = *static_cast<Self*>(ctx);
+          jack_port_t* port = self.port;
 
-              // Is port created?
-              if (port == nullptr)
-                return 0;
+          // Is port created?
+          if (port == nullptr)
+            return 0;
 
-              self.process(nf);
+          self.process(nf);
 
-              self.thread_lock.check_client_released();
-              return 0;
-            },
-            &self);
+          self.thread_lock.check_client_released();
+          return 0;
+        }, &self);
         jack_activate(this->client);
       }
       return status;
@@ -192,8 +198,8 @@ struct jack_helpers : jack_client
     self.client_open_ = std::errc::not_connected;
   }
 
-  stdx::error
-  create_local_port(const auto& self, std::string_view portName, JackPortFlags flags)
+  stdx::error create_local_port(
+      const auto& self, std::string_view portName, const char* type, JackPortFlags flags)
   {
     // full name: "client_name:port_name\0"
     if (portName.empty())
@@ -202,15 +208,13 @@ struct jack_helpers : jack_client
     if (self.configuration.client_name.size() + portName.size() + 2u
         >= static_cast<size_t>(jack_port_name_size()))
     {
-      self.libremidi_handle_error(
-          self.configuration, "port name length limit exceeded");
+      self.libremidi_handle_error(self.configuration, "port name length limit exceeded");
       return std::errc::invalid_argument;
     }
 
     if (!this->port)
     {
-      this->port
-          = jack_port_register(this->client, portName.data(), JACK_DEFAULT_MIDI_TYPE, flags, 0);
+      this->port = jack_port_register(this->client, portName.data(), type, flags, 0);
     }
 
     if (!this->port)
@@ -237,5 +241,78 @@ struct jack_helpers : jack_client
     int err = jack_port_unregister(this->client, port_ptr);
     return from_errc(err);
   }
+};
+
+struct jack_queue
+{
+public:
+  static constexpr auto size_sz = sizeof(int32_t);
+
+  jack_queue() = default;
+  jack_queue(const jack_queue&) = delete;
+  jack_queue(jack_queue&&) = delete;
+  jack_queue& operator=(const jack_queue&) = delete;
+
+  jack_queue& operator=(jack_queue&& other) noexcept
+  {
+    ringbuffer = other.ringbuffer;
+    ringbuffer_space = other.ringbuffer_space;
+    other.ringbuffer = nullptr;
+    return *this;
+  }
+
+  explicit jack_queue(int64_t sz) noexcept
+  {
+    ringbuffer = jack_ringbuffer_create(sz);
+    ringbuffer_space = jack_ringbuffer_write_space(ringbuffer);
+  }
+
+  ~jack_queue() noexcept
+  {
+    if (ringbuffer)
+      jack_ringbuffer_free(ringbuffer);
+  }
+
+  stdx::error write(const unsigned char* data, int64_t sz) const noexcept
+  {
+    if (static_cast<std::size_t>(sz + size_sz) > ringbuffer_space)
+      return std::errc::no_buffer_space;
+
+    while (jack_ringbuffer_write_space(ringbuffer) < sz + size_sz)
+      sched_yield();
+
+    jack_ringbuffer_write(ringbuffer, reinterpret_cast<char*>(&sz), size_sz);
+    jack_ringbuffer_write(ringbuffer, reinterpret_cast<const char*>(data), sz);
+
+    return stdx::error{};
+  }
+
+  void read(void* jack_events) const noexcept
+  {
+    int32_t sz;
+    while (jack_ringbuffer_peek(ringbuffer, reinterpret_cast<char*>(&sz), size_sz) == size_sz
+           && jack_ringbuffer_read_space(ringbuffer) >= size_sz + sz)
+    {
+      jack_ringbuffer_read_advance(ringbuffer, size_sz);
+
+      if (auto midi = jack_midi_event_reserve(jack_events, 0, sz))
+        jack_ringbuffer_read(ringbuffer, reinterpret_cast<char*>(midi), sz);
+      else
+        jack_ringbuffer_read_advance(ringbuffer, sz);
+    }
+  }
+
+  jack_ringbuffer_t* ringbuffer{};
+  std::size_t ringbuffer_space{}; // actual writable size, usually 1 less than ringbuffer
+};
+
+struct jack_midi1
+{
+  static constexpr const char* port_type = "8 bit raw midi";
+};
+
+struct jack_midi2
+{
+  static constexpr const char* port_type = "32 bit raw UMP";
 };
 }

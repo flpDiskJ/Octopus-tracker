@@ -2,7 +2,7 @@
 
 #include <libremidi/backends/linux/dylib_loader.hpp>
 
-#include <alsa/asoundlib.h>
+#include <alsa/asoundlib.h> // IWYU pragma: export
 
 #if defined(SND_LIB_VERSION)
   #if __has_include(<alsa/rawmidi.h>) && SND_LIB_VERSION >= ((1 << 16) | (2 << 8) | 6)
@@ -13,9 +13,13 @@
   #if __has_include(<alsa/ump.h>) && SND_LIB_VERSION >= ((1 << 16) | (2 << 8) | 10)
     #define LIBREMIDI_ALSA_HAS_UMP 1
   #endif
+
+  #if __has_include(<alsa/ump.h>) && SND_LIB_VERSION >= ((1 << 16) | (2 << 8) | 14)
+    #define LIBREMIDI_ALSA_HAS_UMP_SEQ_EVENTS 1
+  #endif
 #endif
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 
 struct libasound
@@ -241,6 +245,7 @@ struct libasound
       LIBREMIDI_SYMBOL_INIT(snd_seq, client_id)
       LIBREMIDI_SYMBOL_INIT(snd_seq, client_info_get_client)
       LIBREMIDI_SYMBOL_INIT(snd_seq, client_info_get_name)
+      LIBREMIDI_SYMBOL_INIT(snd_seq, client_info_get_card)
       LIBREMIDI_SYMBOL_INIT(snd_seq, client_info_set_client)
       LIBREMIDI_SYMBOL_INIT(snd_seq, client_info_sizeof)
       LIBREMIDI_SYMBOL_INIT(snd_seq, close)
@@ -277,6 +282,7 @@ struct libasound
       LIBREMIDI_SYMBOL_INIT(snd_seq, port_info_sizeof)
       LIBREMIDI_SYMBOL_INIT(snd_seq, port_subscribe_free)
       LIBREMIDI_SYMBOL_INIT(snd_seq, port_subscribe_malloc)
+      LIBREMIDI_SYMBOL_INIT(snd_seq, port_subscribe_sizeof)
       LIBREMIDI_SYMBOL_INIT(snd_seq, port_subscribe_set_dest)
       LIBREMIDI_SYMBOL_INIT(snd_seq, port_subscribe_set_sender)
       LIBREMIDI_SYMBOL_INIT(snd_seq, port_subscribe_set_time_real)
@@ -291,6 +297,12 @@ struct libasound
       LIBREMIDI_SYMBOL_INIT(snd_seq, set_queue_tempo)
       LIBREMIDI_SYMBOL_INIT(snd_seq, subscribe_port)
       LIBREMIDI_SYMBOL_INIT(snd_seq, unsubscribe_port)
+
+#if LIBREMIDI_ALSA_HAS_UMP
+      LIBREMIDI_SYMBOL_INIT(snd_seq, set_client_midi_version)
+      LIBREMIDI_SYMBOL_INIT(snd_seq, get_ump_endpoint_info)
+      LIBREMIDI_SYMBOL_INIT(snd_seq, get_ump_block_info)
+#endif
     }
 
     bool available{true};
@@ -298,6 +310,7 @@ struct libasound
     LIBREMIDI_SYMBOL_DEF(snd_seq, client_id)
     LIBREMIDI_SYMBOL_DEF(snd_seq, client_info_get_client)
     LIBREMIDI_SYMBOL_DEF(snd_seq, client_info_get_name)
+    LIBREMIDI_SYMBOL_DEF(snd_seq, client_info_get_card)
     LIBREMIDI_SYMBOL_DEF(snd_seq, client_info_set_client)
     LIBREMIDI_SYMBOL_DEF(snd_seq, client_info_sizeof)
     LIBREMIDI_SYMBOL_DEF(snd_seq, close)
@@ -334,6 +347,7 @@ struct libasound
     LIBREMIDI_SYMBOL_DEF(snd_seq, port_info_sizeof)
     LIBREMIDI_SYMBOL_DEF(snd_seq, port_subscribe_free)
     LIBREMIDI_SYMBOL_DEF(snd_seq, port_subscribe_malloc)
+    LIBREMIDI_SYMBOL_DEF(snd_seq, port_subscribe_sizeof)
     LIBREMIDI_SYMBOL_DEF(snd_seq, port_subscribe_set_dest)
     LIBREMIDI_SYMBOL_DEF(snd_seq, port_subscribe_set_sender)
     LIBREMIDI_SYMBOL_DEF(snd_seq, port_subscribe_set_time_real)
@@ -351,6 +365,12 @@ struct libasound
     LIBREMIDI_SYMBOL_DEF(snd_seq, unsubscribe_port)
 
 #if LIBREMIDI_ALSA_HAS_UMP
+    LIBREMIDI_SYMBOL_DEF(snd_seq, set_client_midi_version)
+    LIBREMIDI_SYMBOL_DEF(snd_seq, get_ump_endpoint_info)
+    LIBREMIDI_SYMBOL_DEF(snd_seq, get_ump_block_info)
+#endif
+
+#if LIBREMIDI_ALSA_HAS_UMP
     struct ump_t
     {
       explicit ump_t(const dylib_loader& library)
@@ -360,7 +380,6 @@ struct libasound
           available = false;
           return;
         }
-        LIBREMIDI_SYMBOL_INIT(snd_seq, set_client_midi_version)
         LIBREMIDI_SYMBOL_INIT(snd_seq_ump, event_input)
         LIBREMIDI_SYMBOL_INIT(snd_seq_ump, event_output)
         LIBREMIDI_SYMBOL_INIT(snd_seq_ump, event_output_direct)
@@ -368,10 +387,10 @@ struct libasound
 
       bool available{true};
 
-      LIBREMIDI_SYMBOL_DEF(snd_seq, set_client_midi_version)
       LIBREMIDI_SYMBOL_DEF(snd_seq_ump, event_input)
       LIBREMIDI_SYMBOL_DEF(snd_seq_ump, event_output)
       LIBREMIDI_SYMBOL_DEF(snd_seq_ump, event_output_direct)
+
     } ump;
 #endif
   } seq{library};
@@ -387,39 +406,98 @@ struct libasound
         return;
       }
 
-      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_name)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_sizeof)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, close)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_name)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_sizeof)
+      // Core UMP functions
       LIBREMIDI_SYMBOL_INIT(snd_ump, open)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, poll_descriptors)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, poll_descriptors_count)
-      LIBREMIDI_SYMBOL_INIT(snd_ump, poll_descriptors_revents)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, close)
       LIBREMIDI_SYMBOL_INIT(snd_ump, rawmidi)
       LIBREMIDI_SYMBOL_INIT(snd_ump, rawmidi_params)
       LIBREMIDI_SYMBOL_INIT(snd_ump, rawmidi_params_current)
       LIBREMIDI_SYMBOL_INIT(snd_ump, read)
       LIBREMIDI_SYMBOL_INIT(snd_ump, tread)
       LIBREMIDI_SYMBOL_INIT(snd_ump, write)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, poll_descriptors)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, poll_descriptors_count)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, poll_descriptors_revents)
+
+      // Endpoint info functions
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_sizeof)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_card)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_device)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_flags)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_protocol_caps)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_protocol)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_num_blocks)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_version)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_manufacturer_id)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_family_id)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_model_id)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_sw_revision)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_name)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, endpoint_info_get_product_id)
+
+      // Block info functions
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_sizeof)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_set_block_id)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_block_id)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_active)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_flags)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_direction)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_first_group)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_num_groups)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_midi_ci_version)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_sysex8_streams)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_ui_hint)
+      LIBREMIDI_SYMBOL_INIT(snd_ump, block_info_get_name)
     }
 
     bool available{true};
-    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_name)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_sizeof)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, close)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_name)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_sizeof)
+
+    // Core UMP functions
     LIBREMIDI_SYMBOL_DEF(snd_ump, open)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, poll_descriptors)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, poll_descriptors_count)
-    LIBREMIDI_SYMBOL_DEF(snd_ump, poll_descriptors_revents)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, close)
     LIBREMIDI_SYMBOL_DEF(snd_ump, rawmidi)
     LIBREMIDI_SYMBOL_DEF(snd_ump, rawmidi_params)
     LIBREMIDI_SYMBOL_DEF(snd_ump, rawmidi_params_current)
     LIBREMIDI_SYMBOL_DEF(snd_ump, read)
     LIBREMIDI_SYMBOL_DEF(snd_ump, tread)
     LIBREMIDI_SYMBOL_DEF(snd_ump, write)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, poll_descriptors)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, poll_descriptors_count)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, poll_descriptors_revents)
+
+    // Endpoint info functions
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_sizeof)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_card)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_device)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_flags)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_protocol_caps)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_protocol)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_num_blocks)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_version)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_manufacturer_id)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_family_id)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_model_id)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_sw_revision)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_name)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, endpoint_info_get_product_id)
+
+    // Block info functions
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_sizeof)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_set_block_id)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_block_id)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_active)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_flags)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_direction)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_first_group)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_num_groups)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_midi_ci_version)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_sysex8_streams)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_ui_hint)
+    LIBREMIDI_SYMBOL_DEF(snd_ump, block_info_get_name)
   } ump{library};
 #endif
 };
@@ -447,6 +525,8 @@ struct libasound
 #define snd_seq_client_info_alloca(ptr) snd_dylib_alloca(ptr, seq, client_info)
 #undef snd_seq_port_info_alloca
 #define snd_seq_port_info_alloca(ptr) snd_dylib_alloca(ptr, seq, port_info)
+#undef snd_seq_port_subscribe_alloca
+#define snd_seq_port_subscribe_alloca(ptr) snd_dylib_alloca(ptr, seq, port_subscribe)
 #undef snd_seq_queue_tempo_alloca
 #define snd_seq_queue_tempo_alloca(ptr) snd_dylib_alloca(ptr, seq, queue_tempo)
 

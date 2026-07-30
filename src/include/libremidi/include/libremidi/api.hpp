@@ -2,11 +2,10 @@
 #include <libremidi/api-c.h>
 #include <libremidi/config.hpp>
 
-#include <any>
 #include <string_view>
 #include <vector>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 //! MIDI API specifier arguments.
 //! To get information on which feature is supported by each back-end, check their backend file
@@ -30,9 +29,6 @@ LIBREMIDI_EXPORT std::vector<libremidi::API> available_apis() noexcept;
   API compiled for certain operating systems.
 */
 LIBREMIDI_EXPORT std::vector<libremidi::API> available_ump_apis() noexcept;
-
-LIBREMIDI_EXPORT
-libremidi::API midi_api(const std::any& conf);
 
 //! A static function to determine the current version.
 LIBREMIDI_EXPORT std::string_view get_version() noexcept;
@@ -64,10 +60,12 @@ inline constexpr libremidi::API default_api() noexcept
   return API::COREMIDI;
 #elif defined(_WIN32)
   return API::WINDOWS_MM;
-#elif defined(__linux__)
+#elif defined(LIBREMIDI_ALSA)
   return API::ALSA_SEQ;
 #elif defined(__emscripten__)
   return API::EMSCRIPTEN_WEBMIDI;
+#elif defined(LIBREMIDI_ANDROID)
+  return API::ANDROID_AMIDI;
 #else
   return API::DUMMY;
 #endif
@@ -83,7 +81,7 @@ inline constexpr libremidi::API default_api() noexcept
   return API::COREMIDI_UMP;
 #elif defined(_WIN32)
   return API::WINDOWS_MIDI_SERVICES;
-#elif defined(__linux__)
+#elif defined(LIBREMIDI_ALSA)
   return API::ALSA_SEQ_UMP;
 #elif defined(__emscripten__)
   return API::DUMMY;

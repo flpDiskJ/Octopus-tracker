@@ -31,7 +31,7 @@ TEST_CASE("creation", "[midi_out]")
 
   GIVEN("A midi output with an empty API")
   {
-    libremidi::midi_out out({}, std::any{});
+    libremidi::midi_out out({}, libremidi::output_api_configuration{});
     THEN("created with defaultapi")
     {
       REQUIRE(out.get_current_api() == libremidi::midi1::default_api());
@@ -45,15 +45,6 @@ TEST_CASE("creation", "[midi_out]")
       REQUIRE(out.get_current_api() == libremidi::API::JACK_MIDI);
     }
   }
-
-  GIVEN("A midi output with a wrong API")
-  {
-    libremidi::midi_out out({}, float(1.23f));
-    THEN("created with dummy api")
-    {
-      REQUIRE(out.get_current_api() == libremidi::API::DUMMY);
-    }
-  }
 }
 
 TEST_CASE("sending messages with span", "[midi_out]")
@@ -65,7 +56,7 @@ TEST_CASE("sending messages with span", "[midi_out]")
   midi.send_message(std::span<unsigned char>(data, 3));
 }
 
-#if defined(__linux__)
+#if defined(LIBREMIDI_ALSA)
   #include <libremidi/backends/alsa_raw/config.hpp>
 TEST_CASE("sending chunked messages", "[midi_out]")
 {

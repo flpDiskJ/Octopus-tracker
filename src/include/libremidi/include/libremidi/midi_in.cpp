@@ -7,10 +7,10 @@
 
 #include <cassert>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 
-static libremidi::ump_input_configuration
+LIBREMIDI_STATIC_IMPLEMENTATION libremidi::ump_input_configuration
 convert_midi1_to_midi2_input_configuration(const input_configuration& base_conf) noexcept
 {
   libremidi::ump_input_configuration c2;
@@ -32,7 +32,7 @@ convert_midi1_to_midi2_input_configuration(const input_configuration& base_conf)
   return c2;
 }
 
-static libremidi::input_configuration
+LIBREMIDI_STATIC_IMPLEMENTATION libremidi::input_configuration
 convert_midi2_to_midi1_input_configuration(const ump_input_configuration& base_conf) noexcept
 {
   libremidi::input_configuration c2;
@@ -41,12 +41,11 @@ convert_midi2_to_midi1_input_configuration(const ump_input_configuration& base_c
     converter.convert(
         msg.bytes.data(), msg.bytes.size(), msg.timestamp,
         [cb](const uint32_t* ump, std::size_t n, int64_t ts) {
-      if(n >= 4)
-      {
-        libremidi::ump u{ump[0],ump[1],ump[2],ump[3]};
-        u.timestamp = ts;
-        cb(std::move(u));
-      }
+      libremidi::ump u{ump[0]};
+      for (std::size_t i = 1; i < n && i < 4; i++)
+        u.data[i] = ump[i];
+      u.timestamp = ts;
+      cb(std::move(u));
       return stdx::error{};
     });
   };
@@ -60,15 +59,15 @@ convert_midi2_to_midi1_input_configuration(const ump_input_configuration& base_c
   return c2;
 }
 
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api>
-make_midi_in(auto base_conf, std::any api_conf, auto backends)
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api>
+make_midi_in(auto base_conf, input_api_configuration api_conf, auto backends)
 {
   std::unique_ptr<midi_in_api> ptr;
 
   assert(base_conf.on_message || base_conf.on_raw_data);
 
   auto from_api = [&]<typename T>(T& /*backend*/) mutable {
-    if (auto conf = std::any_cast<typename T::midi_in_configuration>(&api_conf))
+    if (auto conf = get_if<typename T::midi_in_configuration>(&api_conf))
     {
       ptr = libremidi::make<typename T::midi_in>(std::move(base_conf), std::move(*conf));
       return true;
@@ -80,7 +79,7 @@ make_midi_in(auto base_conf, std::any api_conf, auto backends)
 }
 
 /// MIDI 1 helpers
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api>
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api>
 make_midi1_in(const input_configuration& base_conf)
 {
   for (const auto& api : available_apis())
@@ -117,8 +116,9 @@ make_midi1_in(const input_configuration& base_conf)
   return std::make_unique<midi_in_dummy>(input_configuration{}, dummy_configuration{});
 }
 
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api>
-make_midi1_in(const input_configuration& base_conf, const std::any& api_conf, libremidi::API api)
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api> make_midi1_in(
+    const input_configuration& base_conf, const input_api_configuration& api_conf,
+    libremidi::API api)
 {
   if (libremidi::is_midi1(api))
   {
@@ -132,14 +132,14 @@ make_midi1_in(const input_configuration& base_conf, const std::any& api_conf, li
   return {};
 }
 
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api>
-make_midi1_in(const input_configuration& base_conf, const std::any& api_conf)
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api>
+make_midi1_in(const input_configuration& base_conf, const input_api_configuration& api_conf)
 {
-  if (!api_conf.has_value())
+  if (get_if<unspecified_configuration>(&api_conf))
   {
     return make_midi1_in(base_conf);
   }
-  else if (auto api_p = std::any_cast<libremidi::API>(&api_conf))
+  else if (auto api_p = get_if<libremidi::API>(&api_conf))
   {
     if (*api_p == libremidi::API::UNSPECIFIED)
     {
@@ -161,24 +161,24 @@ make_midi1_in(const input_configuration& base_conf, const std::any& api_conf)
 
 /// MIDI 1 constructors
 LIBREMIDI_INLINE midi_in::midi_in(const input_configuration& base_conf) noexcept
-    : impl_{make_midi1_in(base_conf)}
+    : m_impl{make_midi1_in(base_conf)}
 {
 }
 
 LIBREMIDI_INLINE
-midi_in::midi_in(input_configuration base_conf, std::any api_conf)
-    : impl_{make_midi1_in(base_conf, api_conf)}
+midi_in::midi_in(const input_configuration& base_conf, const input_api_configuration& api_conf)
+    : m_impl{make_midi1_in(base_conf, api_conf)}
 {
-  if (!impl_)
+  if (!m_impl)
   {
     error_handler e;
     e.libremidi_handle_error(base_conf, "Could not open midi in for the given api");
-    impl_ = std::make_unique<midi_in_dummy>(input_configuration{}, dummy_configuration{});
+    m_impl = std::make_unique<midi_in_dummy>(input_configuration{}, dummy_configuration{});
   }
 }
 
 /// MIDI 2 helpers
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api>
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api>
 make_midi2_in(const ump_input_configuration& base_conf)
 {
   for (const auto& api : available_ump_apis())
@@ -213,8 +213,9 @@ make_midi2_in(const ump_input_configuration& base_conf)
   return {};
 }
 
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api> make_midi2_in(
-    const ump_input_configuration& base_conf, const std::any& api_conf, libremidi::API api)
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api> make_midi2_in(
+    const ump_input_configuration& base_conf, const input_api_configuration& api_conf,
+    libremidi::API api)
 {
   if (is_midi2(api))
   {
@@ -229,14 +230,14 @@ static LIBREMIDI_INLINE std::unique_ptr<midi_in_api> make_midi2_in(
   return {};
 }
 
-static LIBREMIDI_INLINE std::unique_ptr<midi_in_api>
-make_midi2_in(const ump_input_configuration& base_conf, const std::any& api_conf)
+LIBREMIDI_STATIC_INLINE_IMPLEMENTATION std::unique_ptr<midi_in_api>
+make_midi2_in(const ump_input_configuration& base_conf, const input_api_configuration& api_conf)
 {
-  if (!api_conf.has_value())
+  if (get_if<unspecified_configuration>(&api_conf))
   {
     return make_midi2_in(base_conf);
   }
-  else if (auto api_p = std::any_cast<libremidi::API>(&api_conf))
+  else if (auto api_p = get_if<libremidi::API>(&api_conf))
   {
     if (*api_p == libremidi::API::UNSPECIFIED)
     {
@@ -257,45 +258,45 @@ make_midi2_in(const ump_input_configuration& base_conf, const std::any& api_conf
 }
 
 /// MIDI 2 constructors
-LIBREMIDI_INLINE midi_in::midi_in(ump_input_configuration base_conf) noexcept
-    : impl_{make_midi2_in(base_conf)}
+LIBREMIDI_INLINE midi_in::midi_in(const ump_input_configuration& base_conf) noexcept
+    : m_impl{make_midi2_in(base_conf)}
 {
 }
 
 LIBREMIDI_INLINE
-midi_in::midi_in(ump_input_configuration base_conf, std::any api_conf)
-    : impl_{make_midi2_in(base_conf, api_conf)}
+midi_in::midi_in(const ump_input_configuration& base_conf, const input_api_configuration& api_conf)
+    : m_impl{make_midi2_in(base_conf, api_conf)}
 {
-  if (!impl_)
+  if (!m_impl)
   {
     error_handler e;
     e.libremidi_handle_error(base_conf, "Could not open midi in for the given api");
-    impl_ = std::make_unique<midi_in_dummy>(input_configuration{}, dummy_configuration{});
+    m_impl = std::make_unique<midi_in_dummy>(input_configuration{}, dummy_configuration{});
   }
 }
 
 LIBREMIDI_INLINE midi_in::~midi_in() = default;
 
 LIBREMIDI_INLINE midi_in::midi_in(midi_in&& other) noexcept
-    : impl_{std::move(other.impl_)}
+    : m_impl{std::move(other.m_impl)}
 {
-  other.impl_
+  other.m_impl
       = std::make_unique<libremidi::midi_in_dummy>(input_configuration{}, dummy_configuration{});
 }
 
 LIBREMIDI_INLINE
 stdx::error midi_in::set_port_name(std::string_view portName)
 {
-  if(impl_->is_port_open())
-    return impl_->set_port_name(portName);
+  if (m_impl->is_port_open())
+    return m_impl->set_port_name(portName);
 
   return std::errc::not_connected;
 }
 
 LIBREMIDI_INLINE midi_in& midi_in::operator=(midi_in&& other) noexcept
 {
-  this->impl_ = std::move(other.impl_);
-  other.impl_
+  this->m_impl = std::move(other.m_impl);
+  other.m_impl
       = std::make_unique<libremidi::midi_in_dummy>(input_configuration{}, dummy_configuration{});
   return *this;
 }
@@ -303,23 +304,26 @@ LIBREMIDI_INLINE midi_in& midi_in::operator=(midi_in&& other) noexcept
 LIBREMIDI_INLINE
 libremidi::API midi_in::get_current_api() const noexcept
 {
-  return impl_->get_current_api();
+  return m_impl->get_current_api();
 }
 
 LIBREMIDI_INLINE
 stdx::error midi_in::open_port(const input_port& port, std::string_view portName)
 {
-  if (auto err = impl_->is_client_open(); err != stdx::error{})
+  if (port.api != get_current_api())
+    return std::errc::invalid_argument;
+
+  if (auto err = m_impl->is_client_open(); err != stdx::error{})
     return std::errc::not_connected;
 
-  if (impl_->is_port_open())
+  if (m_impl->is_port_open())
     return std::errc::operation_not_supported;
 
-  auto ret = impl_->open_port(port, portName);
+  auto ret = m_impl->open_port(port, portName);
   if (ret == stdx::error{})
   {
-    impl_->connected_ = true;
-    impl_->port_open_ = true;
+    m_impl->connected_ = true;
+    m_impl->port_open_ = true;
   }
   return ret;
 }
@@ -327,28 +331,28 @@ stdx::error midi_in::open_port(const input_port& port, std::string_view portName
 LIBREMIDI_INLINE
 stdx::error midi_in::open_virtual_port(std::string_view portName)
 {
-  if (auto err = impl_->is_client_open(); err != stdx::error{})
+  if (auto err = m_impl->is_client_open(); err != stdx::error{})
     return std::errc::not_connected;
 
-  if (impl_->is_port_open())
+  if (m_impl->is_port_open())
     return std::errc::operation_not_supported;
 
-  auto ret = impl_->open_virtual_port(portName);
+  auto ret = m_impl->open_virtual_port(portName);
   if (ret == stdx::error{})
-    impl_->port_open_ = true;
+    m_impl->port_open_ = true;
   return ret;
 }
 
 LIBREMIDI_INLINE
 stdx::error midi_in::close_port()
 {
-  if (auto err = impl_->is_client_open(); err != stdx::error{})
+  if (auto err = m_impl->is_client_open(); err != stdx::error{})
     return std::errc::not_connected;
 
-  auto ret = impl_->close_port();
+  auto ret = m_impl->close_port();
 
-  impl_->connected_ = false;
-  impl_->port_open_ = false;
+  m_impl->connected_ = false;
+  m_impl->port_open_ = false;
 
   return ret;
 }
@@ -356,18 +360,18 @@ stdx::error midi_in::close_port()
 LIBREMIDI_INLINE
 bool midi_in::is_port_open() const noexcept
 {
-  return impl_->is_port_open();
+  return m_impl->is_port_open();
 }
 
 LIBREMIDI_INLINE
 bool midi_in::is_port_connected() const noexcept
 {
-  return impl_->is_port_connected();
+  return m_impl->is_port_connected();
 }
 
 LIBREMIDI_INLINE
 int64_t midi_in::absolute_timestamp() const noexcept
 {
-  return impl_->absolute_timestamp();
+  return m_impl->absolute_timestamp();
 }
 }

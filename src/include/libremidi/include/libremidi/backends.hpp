@@ -1,7 +1,6 @@
 #pragma once
 #include <libremidi/config.hpp>
 
-#include <any>
 #include <tuple>
 
 #if !__has_include(<weak_libjack.h>) && !__has_include(<jack/jack.h>)
@@ -30,10 +29,16 @@
 
 #if defined(LIBREMIDI_JACK)
   #include <libremidi/backends/jack.hpp>
+  #if defined(LIBREMIDI_HAS_JACK_GET_VERSION)
+    #include <libremidi/backends/jack_ump.hpp>
+  #endif
 #endif
 
 #if defined(LIBREMIDI_PIPEWIRE)
   #include <libremidi/backends/pipewire.hpp>
+  #if defined(LIBREMIDI_PIPEWIRE_UMP)
+    #include <libremidi/backends/pipewire_ump.hpp>
+  #endif
 #endif
 
 #if defined(LIBREMIDI_COREMIDI)
@@ -43,6 +48,10 @@
 
 #if defined(LIBREMIDI_WINMM)
   #include <libremidi/backends/winmm.hpp>
+#endif
+
+#if defined(LIBREMIDI_KDMAPI)
+  #include <libremidi/backends/kdmapi.hpp>
 #endif
 
 #if defined(LIBREMIDI_WINUWP)
@@ -68,7 +77,11 @@
   #include <libremidi/backends/network_ump.hpp>
 #endif
 
-namespace libremidi
+#if defined(LIBREMIDI_ANDROID)
+  #include <libremidi/backends/android/android.hpp>
+#endif
+
+NAMESPACE_LIBREMIDI
 {
 // The order here will control the order of the API search in
 // the constructor.
@@ -80,7 +93,7 @@ constexpr auto make_tl(unused, Args...)
 
 namespace midi1
 {
-static constexpr auto available_backends = make_tl(
+LIBREMIDI_STATIC constexpr auto available_backends = make_tl(
     0
 #if defined(LIBREMIDI_ALSA)
     ,
@@ -97,6 +110,10 @@ static constexpr auto available_backends = make_tl(
 #if defined(LIBREMIDI_WINMM)
     ,
     winmm_backend{}
+#endif
+#if defined(LIBREMIDI_KDMAPI)
+    ,
+    kdmapi_backend{}
 #endif
 #if defined(LIBREMIDI_WINUWP)
     ,
@@ -122,6 +139,10 @@ static constexpr auto available_backends = make_tl(
     ,
     net::backend{}
 #endif
+#if defined(LIBREMIDI_ANDROID)
+    ,
+    android::backend{}
+#endif
     ,
     dummy_backend{});
 
@@ -146,7 +167,7 @@ auto for_backend(libremidi::API api, F&& f)
 
 namespace midi2
 {
-static constexpr auto available_backends = make_tl(
+LIBREMIDI_STATIC constexpr auto available_backends = make_tl(
     0
 #if defined(LIBREMIDI_ALSA) && LIBREMIDI_ALSA_HAS_UMP
     ,
@@ -164,6 +185,14 @@ static constexpr auto available_backends = make_tl(
     ,
     net_ump::backend{}
 #endif
+#if defined(LIBREMIDI_JACK) && defined(LIBREMIDI_HAS_JACK_GET_VERSION)
+    ,
+    jack_ump::backend{}
+#endif
+#if defined(LIBREMIDI_PIPEWIRE_UMP)
+    ,
+    pipewire_ump::backend{}
+#endif
     ,
     dummy_backend{});
 
@@ -173,7 +202,7 @@ static_assert(std::tuple_size_v<decltype(available_backends)> >= 1);
 template <typename F>
 auto for_all_backends(F&& f)
 {
-  std::apply([&](auto&&... x) { (f(x), ...); }, available_backends);
+  std::apply([&](auto&&... x) { ((x.available() && (f(x), true)), ...); }, available_backends);
 }
 
 template <typename F>
@@ -202,10 +231,10 @@ auto for_backend(libremidi::API api, F&& f)
   midi2::for_backend(api, f);
 }
 
-void for_input_configuration(auto f, std::any& api_conf)
+void for_input_configuration(auto f, libremidi::input_api_configuration& api_conf)
 {
   auto from_api = [&]<typename T>(T& /*backend*/) mutable {
-    if (auto conf = std::any_cast<typename T::midi_in_configuration>(&api_conf))
+    if (auto conf = get_if<typename T::midi_in_configuration>(&api_conf))
     {
       f(*conf);
       return true;
@@ -217,10 +246,10 @@ void for_input_configuration(auto f, std::any& api_conf)
   std::apply([&](auto&&... b) { return (from_api(b) || ...); }, midi2::available_backends);
 }
 
-void for_output_configuration(auto f, std::any& api_conf)
+void for_output_configuration(auto f, libremidi::output_api_configuration& api_conf)
 {
   auto from_api = [&]<typename T>(T& /*backend*/) mutable {
-    if (auto conf = std::any_cast<typename T::midi_out_configuration>(&api_conf))
+    if (auto conf = get_if<typename T::midi_out_configuration>(&api_conf))
     {
       f(*conf);
       return true;
@@ -232,10 +261,10 @@ void for_output_configuration(auto f, std::any& api_conf)
   std::apply([&](auto&&... b) { return (from_api(b) || ...); }, midi2::available_backends);
 }
 
-void for_observer_configuration(auto f, std::any& api_conf)
+void for_observer_configuration(auto f, libremidi::observer_api_configuration& api_conf)
 {
   auto from_api = [&]<typename T>(T& /*backend*/) mutable {
-    if (auto conf = std::any_cast<typename T::midi_observer_configuration>(&api_conf))
+    if (auto conf = get_if<typename T::midi_observer_configuration>(&api_conf))
     {
       f(*conf);
       return true;

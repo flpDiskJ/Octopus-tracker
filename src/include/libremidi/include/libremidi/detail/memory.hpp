@@ -1,9 +1,11 @@
 #pragma once
 
+#include <libremidi/config.hpp>
+
 #include <memory>
 #include <mutex>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 template <auto func>
 struct deleter

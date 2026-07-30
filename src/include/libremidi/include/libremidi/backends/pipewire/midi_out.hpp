@@ -5,9 +5,7 @@
 
 #include <readerwriterqueue.h>
 
-#include <semaphore>
-
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class midi_out_pipewire
     : public midi1::out_api
@@ -50,7 +48,8 @@ public:
 
   stdx::error open_port(const output_port& out_port, std::string_view name) override
   {
-    if (auto err = create_local_port(*this, name, SPA_DIRECTION_OUTPUT); err != stdx::error{})
+    if (auto err = create_local_port(*this, name, SPA_DIRECTION_OUTPUT, "8 bit raw midi");
+        err != stdx::error{})
       return err;
 
     this->filter->set_port_buffer(configuration.output_buffer_size);
@@ -64,7 +63,8 @@ public:
 
   stdx::error open_virtual_port(std::string_view name) override
   {
-    if (auto err = create_local_port(*this, name, SPA_DIRECTION_OUTPUT); err != stdx::error{})
+    if (auto err = create_local_port(*this, name, SPA_DIRECTION_OUTPUT, "8 bit raw midi");
+        err != stdx::error{})
       return err;
 
     this->filter->set_port_buffer(configuration.output_buffer_size);
@@ -79,10 +79,7 @@ public:
     return do_close_port();
   }
 
-  stdx::error set_port_name(std::string_view port_name) override
-  {
-    return rename_port(port_name);
-  }
+  stdx::error set_port_name(std::string_view port_name) override { return rename_port(port_name); }
 
   int process(spa_io_position* pos)
   {
@@ -121,8 +118,9 @@ public:
         continue;
       }
 
-      spa_pod_builder_control(&build, m.timestamp, SPA_CONTROL_Midi);
-      int res = spa_pod_builder_bytes(&build, m.bytes.data(), m.bytes.size());
+      spa_pod_builder_control(&build, static_cast<int32_t>(m.timestamp), SPA_CONTROL_Midi);
+      int res
+          = spa_pod_builder_bytes(&build, m.bytes.data(), static_cast<uint32_t>(m.bytes.size()));
 
       // Try again next buffer
       if (res == -ENOSPC)

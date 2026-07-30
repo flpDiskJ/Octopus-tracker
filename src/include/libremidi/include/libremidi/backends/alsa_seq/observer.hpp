@@ -7,11 +7,21 @@
 
 #include <alsa/asoundlib.h>
 
-#include <bitset>
+#if LIBREMIDI_HAS_UDEV
+  #include <libremidi/backends/linux/udev.hpp>
+#endif
+
 #include <map>
 
-namespace libremidi::alsa_seq
+NAMESPACE_LIBREMIDI::alsa_seq
 {
+
+struct client_info
+{
+  std::string client_name;
+  int client_id{};
+  std::optional<int> card{};
+};
 
 struct port_info
 {
@@ -19,8 +29,10 @@ struct port_info
   std::string port_name;
   int client{};
   int port{};
-  bool isInput{};
-  bool isOutput{};
+  bool is_input{};
+  bool is_output{};
+  std::optional<int> card{};
+  libremidi::transport_type type{};
 };
 
 template <typename ConfigurationImpl>
@@ -88,12 +100,69 @@ public:
     }
   }
 
-  std::optional<port_info> get_info(int client, int port) const noexcept
+  std::optional<client_info>
+  get_client_info(int client, snd_seq_client_info_t& cinfo) const noexcept
   {
+    client_info p;
+    p.client_id = client;
+
+    if (auto name = snd.seq.client_info_get_name(&cinfo))
+      p.client_name = name;
+
+    if (int card = snd.seq.client_info_get_card(&cinfo); card >= 0)
+      p.card = card;
+
+    return p;
+  }
+
+  std::optional<port_info> get_info(
+      int client, int port, snd_seq_client_info_t& cinfo,
+      snd_seq_port_info_t& pinfo) const noexcept
+  {
+    const auto tp = snd.seq.port_info_get_type(&pinfo);
+    const auto cap = snd.seq.port_info_get_capability(&pinfo);
+    if ((cap & SND_SEQ_PORT_CAP_NO_EXPORT) != 0)
+      return std::nullopt;
+
     port_info p;
     p.client = client;
     p.port = port;
 
+    bool ok = this->configuration.track_any;
+
+    static constexpr auto virtual_port = SND_SEQ_PORT_TYPE_SOFTWARE | SND_SEQ_PORT_TYPE_SYNTHESIZER
+                                         | SND_SEQ_PORT_TYPE_APPLICATION;
+
+    if ((tp & SND_SEQ_PORT_TYPE_HARDWARE) && this->configuration.track_hardware)
+    {
+      p.type = libremidi::transport_type::hardware;
+      ok = true;
+    }
+    else if ((tp & virtual_port) && this->configuration.track_virtual)
+    {
+      p.type = libremidi::transport_type::software;
+      ok = true;
+    }
+    if (!ok)
+      return {};
+
+    if (auto name = snd.seq.client_info_get_name(&cinfo))
+      p.client_name = name;
+
+    if (auto name = snd.seq.port_info_get_name(&pinfo))
+      p.port_name = name;
+
+    if (int card = snd.seq.client_info_get_card(&cinfo); card >= 0)
+      p.card = card;
+
+    p.is_input = (cap & SND_SEQ_PORT_CAP_DUPLEX) | (cap & SND_SEQ_PORT_CAP_READ);
+    p.is_output = (cap & SND_SEQ_PORT_CAP_DUPLEX) | (cap & SND_SEQ_PORT_CAP_WRITE);
+
+    return p;
+  }
+
+  std::optional<port_info> get_info(int client, int port) const noexcept
+  {
     snd_seq_client_info_t* cinfo;
     snd_seq_client_info_alloca(&cinfo);
     if (int err = snd.seq.get_any_client_info(seq, client, cinfo); err < 0)
@@ -104,55 +173,57 @@ public:
     if (int err = snd.seq.get_any_port_info(seq, client, port, pinfo); err < 0)
       return std::nullopt;
 
-    const auto tp = snd.seq.port_info_get_type(pinfo);
-    bool ok = this->configuration.track_any;
-
-    static constexpr auto virtual_port
-        = SND_SEQ_PORT_TYPE_SOFTWARE | SND_SEQ_PORT_TYPE_SYNTHESIZER;
-
-    if ((tp & SND_SEQ_PORT_TYPE_HARDWARE) && this->configuration.track_hardware)
-      ok = true;
-    else if ((tp & virtual_port) && this->configuration.track_virtual)
-      ok = true;
-    if (!ok)
-      return {};
-
-    if (auto name = snd.seq.client_info_get_name(cinfo))
-      p.client_name = name;
-
-    if (auto name = snd.seq.port_info_get_name(pinfo))
-      p.port_name = name;
-
-    auto cap = snd.seq.port_info_get_capability(pinfo);
-    p.isInput = (cap & SND_SEQ_PORT_CAP_DUPLEX) | (cap & SND_SEQ_PORT_CAP_READ);
-    p.isOutput = (cap & SND_SEQ_PORT_CAP_DUPLEX) | (cap & SND_SEQ_PORT_CAP_WRITE);
-
-    return p;
+    return get_info(client, port, *cinfo, *pinfo);
   }
 
   template <bool Input>
-  auto to_port_info(port_info p) const noexcept
+  auto to_port_info(const port_info& p) const noexcept
       -> std::conditional_t<Input, input_port, output_port>
   {
     static_assert(sizeof(this->seq) <= sizeof(libremidi::client_handle));
     static_assert(sizeof(std::uintptr_t) <= sizeof(libremidi::client_handle));
+
+    container_identifier container{};
+    device_identifier device{};
+    libremidi::transport_type type = p.type;
+    std::string manufacturer;
+    std::string product;
+    std::string serial;
+#if LIBREMIDI_HAS_UDEV
+    if (p.card)
+    {
+      auto res = get_udev_soundcard_info(m_udev, *p.card);
+      container = res.container;
+      device = res.path;
+      type = res.type;
+      manufacturer = res.vendor;
+      product = res.product;
+      serial = res.serial;
+    }
+#endif
     return {
-        {.client = std::uintptr_t(this->seq),
+        {.api = get_current_api(),
+         .client = std::uintptr_t(this->seq),
+         .container = container,
+         .device = device,
          .port = alsa_seq::seq_to_port_handle(p.client, p.port),
-         .manufacturer = "",
+         .manufacturer = manufacturer,
+         .product = product,
+         .serial = serial,
          .device_name = p.client_name,
          .port_name = p.port_name,
-         .display_name = p.port_name}};
+         .display_name = p.port_name,
+         .type = type}};
   }
 
   void init_all_ports()
   {
     alsa_seq::for_all_ports(
         snd, this->seq, [this](snd_seq_client_info_t& client, snd_seq_port_info_t& port) {
-          int clt = snd.seq.client_info_get_client(&client);
-          int pt = snd.seq.port_info_get_port(&port);
-          register_port(clt, pt);
-        });
+      int clt = snd.seq.client_info_get_client(&client);
+      int pt = snd.seq.port_info_get_port(&port);
+      register_port(clt, pt);
+    });
   }
 
   libremidi::API get_current_api() const noexcept override
@@ -168,12 +239,12 @@ public:
     std::vector<libremidi::input_port> ret;
     alsa_seq::for_all_ports(
         snd, this->seq, [this, &ret](snd_seq_client_info_t& client, snd_seq_port_info_t& port) {
-          int clt = snd.seq.client_info_get_client(&client);
-          int pt = snd.seq.port_info_get_port(&port);
-          if (auto p = get_info(clt, pt))
-            if (p->isInput)
-              ret.push_back(to_port_info<true>(*p));
-        });
+      int clt = snd.seq.client_info_get_client(&client);
+      int pt = snd.seq.port_info_get_port(&port);
+      if (auto p = get_info(clt, pt, client, port))
+        if (p->is_input)
+          ret.push_back(to_port_info<true>(*p));
+    });
     return ret;
   }
 
@@ -182,12 +253,12 @@ public:
     std::vector<libremidi::output_port> ret;
     alsa_seq::for_all_ports(
         snd, this->seq, [this, &ret](snd_seq_client_info_t& client, snd_seq_port_info_t& port) {
-          int clt = snd.seq.client_info_get_client(&client);
-          int pt = snd.seq.port_info_get_port(&port);
-          if (auto p = get_info(clt, pt))
-            if (p->isOutput)
-              ret.push_back(to_port_info<false>(*p));
-        });
+      int clt = snd.seq.client_info_get_client(&client);
+      int pt = snd.seq.port_info_get_port(&port);
+      if (auto p = get_info(clt, pt, client, port))
+        if (p->is_output)
+          ret.push_back(to_port_info<false>(*p));
+    });
     return ret;
   }
 
@@ -200,13 +271,13 @@ public:
     if (p.client == snd.seq.client_id(seq))
       return;
 
-    knownClients_[{p.client, p.port}] = p;
-    if (p.isInput && configuration.input_added)
+    m_knownClients[{p.client, p.port}] = p;
+    if (p.is_input && configuration.input_added)
     {
       configuration.input_added(to_port_info<true>(p));
     }
 
-    if (p.isOutput && configuration.output_added)
+    if (p.is_output && configuration.output_added)
     {
       configuration.output_added(to_port_info<false>(p));
     }
@@ -214,37 +285,61 @@ public:
 
   void unregister_port(int client, int port)
   {
-    auto it = knownClients_.find({client, port});
-    if (it != knownClients_.end())
+    auto it = m_knownClients.find({client, port});
+    if (it != m_knownClients.end())
     {
       auto p = it->second;
-      knownClients_.erase(it);
+      m_knownClients.erase(it);
 
-      if (p.isInput && configuration.input_removed)
+      if (p.is_input && configuration.input_removed)
       {
         configuration.input_removed(to_port_info<true>(p));
       }
 
-      if (p.isOutput && configuration.output_removed)
+      if (p.is_output && configuration.output_removed)
       {
         configuration.output_removed(to_port_info<false>(p));
       }
     }
   }
 
-  void handle_event(const snd_seq_event_t& ev)
+  void handle_event_direct(const snd_seq_event_t& ev)
   {
     switch (ev.type)
     {
+      case SND_SEQ_EVENT_CLIENT_START: {
+        // TODO
+        break;
+      }
+      case SND_SEQ_EVENT_CLIENT_EXIT: {
+        // TODO
+        break;
+      }
+      case SND_SEQ_EVENT_CLIENT_CHANGE: {
+        // TODO
+        break;
+      }
+#if LIBREMIDI_ALSA_HAS_UMP_SEQ_EVENTS
+      case SND_SEQ_EVENT_UMP_EP_CHANGE: {
+        // TODO
+        break;
+      }
+      case SND_SEQ_EVENT_UMP_BLOCK_CHANGE: {
+        // TODO
+        break;
+      }
+#endif
       case SND_SEQ_EVENT_PORT_START: {
-        register_port(ev.data.addr.client, ev.data.addr.port);
+        this->register_port(ev.data.addr.client, ev.data.addr.port);
         break;
       }
       case SND_SEQ_EVENT_PORT_EXIT: {
-        unregister_port(ev.data.addr.client, ev.data.addr.port);
+        this->unregister_port(ev.data.addr.client, ev.data.addr.port);
         break;
       }
       case SND_SEQ_EVENT_PORT_CHANGE:
+        // TODO
+        break;
       default:
         break;
     }
@@ -263,7 +358,11 @@ public:
   }
 
 private:
-  std::map<std::pair<int, int>, port_info> knownClients_;
+  std::map<std::pair<int, int>, port_info> m_knownClients;
+
+#if LIBREMIDI_HAS_UDEV
+  udev_helper m_udev{};
+#endif
 };
 
 template <typename ConfigurationImpl>
@@ -275,36 +374,85 @@ public:
   {
     // Create relevant descriptors
     auto& snd = alsa_data::snd;
-    const auto N = snd.seq.poll_descriptors_count(this->seq, POLLIN);
-    descriptors_.resize(N + 1);
-    snd.seq.poll_descriptors(this->seq, descriptors_.data(), N, POLLIN);
-    descriptors_.back() = this->termination_event;
+
+    // 1. Descriptor count
+    const auto n = snd.seq.poll_descriptors_count(this->seq, POLLIN);
+    int total_descriptors = n;
+    total_descriptors++; // eventfd for terminating the thread
+
+    // 2. Create storage
+    descriptors.resize(total_descriptors);
+
+    // 3. Store descriptors
+    snd.seq.poll_descriptors(this->seq, descriptors.data(), n, POLLIN);
+    descriptors[n] = this->termination_event;
 
     // Start the listening thread
-    thread = std::thread{[this] {
+    thread = std::thread{[this, n] {
       auto& snd = alsa_data::snd;
       const auto period
           = std::chrono::duration_cast<std::chrono::milliseconds>(this->configuration.poll_period)
                 .count();
       for (;;)
       {
-        int err = poll(descriptors_.data(), descriptors_.size(), period);
+        int err = poll(descriptors.data(), descriptors.size(), static_cast<int32_t>(period));
         if (err >= 0)
         {
           // We got our stop-thread signal
-          if (descriptors_.back().revents & POLLIN)
+          if (descriptors[n].revents & POLLIN)
             break;
 
+          // Put ALSA event in our queue
           snd_seq_event_t* ev{};
           event_handle handle{snd};
           while (snd.seq.event_input(this->seq, &ev) >= 0)
           {
             handle.reset(ev);
-            this->handle_event(*ev);
+            this->handle_event_delayed(*ev);
+          }
+
+          // Process the events in a deferred way.
+          // This is because udev takes some milliseconds to populate its field after a
+          // port was added
+          auto tm = std::chrono::steady_clock::now();
+          for (auto it = queued_events.begin(); it != queued_events.end();)
+          {
+            if ((tm - it->second) >= this->configuration.poll_period)
+            {
+              this->handle_event_direct(it->first);
+              it = queued_events.erase(it);
+            }
+            else
+            {
+              break;
+            }
           }
         }
       }
     }};
+  }
+
+  void handle_event_delayed(const snd_seq_event_t& ev)
+  {
+    switch (ev.type)
+    {
+      case SND_SEQ_EVENT_CLIENT_START:
+      case SND_SEQ_EVENT_CLIENT_EXIT:
+      case SND_SEQ_EVENT_CLIENT_CHANGE:
+
+#if LIBREMIDI_ALSA_HAS_UMP_SEQ_EVENTS
+      case SND_SEQ_EVENT_UMP_EP_CHANGE:
+      case SND_SEQ_EVENT_UMP_BLOCK_CHANGE:
+#endif
+
+      case SND_SEQ_EVENT_PORT_START:
+      case SND_SEQ_EVENT_PORT_EXIT:
+      case SND_SEQ_EVENT_PORT_CHANGE:
+        queued_events.emplace_back(ev, std::chrono::steady_clock::now());
+        break;
+      default:
+        break;
+    }
   }
 
   ~observer_threaded()
@@ -317,7 +465,8 @@ public:
 
   eventfd_notifier termination_event{};
   std::thread thread;
-  std::vector<pollfd> descriptors_;
+  std::vector<pollfd> descriptors;
+  std::vector<std::pair<snd_seq_event_t, std::chrono::steady_clock::time_point>> queued_events;
 };
 
 template <typename ConfigurationImpl>
@@ -329,16 +478,16 @@ public:
   {
     this->configuration.manual_poll(
         poll_parameters{.addr = this->vaddr, .callback = [this](const auto& v) {
-                          this->handle_event(v);
-                          return 0;
-                        }});
+      this->handle_event_direct(v);
+      return 0;
+    }});
   }
 
   ~observer_manual() { this->configuration.stop_poll(this->vaddr); }
 };
 }
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 template <>
 inline std::unique_ptr<observer_api>

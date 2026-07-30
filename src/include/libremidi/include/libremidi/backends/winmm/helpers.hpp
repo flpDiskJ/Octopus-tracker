@@ -1,9 +1,10 @@
 #pragma once
 #include <libremidi/backends/winmm/error_domain.hpp>
 #include <libremidi/detail/midi_api.hpp>
-#include <algorithm>
 
-namespace libremidi
+#include <string>
+
+NAMESPACE_LIBREMIDI
 {
 
 // Convert a nullptr-terminated wide string or ANSI-encoded string to UTF-8.
@@ -70,5 +71,4 @@ inline void MakeUniqueOutPortName(std::string& deviceName, std::size_t portNumbe
   deviceName += " ";
   deviceName += std::to_string(x);
 }
-
 }

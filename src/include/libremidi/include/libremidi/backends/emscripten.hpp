@@ -7,7 +7,9 @@
   #include <libremidi/backends/emscripten/midi_out.hpp>
   #include <libremidi/backends/emscripten/observer.hpp>
 
-namespace libremidi
+  #include <string_view>
+
+NAMESPACE_LIBREMIDI
 {
 
 struct emscripten_backend
@@ -19,8 +21,8 @@ struct emscripten_backend
   using midi_out_configuration = emscripten_output_configuration;
   using midi_observer_configuration = emscripten_observer_configuration;
   static const constexpr auto API = libremidi::API::WEBMIDI;
-  static const constexpr auto name = "webmidi";
-  static const constexpr auto display_name = "WebMIDI";
+  static const constexpr std::string_view name = "webmidi";
+  static const constexpr std::string_view display_name = "WebMIDI";
 
   static constexpr inline bool available() noexcept { return true; }
 };

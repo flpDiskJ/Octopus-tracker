@@ -4,7 +4,8 @@
 #include <libremidi/detail/midi_in.hpp>
 #include <libremidi/detail/midi_stream_decoder.hpp>
 
-namespace libremidi
+#include <thread>
+NAMESPACE_LIBREMIDI
 {
 template <typename Impl, typename F>
 struct osc_parser
@@ -114,7 +115,7 @@ struct osc_parser
 
 }
 
-namespace libremidi::net
+NAMESPACE_LIBREMIDI::net
 {
 
 struct osc_parser_midi1
@@ -219,8 +220,6 @@ public:
     return {};
   }
 
-  stdx::error set_port_name(std::string_view) override { return stdx::error{}; }
-
   timestamp absolute_timestamp() const noexcept override
   {
     return std::chrono::steady_clock::now().time_since_epoch().count();
@@ -265,7 +264,7 @@ public:
 };
 }
 
-namespace libremidi::net_ump
+NAMESPACE_LIBREMIDI::net_ump
 {
 struct osc_parser_midi2
 {
@@ -393,8 +392,6 @@ public:
       m_socket.close();
     return {};
   }
-
-  stdx::error set_port_name(std::string_view) override { return stdx::error{}; }
 
   timestamp absolute_timestamp() const noexcept override
   {

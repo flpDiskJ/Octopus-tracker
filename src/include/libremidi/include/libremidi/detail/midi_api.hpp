@@ -5,7 +5,7 @@
 
 #include <string_view>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class midi_api
 {
@@ -23,14 +23,7 @@ public:
   {
     return std::errc::function_not_supported;
   }
-  virtual stdx::error set_client_name(std::string_view)
-  {
-    return std::errc::function_not_supported;
-  }
-  virtual stdx::error set_port_name(std::string_view)
-  {
-    return std::errc::function_not_supported;
-  }
+  virtual stdx::error set_port_name(std::string_view) { return std::errc::function_not_supported; }
 
   virtual stdx::error close_port() = 0;
 

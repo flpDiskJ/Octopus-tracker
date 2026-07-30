@@ -3,7 +3,7 @@
 #include <libremidi/backends/emscripten/helpers.hpp>
 #include <libremidi/detail/midi_out.hpp>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class midi_out_emscripten final
     : public midi1::out_api
@@ -28,6 +28,6 @@ public:
   stdx::error send_message(const unsigned char* message, size_t size) override;
 
 private:
-  int portNumber_{-1};
+  int m_portNumber{-1};
 };
 }

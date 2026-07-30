@@ -10,7 +10,7 @@
 #include <chrono>
 #include <thread>
 
-namespace libremidi::alsa_raw
+NAMESPACE_LIBREMIDI::alsa_raw
 {
 class midi_in_impl
     : public midi1::in_api
@@ -200,7 +200,7 @@ public:
   midi_in_alsa_raw_threaded(input_configuration&& conf, alsa_raw_input_configuration&& apiconf)
       : midi_in_impl{std::move(conf), std::move(apiconf)}
   {
-    if (this->termination_event < 0)
+    if (this->m_termination_event < 0)
     {
       libremidi_handle_error(this->configuration, "error creating eventfd.");
       return;
@@ -220,7 +220,7 @@ public:
 private:
   void run_thread(auto parse_func)
   {
-    fds_.push_back(this->termination_event);
+    fds_.push_back(this->m_termination_event);
     const auto period
         = std::chrono::duration_cast<std::chrono::milliseconds>(this->configuration.poll_period)
               .count();
@@ -228,12 +228,12 @@ private:
     for (;;)
     {
       // Poll
-      ssize_t err = poll(fds_.data(), fds_.size(), period);
+      ssize_t err = poll(fds_.data(), fds_.size(), static_cast<int32_t>(period));
       if (err == -EAGAIN)
         continue;
       else if (err < 0)
         return;
-      else if (termination_event.ready(fds_.back()))
+      else if (m_termination_event.ready(fds_.back()))
         break;
 
       err = do_read_events(parse_func, {fds_.data(), fds_.size() - 1});
@@ -250,11 +250,11 @@ private:
     {
       if (configuration.timestamps == timestamp_mode::NoTimestamp)
       {
-        this->thread_ = std::thread{[this] { run_thread(&midi_in_impl::read_input_buffer); }};
+        this->m_thread = std::thread{[this] { run_thread(&midi_in_impl::read_input_buffer); }};
       }
       else
       {
-        this->thread_ = std::thread{
+        this->m_thread = std::thread{
             [this] { run_thread(&midi_in_impl::read_input_buffer_with_timestamps); }};
       }
       return stdx::error{};
@@ -264,8 +264,7 @@ private:
       using namespace std::literals;
 
       libremidi_handle_error(
-          this->configuration,
-          "error starting MIDI input thread: "s + e.what());
+          this->configuration, "error starting MIDI input thread: "s + e.what());
       return e.code();
     }
     return stdx::error{};
@@ -282,16 +281,16 @@ private:
 
   stdx::error close_port() override
   {
-    termination_event.notify();
-    if (thread_.joinable())
-      thread_.join();
-    termination_event.consume(); // Reset to zero
+    m_termination_event.notify();
+    if (m_thread.joinable())
+      m_thread.join();
+    m_termination_event.consume(); // Reset to zero
 
     return midi_in_impl::close_port();
   }
 
-  std::thread thread_;
-  eventfd_notifier termination_event{};
+  std::thread m_thread;
+  eventfd_notifier m_termination_event{};
 };
 
 class midi_in_alsa_raw_manual : public midi_in_impl
@@ -316,19 +315,21 @@ private:
   {
     if (configuration.timestamps == timestamp_mode::NoTimestamp)
     {
-      configuration.manual_poll(manual_poll_parameters{
-          .fds = {this->fds_.data(), this->fds_.size()},
-          .callback = [this](std::span<pollfd> fds) {
-            return do_read_events(&midi_in_impl::read_input_buffer, fds);
-          }});
+      configuration.manual_poll(
+          manual_poll_parameters{
+              .fds = {this->fds_.data(), this->fds_.size()},
+              .callback = [this](std::span<pollfd> fds) {
+        return do_read_events(&midi_in_impl::read_input_buffer, fds);
+      }});
     }
     else
     {
-      configuration.manual_poll(manual_poll_parameters{
-          .fds = {this->fds_.data(), this->fds_.size()},
-          .callback = [this](std::span<pollfd> fds) {
-            return do_read_events(&midi_in_impl::read_input_buffer_with_timestamps, fds);
-          }});
+      configuration.manual_poll(
+          manual_poll_parameters{
+              .fds = {this->fds_.data(), this->fds_.size()},
+              .callback = [this](std::span<pollfd> fds) {
+        return do_read_events(&midi_in_impl::read_input_buffer_with_timestamps, fds);
+      }});
     }
   }
 
@@ -342,7 +343,7 @@ private:
 };
 }
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 template <>
 inline std::unique_ptr<midi_in_api> make<alsa_raw::midi_in_impl>(

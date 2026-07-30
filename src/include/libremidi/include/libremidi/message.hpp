@@ -2,13 +2,14 @@
 #include <libremidi/config.hpp>
 
 #include <algorithm>
+#include <cstdint>
 #include <span>
 #include <vector>
 #if defined(__cpp_exceptions)
   #include <stdexcept>
 #endif
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 enum class message_type : uint8_t
 {
@@ -121,12 +122,8 @@ struct message
   auto rbegin() noexcept { return bytes.rbegin(); }
   auto rend() noexcept { return bytes.rend(); }
 
-  bool uses_channel(int channel) const
+  bool uses_channel(int channel) const LIBREMIDI_PRECONDITION(channel > 0 && channel <= 16)
   {
-#if defined(__cpp_exceptions)
-    if (channel <= 0 || channel > 16)
-      throw std::range_error("out of range");
-#endif
     return ((bytes[0] & 0xF) == channel - 1) && ((bytes[0] & 0xF0) != 0xF0);
   }
 
@@ -250,12 +247,12 @@ struct meta_events
       int notated_32nd_notes_per_beat = 96)
   {
     int n = 1;
-    int powTwo = 0;
+    int pow_two = 0;
 
     while (n < denominator)
     {
       n <<= 1;
-      ++powTwo;
+      ++pow_two;
     }
 
     return {
@@ -263,7 +260,7 @@ struct meta_events
         0x58,
         0x04,
         static_cast<uint8_t>(numerator),
-        static_cast<uint8_t>(powTwo),
+        static_cast<uint8_t>(pow_two),
         static_cast<uint8_t>(clocks_per_click),
         static_cast<uint8_t>(notated_32nd_notes_per_beat)};
   }

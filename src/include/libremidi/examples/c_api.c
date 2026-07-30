@@ -36,7 +36,13 @@ void on_input_port_found(void* ctx, const libremidi_midi_in_port* port)
   if (ret != 0)
     return;
 
-  printf("input: %s\n", name);
+  uint64_t handle = -1;
+
+  ret = libremidi_midi_in_port_handle(port, &handle);
+  if (ret != 0)
+    return;
+
+  printf("input %llu: %s\n", handle, name);
   fflush(stdout);
 
   enumerated_ports* e = (enumerated_ports*)ctx;
@@ -53,7 +59,13 @@ void on_output_port_found(void* ctx, const libremidi_midi_out_port* port)
   if (ret != 0)
     return;
 
-  printf("output: %s\n", name);
+  uint64_t handle = -1;
+
+  ret = libremidi_midi_out_port_handle(port, &handle);
+  if (ret != 0)
+    return;
+
+  printf("output %llu: %s\n", handle, name);
   fflush(stdout);
 
   enumerated_ports* e = (enumerated_ports*)ctx;
@@ -92,6 +104,11 @@ int enumerate_ports(libremidi_midi_observer_handle* observer, struct enumerated_
 
 int main(void)
 {
+#if defined(_WIN32)
+  // Necessary for using WinUWP and WinMIDI, must be done as early as possible in your main()
+  CoInitializeEx(NULL, COINIT_MULTITHREADED);
+#endif
+
   int ret = 0;
 
   /// Create an observer for MIDI ports
@@ -176,7 +193,7 @@ int main(void)
   libremidi_midi_out_handle* midi_out = NULL;
   ret = libremidi_midi_out_new(&midi_out_conf, &midi_out_api_conf, &midi_out);
   if (ret != 0)
-    goto free_midi_in;
+    goto free_midi_out;
 
   for (int i = 0; i < 100; i++)
     sleep_ms(1000);

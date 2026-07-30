@@ -5,7 +5,9 @@
 #include <libremidi/detail/midi_out.hpp>
 #include <libremidi/detail/observer.hpp>
 
-namespace libremidi
+#include <string_view>
+
+NAMESPACE_LIBREMIDI
 {
 class observer_dummy : public observer_api
 {
@@ -23,11 +25,12 @@ class midi_in_dummy final
     , public error_handler
 {
 public:
-  explicit midi_in_dummy(const input_configuration& configuration, std::any)
+  explicit midi_in_dummy(const input_configuration& configuration, const input_api_configuration&)
   {
     libremidi_handle_warning(configuration, "This class provides no functionality.");
   }
-  explicit midi_in_dummy(const ump_input_configuration& configuration, std::any)
+  explicit midi_in_dummy(
+      const ump_input_configuration& configuration, const input_api_configuration&)
   {
     libremidi_handle_warning(configuration, "This class provides no functionality.");
   }
@@ -37,19 +40,9 @@ public:
   {
     return stdx::error{};
   }
-  stdx::error open_virtual_port(std::string_view /*portName*/) override
-  {
-    return stdx::error{};
-  }
+  stdx::error open_virtual_port(std::string_view /*portName*/) override { return stdx::error{}; }
   stdx::error close_port() override { return stdx::error{}; }
-  stdx::error set_client_name(std::string_view /*clientName*/) override
-  {
-    return stdx::error{};
-  }
-  stdx::error set_port_name(std::string_view /*portName*/) override
-  {
-    return stdx::error{};
-  }
+  stdx::error set_port_name(std::string_view /*portName*/) override { return stdx::error{}; }
   timestamp absolute_timestamp() const noexcept override { return 0; }
 };
 
@@ -58,7 +51,8 @@ class midi_out_dummy final
     , public error_handler
 {
 public:
-  explicit midi_out_dummy(const output_configuration& configuration, std::any)
+  explicit midi_out_dummy(
+      const output_configuration& configuration, const output_api_configuration&)
   {
     libremidi_handle_warning(configuration, "This class provides no functionality.");
   }
@@ -68,20 +62,10 @@ public:
   {
     return stdx::error{};
   }
-  stdx::error open_virtual_port(std::string_view /*portName*/) override
-  {
-    return stdx::error{};
-  }
+  stdx::error open_virtual_port(std::string_view /*portName*/) override { return stdx::error{}; }
 
   stdx::error close_port() override { return stdx::error{}; }
-  stdx::error set_client_name(std::string_view /*clientName*/) override
-  {
-    return stdx::error{};
-  }
-  stdx::error set_port_name(std::string_view /*portName*/) override
-  {
-    return stdx::error{};
-  }
+  stdx::error set_port_name(std::string_view /*portName*/) override { return stdx::error{}; }
   stdx::error send_message(const unsigned char* /*message*/, size_t /*size*/) override
   {
     return stdx::error{};
@@ -97,8 +81,8 @@ struct dummy_backend
   using midi_out_configuration = dummy_configuration;
   using midi_observer_configuration = dummy_configuration;
   static const constexpr auto API = libremidi::API::DUMMY;
-  static const constexpr auto name = "dummy";
-  static const constexpr auto display_name = "Dummy";
+  static const constexpr std::string_view name = "dummy";
+  static const constexpr std::string_view display_name = "Dummy";
 
   static constexpr inline bool available() noexcept { return true; }
 };

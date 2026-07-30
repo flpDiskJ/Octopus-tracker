@@ -18,13 +18,14 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <spa/param/audio/format-utils.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 template <typename K, typename V>
 using hash_map = std::unordered_map<K, V>;
@@ -79,11 +80,11 @@ struct pipewire_context
   struct graph
   {
     mutable std::mutex mtx;
-    libremidi::hash_map<uint32_t, node> physical_audio;
-    libremidi::hash_map<uint32_t, node> physical_midi;
-    libremidi::hash_map<uint32_t, node> software_audio;
-    libremidi::hash_map<uint32_t, node> software_midi;
-    libremidi::hash_map<uint32_t, port_info> port_cache;
+    libremidi::hash_map<uint64_t, node> physical_audio;
+    libremidi::hash_map<uint64_t, node> physical_midi;
+    libremidi::hash_map<uint64_t, node> software_audio;
+    libremidi::hash_map<uint64_t, node> software_midi;
+    libremidi::hash_map<uint64_t, port_info> port_cache;
 
     void for_each_port(auto func)
     {
@@ -123,7 +124,7 @@ struct pipewire_context
   }
 
   explicit pipewire_context(std::shared_ptr<pipewire_instance> inst)
-      : global_instance{inst}
+      : global_instance{std::move(inst)}
       , owns_main_loop{true}
   {
     this->main_loop = pw.main_loop_new(nullptr);
@@ -187,13 +188,13 @@ struct pipewire_context
       pipewire_context& self = *(pipewire_context*)object;
       if (strcmp(type, PW_TYPE_INTERFACE_Port) == 0)
         self.register_port(id, type);
-        },
+    },
         .global_remove =
             [](void* object, uint32_t id) {
       pipewire_context& self = *(pipewire_context*)object;
       self.unregister_port(id);
-        },
-        };
+    },
+    };
 
     // Start listening
     pw_registry_add_listener(this->registry, &this->registry_listener, &registry_events, this);
@@ -244,8 +245,8 @@ struct pipewire_context
     // Remove from the listeners
     auto it
         = std::find_if(port_listener.begin(), port_listener.end(), [&](const listened_port& l) {
-            return l.id == id;
-          });
+      return l.id == id;
+    });
     if (it != port_listener.end())
     {
       pw.proxy_destroy((pw_proxy*)it->port);
@@ -266,14 +267,14 @@ struct pipewire_context
     static constexpr struct pw_core_events core_events = {
         .version = PW_VERSION_CORE_EVENTS,
         .done =
-        [](void* object, uint32_t id, int seq) {
+            [](void* object, uint32_t id, int seq) {
       auto& self = *(pipewire_context*)object;
-      if(id == PW_ID_CORE && seq == self.pending)
+      if (id == PW_ID_CORE && seq == self.pending)
       {
         self.done = 1;
         libpipewire::instance().main_loop_quit(self.main_loop);
       }
-        },
+    },
     };
 
     spa_zero(core_listener);
@@ -287,7 +288,7 @@ struct pipewire_context
     spa_hook_remove(&core_listener);
   }
 
-  [[nodiscard]] pw_proxy* link_ports(uint32_t out_port, uint32_t in_port)
+  [[nodiscard]] pw_proxy* link_ports(uint64_t out_port, uint64_t in_port)
   {
     auto props = pw.properties_new(
         PW_KEY_LINK_OUTPUT_PORT, std::to_string(out_port).c_str(), PW_KEY_LINK_INPUT_PORT,
@@ -361,12 +362,16 @@ struct pipewire_context
           return &this->current_graph.physical_audio[nid];
         else if (p.format.find("midi") != p.format.npos)
           return &this->current_graph.physical_midi[nid];
+        else if (p.format.find("UMP") != p.format.npos)
+          return &this->current_graph.physical_midi[nid];
       }
       else
       {
         if (p.format.find("audio") != p.format.npos)
           return &this->current_graph.software_audio[nid];
         else if (p.format.find("midi") != p.format.npos)
+          return &this->current_graph.software_midi[nid];
+        else if (p.format.find("UMP") != p.format.npos)
           return &this->current_graph.software_midi[nid];
       }
       return nullptr;
@@ -453,12 +458,12 @@ struct pipewire_filter
   }* port{};
 
   explicit pipewire_filter(std::shared_ptr<pipewire_context> loop)
-      : loop{loop}
+      : loop{std::move(loop)}
   {
   }
 
   explicit pipewire_filter(std::shared_ptr<pipewire_context> loop, pw_filter* filter)
-      : loop{loop}
+      : loop{std::move(loop)}
       , filter{filter}
   {
   }
@@ -498,7 +503,8 @@ struct pipewire_filter
       pw.filter_destroy(this->filter);
   }
 
-  stdx::error create_local_port(std::string_view port_name, spa_direction direction)
+  stdx::error
+  create_local_port(std::string_view port_name, spa_direction direction, const char* format)
   {
     // clang-format off
     this->port = (struct port*)pw.filter_add_port(
@@ -507,7 +513,7 @@ struct pipewire_filter
         PW_FILTER_PORT_FLAG_MAP_BUFFERS,
         sizeof(struct port),
         pw.properties_new(
-            PW_KEY_FORMAT_DSP, "8 bit raw midi",
+            PW_KEY_FORMAT_DSP, format,
             PW_KEY_PORT_NAME, port_name.data(),
             nullptr),
         nullptr, 0);
@@ -517,7 +523,7 @@ struct pipewire_filter
     return stdx::error{};
   }
 
-  void set_port_buffer(int bytes)
+  void set_port_buffer(int64_t bytes)
   {
     uint8_t buffer[1024];
     struct spa_pod_builder builder;

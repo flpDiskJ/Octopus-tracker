@@ -5,7 +5,7 @@
 
 #include <unordered_set>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class observer_pipewire final
     : public observer_api
@@ -19,24 +19,15 @@ public:
   {
   } configuration;
 
-  explicit observer_pipewire(observer_configuration&& conf, pipewire_observer_configuration&& apiconf)
+  explicit observer_pipewire(
+      observer_configuration&& conf, pipewire_observer_configuration&& apiconf)
       : configuration{std::move(conf), std::move(apiconf)}
   {
     create_context(*this);
 
-    // FIXME notify_in_constructor
     // FIXME port rename callback
-#if 0
-    // Initialize PipeWire client
-    if (configuration.context)
     {
-      this->client = configuration.context;
-      set_callbacks();
-    }
-    else
-#endif
-    {
-      this->add_callbacks(configuration);
+      this->add_callbacks<libremidi::API::PIPEWIRE>("midi", configuration);
       this->start_thread();
     }
 
@@ -56,27 +47,20 @@ public:
 
   std::vector<libremidi::input_port> get_input_ports() const noexcept override
   {
-    return get_ports<SPA_DIRECTION_OUTPUT>(this->configuration, *this->global_context);
+    return get_ports<SPA_DIRECTION_OUTPUT, libremidi::API::PIPEWIRE>(
+        "midi", this->configuration, *this->global_context);
   }
 
   std::vector<libremidi::output_port> get_output_ports() const noexcept override
   {
-    return get_ports<SPA_DIRECTION_INPUT>(this->configuration, *this->global_context);
+    return get_ports<SPA_DIRECTION_INPUT, libremidi::API::PIPEWIRE>(
+        "midi", this->configuration, *this->global_context);
   }
 
   ~observer_pipewire()
   {
     stop_thread();
     destroy_context();
-#if 0
-    if (client && !configuration.context)
-    {
-      // If we own the client, deactivate it
-      pipewire_deactivate(this->client);
-      pipewire_client_close(this->client);
-      this->client = nullptr;
-    }
-#endif
   }
 
   std::unordered_set<std::string> seen_input_ports;

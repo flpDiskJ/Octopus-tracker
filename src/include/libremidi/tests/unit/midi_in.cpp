@@ -21,7 +21,7 @@ TEST_CASE("creation", "[midi_in]")
 
   GIVEN("A default midi input")
   {
-    libremidi::midi_in in(libremidi::input_configuration{.on_message = [](auto) {}});
+    libremidi::midi_in in(libremidi::input_configuration{.on_message = [](auto) { }});
     THEN("created with the default MIDI 1 api for the platform")
     {
       REQUIRE(in.get_current_api() == libremidi::midi1::default_api());
@@ -30,7 +30,7 @@ TEST_CASE("creation", "[midi_in]")
 
   GIVEN("A default ump input")
   {
-    libremidi::ump_input_configuration conf{.on_message = [](auto) {}};
+    libremidi::ump_input_configuration conf{.on_message = [](auto) { }};
     libremidi::midi_in in(conf);
     THEN("created with the default MIDI 2 api for the platform")
     {
@@ -41,7 +41,7 @@ TEST_CASE("creation", "[midi_in]")
   GIVEN("A midi input with an explicitly unspecified API")
   {
     libremidi::midi_in in(
-        libremidi::input_configuration{.on_message = [](auto) {}}, libremidi::API::UNSPECIFIED);
+        libremidi::input_configuration{.on_message = [](auto) { }}, libremidi::API::UNSPECIFIED);
     THEN("created with the default api")
     {
       REQUIRE(in.get_current_api() == libremidi::midi1::default_api());
@@ -50,7 +50,9 @@ TEST_CASE("creation", "[midi_in]")
 
   GIVEN("A midi input with an empty API")
   {
-    libremidi::midi_in in(libremidi::input_configuration{.on_message = [](auto) {}}, std::any{});
+    libremidi::midi_in in(
+        libremidi::input_configuration{.on_message = [](auto) { }},
+        libremidi::input_api_configuration{});
     THEN("created with defaultapi")
     {
       REQUIRE(in.get_current_api() == libremidi::midi1::default_api());
@@ -59,26 +61,17 @@ TEST_CASE("creation", "[midi_in]")
   GIVEN("A midi input with an explicit API")
   {
     libremidi::midi_in in(
-        libremidi::input_configuration{.on_message = [](auto) {}}, libremidi::API::KEYBOARD);
+        libremidi::input_configuration{.on_message = [](auto) { }}, libremidi::API::KEYBOARD);
     THEN("created with that api")
     {
       REQUIRE(in.get_current_api() == libremidi::API::KEYBOARD);
     }
   }
 
-  GIVEN("A midi input with a wrong API")
-  {
-    libremidi::midi_in in(libremidi::input_configuration{.on_message = [](auto) {}}, float(1.23f));
-    THEN("created with dummy api")
-    {
-      REQUIRE(in.get_current_api() == libremidi::API::DUMMY);
-    }
-  }
-
   GIVEN("A midi input with a proper API")
   {
     libremidi::midi_in in(
-        libremidi::input_configuration{.on_message = [](auto) {}},
+        libremidi::input_configuration{.on_message = [](auto) { }},
         libremidi::kbd_input_configuration{});
     THEN("created with the correct api")
     {
@@ -89,7 +82,7 @@ TEST_CASE("creation", "[midi_in]")
   GIVEN("A midi 2 input with a proper midi1 API")
   {
     libremidi::midi_in in(
-        libremidi::ump_input_configuration{.on_message = [](auto) {}},
+        libremidi::ump_input_configuration{.on_message = [](auto) { }},
         libremidi::kbd_input_configuration{});
     THEN("created with the correct api")
     {

@@ -2,12 +2,15 @@
 #include <libremidi/config.hpp>
 
 #include <string>
+
+#if !defined(BOOST_ASIO_IO_CONTEXT_HPP)
 namespace boost::asio
 {
 struct io_context;
 }
+#endif
 
-namespace libremidi::net
+NAMESPACE_LIBREMIDI::net
 {
 enum class protocol
 {
@@ -46,7 +49,7 @@ struct dgram_observer_configuration
 
 }
 
-namespace libremidi::net_ump
+NAMESPACE_LIBREMIDI::net_ump
 {
 enum class protocol
 {

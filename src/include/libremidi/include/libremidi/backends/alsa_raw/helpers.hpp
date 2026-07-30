@@ -2,10 +2,17 @@
 #include <libremidi/backends/linux/alsa.hpp>
 #include <libremidi/config.hpp>
 #include <libremidi/detail/observer.hpp>
+#include <libremidi/observer_configuration.hpp>
 
-#include <functional>
+#include <alsa/asoundlib.h>
+
+#include <cerrno>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <vector>
 
 // Credits: greatly inspired from
@@ -13,9 +20,7 @@
 // https://ccrma.stanford.edu/~craig/articles/linuxmidi/alsa-1.0/alsarawportlist.c
 // Thanks Craig Stuart Sapp <craig@ccrma.stanford.edu>
 
-namespace libremidi
-{
-namespace
+NAMESPACE_LIBREMIDI
 {
 struct alsa_raw_port_id
 {
@@ -27,25 +32,25 @@ struct alsa_raw_port_id
 };
 inline constexpr port_handle raw_to_port_handle(alsa_raw_port_id id) noexcept
 {
-  return (uint64_t(id.card) << 32) + (uint64_t(id.dev) << 16) + id.port;
+  return (uint64_t(id.port) << 32) + (uint64_t(id.dev) << 16) + id.card;
 }
 inline constexpr alsa_raw_port_id raw_from_port_handle(port_handle p) noexcept
 {
   alsa_raw_port_id ret;
-  ret.card = (p & 0x00'00'FF'FF'00'00'00'00) >> 32;
+  ret.port = (p & 0x00'00'FF'FF'00'00'00'00) >> 32;
   ret.dev = (p & 0x00'00'00'00'FF'FF'00'00) >> 16;
-  ret.port = (p & 0x00'00'00'00'00'00'FF'FF);
+  ret.card = (p & 0x00'00'00'00'00'00'FF'FF);
   return ret;
 }
 static_assert(raw_from_port_handle(raw_to_port_handle({102, 7, 3})).card == 102);
 static_assert(raw_from_port_handle(raw_to_port_handle({12, 7, 3})).dev == 7);
 static_assert(raw_from_port_handle(raw_to_port_handle({12, 7, 3})).port == 3);
-}
 
 namespace alsa_raw
 {
 struct alsa_raw_port_info
 {
+  // hw:1,2,0
   std::string device;
   std::string card_name;
   std::string device_name;
@@ -91,7 +96,6 @@ struct enumerator
       : handler{self}
       , configuration{self.configuration}
   {
-
   }
 
   // 1: is an input / output
@@ -114,8 +118,9 @@ struct enumerator
     else if (status < 0 && status != -ENXIO)
     {
       handler.libremidi_handle_error(
-          configuration, "Cannot get rawmidi information: " + device_identifier(card, device, sub)
-                             + " : " + snd.strerror(status));
+          configuration,
+          "Cannot get rawmidi information: " + device_identifier(card, device, sub) + " : "
+              + snd.strerror(status));
       return status;
     }
     else
@@ -201,7 +206,8 @@ inline snd_ctl_wrapper::snd_ctl_wrapper(enumerator& self, const char* name)
   if (status < 0)
   {
     self.handler.libremidi_handle_error(
-        self.configuration, "cannot open control for card"s + name + " : " + snd.strerror(status));
+        self.configuration,
+        "cannot open control for card"s + name + " : " + snd.strerror(status));
   }
 }
 

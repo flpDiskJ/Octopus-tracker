@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <libremidi/message.hpp>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 /**
  * @brief reads Standard MIDI files (SMF).
@@ -66,7 +66,7 @@ public:
   std::vector<midi_track> tracks;
 
 private:
-  bool useAbsoluteTicks{};
+  bool m_useAbsoluteTicks{};
 };
 }
 

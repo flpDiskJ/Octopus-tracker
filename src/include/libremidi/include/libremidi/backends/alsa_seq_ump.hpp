@@ -5,7 +5,11 @@
 #include <libremidi/backends/alsa_seq_ump/config.hpp>
 #include <libremidi/backends/alsa_seq_ump/midi_out.hpp>
 
-namespace libremidi
+#include <unistd.h>
+
+#include <string_view>
+
+NAMESPACE_LIBREMIDI
 {
 template <>
 inline std::unique_ptr<observer_api>
@@ -38,7 +42,7 @@ inline std::unique_ptr<midi_in_api> make<
 
 }
 
-namespace libremidi::alsa_seq_ump
+NAMESPACE_LIBREMIDI::alsa_seq_ump
 {
 struct backend
 {
@@ -50,13 +54,16 @@ struct backend
   using midi_out_configuration = alsa_seq_ump::output_configuration;
   using midi_observer_configuration = alsa_seq_ump::observer_configuration;
   static const constexpr auto API = libremidi::API::ALSA_SEQ_UMP;
-  static const constexpr auto name = "alsa_seq_ump";
-  static const constexpr auto display_name = "ALSA (sequencer, UMP)";
+  static const constexpr std::string_view name = "alsa_seq_ump";
+  static const constexpr std::string_view display_name = "ALSA (sequencer, UMP)";
 
   static inline bool available() noexcept
   {
     static const libasound& snd = libasound::instance();
-    return snd.available && snd.seq.available && snd.seq.ump.available && snd.ump.available;
+    if (!snd.available || !snd.seq.available || !snd.seq.ump.available || !snd.ump.available)
+      return false;
+
+    return ::access("/dev/snd/seq", F_OK | R_OK | W_OK) == 0;
   }
 };
 }

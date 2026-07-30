@@ -24,10 +24,10 @@ struct libremidi_midi_out_handle
   libremidi::midi_out self;
 };
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 
-static void assign_error_callback(const auto& src, auto& dst)
+LIBREMIDI_STATIC void assign_error_callback(const auto& src, auto& dst)
 {
   if (src.callback)
   {
@@ -44,14 +44,14 @@ const char* libremidi_get_version(void)
   return LIBREMIDI_VERSION;
 }
 
-void libremidi_available_midi1_apis(void* ctx, void (*cb)(void* ctx, libremidi_api))
+void libremidi_midi1_available_apis(void* ctx, void (*cb)(void* ctx, libremidi_api))
 {
   if (!cb)
     return;
   libremidi::midi1::for_all_backends([=](auto b) { cb(ctx, b.API); });
 }
 
-void libremidi_available_midi2_apis(void* ctx, void (*cb)(void* ctx, libremidi_api))
+void libremidi_midi2_available_apis(void* ctx, void (*cb)(void* ctx, libremidi_api))
 {
   if (!cb)
     return;
@@ -123,6 +123,16 @@ int libremidi_midi_in_port_name(const libremidi_midi_in_port* port, const char**
   return 0;
 }
 
+int libremidi_midi_in_port_handle(const libremidi_midi_in_port* port, uint64_t* handle)
+{
+  if (!port || !handle)
+    return -EINVAL;
+
+  auto& p = *reinterpret_cast<const libremidi::input_port*>(port);
+  *handle = static_cast<uint64_t>(p.port);
+  return 0;
+}
+
 int libremidi_midi_out_port_clone(
     const libremidi_midi_out_port* port, libremidi_midi_out_port** dst)
 {
@@ -149,6 +159,16 @@ int libremidi_midi_out_port_name(
   auto& p = *reinterpret_cast<const libremidi::output_port*>(port);
   *name = p.port_name.data();
   *len = p.port_name.size();
+  return 0;
+}
+
+int libremidi_midi_out_port_handle(const libremidi_midi_out_port* port, uint64_t* handle)
+{
+  if (!port || !handle)
+    return -EINVAL;
+
+  auto& p = *reinterpret_cast<const libremidi::output_port*>(port);
+  *handle = static_cast<uint64_t>(p.port);
   return 0;
 }
 
@@ -276,11 +296,12 @@ int libremidi_midi_in_new(
             = [cb = c->get_timestamp](int64_t msg) { return cb.callback(cb.context, msg); };
       }
 
-      if (c->on_midi1_message.callback)
+      if (c->version == libremidi_midi_configuration::MIDI1 && c->on_midi1_message.callback)
         conf.on_message = [cb = c->on_midi1_message](const libremidi::message& msg) {
           cb.callback(cb.context, msg.timestamp, msg.bytes.data(), msg.size());
         };
-      else if (c->on_midi1_raw_data.callback)
+      else if (
+          c->version == libremidi_midi_configuration::MIDI1_RAW && c->on_midi1_raw_data.callback)
       {
         conf.on_raw_data = [cb = c->on_midi1_raw_data](std::span<const uint8_t> msg, int64_t ts) {
           cb.callback(cb.context, ts, msg.data(), msg.size());
@@ -319,11 +340,12 @@ int libremidi_midi_in_new(
             = [cb = c->get_timestamp](int64_t msg) { return cb.callback(cb.context, msg); };
       }
 
-      if (c->on_midi2_message.callback)
+      if (c->version == libremidi_midi_configuration::MIDI2 && c->on_midi2_message.callback)
         conf.on_message = [cb = c->on_midi2_message](const libremidi::ump& msg) {
           cb.callback(cb.context, msg.timestamp, msg.data, msg.size());
         };
-      else if (c->on_midi2_raw_data.callback)
+      else if (
+          c->version == libremidi_midi_configuration::MIDI2_RAW && c->on_midi2_raw_data.callback)
       {
         conf.on_raw_data = [cb = c->on_midi2_raw_data](std::span<const uint32_t> msg, int64_t ts) {
           cb.callback(cb.context, ts, msg.data(), msg.size());
@@ -470,7 +492,8 @@ int libremidi_midi_out_send_message(
   return res != stdx::error{} ? -EIO : 0;
 }
 
-int libremidi_midi_out_send_ump(libremidi_midi_out_handle* out, const libremidi_midi2_symbol* msg, size_t sz)
+int libremidi_midi_out_send_ump(
+    libremidi_midi_out_handle* out, const libremidi_midi2_symbol* msg, size_t sz)
 {
   if (!out || !msg || sz > std::numeric_limits<int32_t>::max())
     return -EINVAL;

@@ -4,7 +4,7 @@
 #include <libremidi/backends/winmm/observer.hpp>
 #include <libremidi/detail/midi_out.hpp>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 
 class midi_out_winmm final
@@ -65,8 +65,7 @@ public:
       if (p.port_name == port.port_name)
         return do_open(port.port);
     }
-    libremidi_handle_error(
-        configuration, "port not found: " + p.port_name);
+    libremidi_handle_error(configuration, "port not found: " + p.port_name);
     return std::errc::invalid_argument;
   }
 
@@ -107,8 +106,7 @@ public:
       auto result = midiOutPrepareHeader(this->outHandle, &sysex, sizeof(MIDIHDR));
       if (result != MMSYSERR_NOERROR)
       {
-        libremidi_handle_error(
-            configuration, "error preparing sysex header.");
+        libremidi_handle_error(configuration, "error preparing sysex header.");
         return from_mmerr(result);
       }
 
@@ -116,8 +114,7 @@ public:
       result = midiOutLongMsg(this->outHandle, &sysex, sizeof(MIDIHDR));
       if (result != MMSYSERR_NOERROR)
       {
-        libremidi_handle_error(
-            configuration, "error sending sysex message.");
+        libremidi_handle_error(configuration, "error sending sysex message.");
         return from_mmerr(result);
       }
 
@@ -148,8 +145,7 @@ public:
       auto result = midiOutShortMsg(this->outHandle, packet);
       if (result != MMSYSERR_NOERROR)
       {
-        libremidi_handle_error(
-            configuration, "error sending MIDI message.");
+        libremidi_handle_error(configuration, "error sending MIDI message.");
         return from_mmerr(result);
       }
     }

@@ -5,7 +5,7 @@
 #include <chrono>
 #include <unordered_map>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class midi_in_kbd final
     : public midi1::in_api
@@ -22,21 +22,21 @@ public:
   explicit midi_in_kbd(input_configuration&& conf, kbd_input_configuration&& apiconf)
       : configuration{std::move(conf), std::move(apiconf)}
   {
-    configuration.set_input_scancode_callbacks(
-        [this](int v) { on_keypress(v); }, [this](int v) { on_keyrelease(v); });
   }
 
   ~midi_in_kbd() override { }
 
   libremidi::API get_current_api() const noexcept override { return libremidi::API::KEYBOARD; }
 
-  stdx::error open_port(const input_port&, std::string_view) override { return stdx::error{}; }
+  stdx::error open_port(const input_port&, std::string_view) override
+  {
+    configuration.set_input_scancode_callbacks(
+        [this](int v) { on_keypress(v); }, [this](int v) { on_keyrelease(v); });
 
-  stdx::error open_virtual_port(std::string_view) override { return stdx::error{}; }
+    return stdx::error{};
+  }
 
   stdx::error close_port() override { return stdx::error{}; }
-
-  stdx::error set_port_name(std::string_view) override { return stdx::error{}; }
 
   timestamp absolute_timestamp() const noexcept override
   {
@@ -45,7 +45,7 @@ public:
 
   void on_keypress(int scancode)
   {
-    using kevent = kbd_input_configuration::kbd_event;
+    using kevent = libremidi::kbd_event;
 
     auto it = configuration.scancode_map.find(scancode);
     if (it == configuration.scancode_map.end())
@@ -88,7 +88,7 @@ public:
 
   void on_keyrelease(int scancode)
   {
-    using kevent = kbd_input_configuration::kbd_event;
+    using kevent = libremidi::kbd_event;
 
     auto it = configuration.scancode_map.find(scancode);
     if (it == configuration.scancode_map.end())

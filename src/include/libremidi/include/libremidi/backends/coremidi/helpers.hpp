@@ -1,9 +1,9 @@
 #pragma once
+#include <libremidi/backends/coremidi/error_domain.hpp>
 #include <libremidi/detail/memory.hpp>
 #include <libremidi/detail/midi_api.hpp>
 #include <libremidi/error_handler.hpp>
 #include <libremidi/input_configuration.hpp>
-#include <libremidi/backends/coremidi/error_domain.hpp>
 
 #include <CoreMIDI/CoreMIDI.h>
 #include <CoreServices/CoreServices.h>
@@ -21,13 +21,12 @@
   #define LIBREMIDI_AUDIO_GET_CURRENT_HOST_TIME AudioGetCurrentHostTime
 #endif
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 using CFString_handle = unique_handle<const __CFString, CFRelease>;
 using CFStringMutable_handle = unique_handle<__CFString, CFRelease>;
-namespace
-{
-static inline std::string get_string_property(MIDIObjectRef object, CFStringRef property) noexcept
+
+LIBREMIDI_STATIC std::string get_string_property(MIDIObjectRef object, CFStringRef property) noexcept
 {
   CFStringRef res;
   if (MIDIObjectGetStringProperty(object, property, &res) || !res)
@@ -39,14 +38,14 @@ static inline std::string get_string_property(MIDIObjectRef object, CFStringRef 
   return name;
 }
 
-static inline int32_t get_int_property(MIDIObjectRef object, CFStringRef property) noexcept
+LIBREMIDI_STATIC int32_t get_int_property(MIDIObjectRef object, CFStringRef property) noexcept
 {
   SInt32 res;
   MIDIObjectGetIntegerProperty(object, property, &res);
   return res;
 }
 
-static inline CFString_handle toCFString(std::string_view str) noexcept
+LIBREMIDI_STATIC CFString_handle toCFString(std::string_view str) noexcept
 {
   return CFString_handle{CFStringCreateWithCString(nullptr, str.data(), kCFStringEncodingASCII)};
 }
@@ -71,20 +70,22 @@ inline uint64_t AudioConvertHostTimeToNanos(uint64_t hostTime)
   return static_cast<uint64_t>(res);
 }
 #endif
+
+LIBREMIDI_STATIC auto get_cfstring_property(MIDIObjectRef prop, CFStringRef name)
+{
+  CFStringRef str = nullptr;
+  MIDIObjectGetStringProperty(prop, name, &str);
+  return CFString_handle{str};
+}
+
 // This function was submitted by Douglas Casey Tucker and apparently
 // derived largely from PortMidi.
 inline CFStringRef EndpointName(MIDIEndpointRef endpoint, bool isExternal)
 {
   CFMutableStringRef result = CFStringCreateMutable(nullptr, 0);
 
-  static constexpr auto getProp = [](MIDIObjectRef prop) {
-    CFStringRef str = nullptr;
-    MIDIObjectGetStringProperty(prop, kMIDIPropertyName, &str);
-    return CFString_handle{str};
-  };
-
   // Begin with the endpoint's name.
-  if (auto endpoint_name = getProp(endpoint))
+  if (auto endpoint_name = get_cfstring_property(endpoint, kMIDIPropertyName))
   {
     CFStringAppend(result, endpoint_name.get());
   }
@@ -101,7 +102,7 @@ inline CFStringRef EndpointName(MIDIEndpointRef endpoint, bool isExternal)
   if (CFStringGetLength(result) == 0)
   {
     // endpoint name has zero length -- try the entity
-    if (auto entity_name = getProp(entity))
+    if (auto entity_name = get_cfstring_property(entity, kMIDIPropertyName))
     {
       CFStringAppend(result, entity_name.get());
     }
@@ -112,7 +113,7 @@ inline CFStringRef EndpointName(MIDIEndpointRef endpoint, bool isExternal)
   if (device == 0)
     goto finish;
 
-  if (auto dev_name = getProp(device))
+  if (auto dev_name = get_cfstring_property(device, kMIDIPropertyName))
   {
     const auto dev_strlen = CFStringGetLength(dev_name.get());
 
@@ -218,21 +219,18 @@ locate_object(auto& self, const port_information& info, MIDIObjectType requested
   auto ret = MIDIObjectFindByUniqueID(uid, &object, &type);
   if (ret != noErr)
   {
-    self.libremidi_handle_error(
-        self.configuration, "cannot find port: " + info.port_name);
+    self.libremidi_handle_error(self.configuration, "cannot find port: " + info.port_name);
     return 0;
   }
 
   if (type != requested_type || object == 0)
   {
     self.libremidi_handle_error(
-        self.configuration, "invalid object: " + info.port_name + " : "
-                                + std::to_string(object));
+        self.configuration, "invalid object: " + info.port_name + " : " + std::to_string(object));
     return 0;
   }
 
   return object;
-}
 }
 
 // A structure to hold variables related to the CoreMIDI API

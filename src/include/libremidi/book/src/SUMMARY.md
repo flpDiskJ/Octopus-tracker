@@ -4,6 +4,7 @@
 # Getting started
 - [Compiling](./compiling.md)
   - [Header-only support](./header-only.md)
+  - [Adding to a project](./cmake.md)
 - [Enumerating ports](./enumerating.md)
 - [MIDI 1 in](./midi-1-in.md)
 - [MIDI 1 out](./midi-1-out.md)

@@ -2,7 +2,7 @@
   #include <libremidi/backends/emscripten/midi_access.hpp>
   #include <libremidi/backends/emscripten/midi_out.hpp>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 LIBREMIDI_INLINE midi_out_emscripten::midi_out_emscripten(
     output_configuration&& conf, emscripten_output_configuration&& apiconf)
@@ -29,34 +29,36 @@ LIBREMIDI_INLINE stdx::error midi_out_emscripten::open_port(int portNumber, std:
 
   if (portNumber >= midi.output_count())
   {
-    libremidi_handle_error(
-        this->configuration, "no MIDI output sources found.");
+    libremidi_handle_error(this->configuration, "no MIDI output sources found.");
     return std::errc::invalid_argument;
   }
 
-  portNumber_ = portNumber;
+  m_portNumber = portNumber;
   return stdx::error{};
 }
 
-LIBREMIDI_INLINE stdx::error midi_out_emscripten::open_port(const output_port& p, std::string_view nm)
+LIBREMIDI_INLINE stdx::error
+midi_out_emscripten::open_port(const output_port& p, std::string_view nm)
 {
   return open_port(p.port, nm);
 }
 
-LIBREMIDI_INLINE stdx::error midi_out_emscripten::close_port() { 
+LIBREMIDI_INLINE stdx::error midi_out_emscripten::close_port()
+{
   return stdx::error{};
 }
 
-LIBREMIDI_INLINE stdx::error midi_out_emscripten::send_message(const unsigned char* message, size_t size)
+LIBREMIDI_INLINE stdx::error
+midi_out_emscripten::send_message(const unsigned char* message, size_t size)
 {
-  if (portNumber_ < 0)
+  if (m_portNumber < 0)
     libremidi_handle_error(
         this->configuration,
         "trying to send a message without an open "
         "port.");
 
   webmidi_helpers::midi_access_emscripten::instance().send_message(
-      portNumber_, reinterpret_cast<const char*>(message), size);
+      m_portNumber, reinterpret_cast<const char*>(message), size);
   return stdx::error{};
 }
 }

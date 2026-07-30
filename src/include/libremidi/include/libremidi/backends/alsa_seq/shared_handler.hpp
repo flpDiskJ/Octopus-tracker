@@ -9,7 +9,7 @@
 
   #include <variant>
 
-namespace libremidi::alsa_seq
+NAMESPACE_LIBREMIDI::alsa_seq
 {
 
 struct shared_handler : public libremidi::shared_context
@@ -61,7 +61,7 @@ struct shared_handler : public libremidi::shared_context
   {
     auto clt = std::make_shared<shared_handler>(client_name);
 
-    auto cb = [client = std::weak_ptr{clt}](const libremidi::alsa_seq::poll_parameters& params) {
+    auto cb = [client = std::weak_ptr{clt}](libremidi::alsa_seq::poll_parameters params) {
       if (auto clt = client.lock())
       {
         clt->events.push(
@@ -74,8 +74,7 @@ struct shared_handler : public libremidi::shared_context
     auto stop_cb = [client = std::weak_ptr{clt}](snd_seq_addr_t id) {
       if (auto clt = client.lock())
       {
-        clt->events.push(
-            {.type = shared_handler::event_type::callback_removed, .payload = std::move(id)});
+        clt->events.push({.type = shared_handler::event_type::callback_removed, .payload = id});
         clt->queue_event.notify();
       }
       return true;
@@ -128,13 +127,13 @@ struct shared_handler : public libremidi::shared_context
           {
             case callback_added: {
               auto [addr, cb]
-                  = std::move(*std::get_if<libremidi::alsa_seq::poll_parameters>(&ev.payload));
+                  = std::move(*get_if<libremidi::alsa_seq::poll_parameters>(&ev.payload));
               addresses.push_back(addr);
               callbacks.push_back(std::move(cb));
               break;
             }
             case callback_removed:
-              auto addr = std::move(*std::get_if<snd_seq_addr_t>(&ev.payload));
+              auto addr = *get_if<snd_seq_addr_t>(&ev.payload);
               if (auto index = index_of_address(addr); index >= 0)
               {
                 addresses.erase(addresses.begin() + index);
@@ -146,15 +145,14 @@ struct shared_handler : public libremidi::shared_context
       }
 
       // Look for who's ready
-      for (int64_t i = 0, N = std::ssize(fds) - 2; i < N; i++)
+      for (int64_t i = 0, n = std::ssize(fds) - 2; i < n; i++)
       {
         if (fds[i].revents & POLLIN)
         {
           // Read alsa event
           snd_seq_event_t* ev{};
           event_handle handle{snd};
-          int result = 0;
-          while ((result = snd.seq.event_input(client, &ev)) > 0)
+          while (snd.seq.event_input(client, &ev) > 0)
           {
             handle.reset(ev);
 
@@ -181,7 +179,7 @@ struct shared_handler : public libremidi::shared_context
   struct event
   {
     event_type type;
-    std::variant<libremidi::alsa_seq::poll_parameters, snd_seq_addr_t> payload;
+    libremidi_variant_alias::variant<libremidi::alsa_seq::poll_parameters, snd_seq_addr_t> payload;
   };
 
   snd_seq_t* client{};

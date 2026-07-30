@@ -33,11 +33,11 @@ struct output_removed_message {
   output_port port;
 };
 struct midi1_raw_message {
-  boost::container::small_vector<unsigned char, 16> data;
+  std::vector<uint8_t> data;
   timestamp t;
 };
 struct midi2_raw_message {
-  boost::container::small_vector<uint32_t, 4> data;
+  std::vector<uint32_t> data;
   timestamp t;
 };
 
@@ -49,10 +49,10 @@ using midi_out_msg = boost::variant2::variant<error_message, warning_message>;
 struct observer_poll_wrapper {
   moodycamel::ReaderWriterQueue<poll_queue::observer_msg> queue{};
   observer_configuration conf;
-  observer observer;
-  explicit observer_poll_wrapper(observer_configuration conf = {}) noexcept : conf{conf}, observer{this->process(std::move(conf))} {}
+  observer impl;
+  explicit observer_poll_wrapper(observer_configuration conf = {}) noexcept : conf{conf}, impl{this->process(std::move(conf))} {}
 
-  explicit observer_poll_wrapper(observer_configuration conf, std::any api_conf) : conf{conf}, observer{process(std::move(conf)), std::move(api_conf)} {}
+  explicit observer_poll_wrapper(observer_configuration conf, libremidi::observer_api_configuration api_conf) : conf{conf}, impl{process(std::move(conf)), std::move(api_conf)} {}
 
   observer_configuration process(observer_configuration &&obs) {
     if (obs.on_error)
@@ -86,20 +86,30 @@ struct observer_poll_wrapper {
   void operator()(const poll_queue::output_removed_message &msg) const noexcept { conf.output_removed(msg.port); }
 };
 
+
+struct input_configuration_wrapper: libremidi::input_configuration
+{
+  std::function<void(std::vector<uint8_t>, libremidi::timestamp)> on_raw_data_vector;
+};
+struct ump_input_configuration_wrapper : libremidi::ump_input_configuration
+{
+  std::function<void(std::vector<uint32_t>, libremidi::timestamp)> on_raw_data_vector;
+};
+
 struct midi_in_poll_wrapper {
   moodycamel::ReaderWriterQueue<poll_queue::midi_in_msg> queue{};
 
-  input_configuration orig_callbacks;
-  ump_input_configuration ump_callbacks;
-  midi_in midi_in;
+  input_configuration_wrapper python_midi1_callbacks;
+  ump_input_configuration_wrapper python_ump_callbacks;
+  midi_in impl;
 
-  explicit midi_in_poll_wrapper(const input_configuration &conf) noexcept : orig_callbacks{conf}, midi_in{this->process(std::move(conf))} {}
-  explicit midi_in_poll_wrapper(input_configuration conf, std::any api_conf) : orig_callbacks{conf}, midi_in{this->process(std::move(conf)), std::move(api_conf)} {}
-  explicit midi_in_poll_wrapper(ump_input_configuration conf) noexcept : ump_callbacks{conf}, midi_in{this->process(std::move(conf))} {}
-  explicit midi_in_poll_wrapper(ump_input_configuration conf, std::any api_conf) : ump_callbacks{conf}, midi_in{this->process(std::move(conf)), std::move(api_conf)} {}
+  explicit midi_in_poll_wrapper(const input_configuration_wrapper &conf) noexcept : python_midi1_callbacks{conf}, impl{this->process(std::move(conf))} {}
+  explicit midi_in_poll_wrapper(input_configuration_wrapper conf, input_api_configuration api_conf) : python_midi1_callbacks{conf}, impl{this->process(std::move(conf)), std::move(api_conf)} {}
+  explicit midi_in_poll_wrapper(ump_input_configuration_wrapper conf) noexcept : python_ump_callbacks{conf}, impl{this->process(std::move(conf))} {}
+  explicit midi_in_poll_wrapper(ump_input_configuration_wrapper conf, input_api_configuration api_conf) : python_ump_callbacks{conf}, impl{this->process(std::move(conf)), std::move(api_conf)} {}
 
-  input_configuration process(input_configuration obs) {
-    orig_callbacks = obs;
+  input_configuration process(input_configuration_wrapper obs) {
+    python_midi1_callbacks = obs;
 
     if (obs.on_error)
       obs.on_error = [this](std::string_view errorText, const source_location &) { queue.enqueue(poll_queue::error_message{std::string{errorText}}); };
@@ -108,13 +118,13 @@ struct midi_in_poll_wrapper {
 
     if (obs.on_message)
       obs.on_message = [this](libremidi::message &&msg) { queue.enqueue(std::move(msg)); };
-    if (obs.on_raw_data)
+    if (obs.on_raw_data_vector)
       obs.on_raw_data = [this](std::span<const uint8_t> msg, timestamp t) { queue.enqueue(poll_queue::midi1_raw_message{{msg.begin(), msg.end()}, t}); };
     return obs;
   }
 
-  ump_input_configuration process(ump_input_configuration obs) {
-    ump_callbacks = obs;
+  ump_input_configuration process(ump_input_configuration_wrapper obs) {
+    python_ump_callbacks = obs;
 
     if (obs.on_error)
       obs.on_error = [this](std::string_view errorText, const source_location &) { queue.enqueue(poll_queue::error_message{std::string{errorText}}); };
@@ -123,7 +133,7 @@ struct midi_in_poll_wrapper {
 
     if (obs.on_message)
       obs.on_message = [this](libremidi::ump &&msg) { queue.enqueue(std::move(msg)); };
-    if (obs.on_raw_data)
+    if (obs.on_raw_data_vector)
       obs.on_raw_data = [this](std::span<const uint32_t> msg, timestamp t) { queue.enqueue(poll_queue::midi2_raw_message{{msg.begin(), msg.end()}, t}); };
     return obs;
   }
@@ -135,34 +145,48 @@ struct midi_in_poll_wrapper {
   }
 
   void operator()(const poll_queue::error_message &msg) const noexcept {
-    if (orig_callbacks.on_error)
-      orig_callbacks.on_error(msg.msg, {});
-    else if (ump_callbacks.on_error)
-      ump_callbacks.on_error(msg.msg, {});
+    if (python_midi1_callbacks.on_error)
+      python_midi1_callbacks.on_error(msg.msg, {});
+    else if (python_ump_callbacks.on_error)
+      python_ump_callbacks.on_error(msg.msg, {});
   }
   void operator()(const poll_queue::warning_message &msg) const noexcept {
-    if (orig_callbacks.on_warning)
-      orig_callbacks.on_warning(msg.msg, {});
-    else if (ump_callbacks.on_warning)
-      ump_callbacks.on_warning(msg.msg, {});
+    if (python_midi1_callbacks.on_warning)
+      python_midi1_callbacks.on_warning(msg.msg, {});
+    else if (python_ump_callbacks.on_warning)
+      python_ump_callbacks.on_warning(msg.msg, {});
   }
-  void operator()(libremidi::message &&msg) const noexcept { orig_callbacks.on_message(std::move(msg)); }
-  void operator()(const poll_queue::midi1_raw_message &msg) const noexcept { orig_callbacks.on_raw_data(msg.data, msg.t); }
-  void operator()(libremidi::ump &&msg) const noexcept { ump_callbacks.on_message(std::move(msg)); }
-  void operator()(const poll_queue::midi2_raw_message &msg) const noexcept { ump_callbacks.on_raw_data(msg.data, msg.t); }
+  void operator()(libremidi::message &&msg) const noexcept {
+    if(python_midi1_callbacks.on_message)
+      python_midi1_callbacks.on_message(std::move(msg));
+  }
+  void operator()(const poll_queue::midi1_raw_message &msg) const noexcept {
+    if(python_midi1_callbacks.on_raw_data_vector)
+    {
+      python_midi1_callbacks.on_raw_data_vector(msg.data, msg.t);
+    }
+  }
+  void operator()(libremidi::ump &&msg) const noexcept {
+    if(python_ump_callbacks.on_message)
+      python_ump_callbacks.on_message(std::move(msg));
+  }
+  void operator()(const poll_queue::midi2_raw_message &msg) const noexcept {
+    if(python_ump_callbacks.on_raw_data_vector)
+      python_ump_callbacks.on_raw_data_vector(msg.data, msg.t);
+  }
 };
 
 struct midi_out_poll_wrapper {
   moodycamel::ReaderWriterQueue<poll_queue::midi_out_msg> queue{};
-  output_configuration orig_callbacks;
-  midi_out midi_out;
-  explicit midi_out_poll_wrapper() noexcept : midi_out{} {}
+  output_configuration python_midi1_callbacks;
+  midi_out impl;
+  explicit midi_out_poll_wrapper() noexcept : impl{} {}
 
-  explicit midi_out_poll_wrapper(const output_configuration &conf) noexcept : orig_callbacks{conf}, midi_out{this->process(std::move(conf))} {}
-  explicit midi_out_poll_wrapper(output_configuration conf, std::any api_conf) : orig_callbacks{conf}, midi_out{this->process(std::move(conf)), std::move(api_conf)} {}
+  explicit midi_out_poll_wrapper(const output_configuration &conf) noexcept : python_midi1_callbacks{conf}, impl{this->process(std::move(conf))} {}
+  explicit midi_out_poll_wrapper(output_configuration conf, output_api_configuration api_conf) : python_midi1_callbacks{conf}, impl{this->process(std::move(conf)), std::move(api_conf)} {}
 
   output_configuration process(output_configuration obs) {
-    orig_callbacks = obs;
+    python_midi1_callbacks = obs;
 
     if (obs.on_error)
       obs.on_error = [this](std::string_view errorText, const source_location &) { queue.enqueue(poll_queue::error_message{std::string{errorText}}); };
@@ -177,12 +201,16 @@ struct midi_out_poll_wrapper {
       boost::variant2::visit(*this, std::move(m));
   }
 
-  void operator()(const poll_queue::error_message &msg) const noexcept { orig_callbacks.on_error(msg.msg, {}); }
-  void operator()(const poll_queue::warning_message &msg) const noexcept { orig_callbacks.on_warning(msg.msg, {}); }
+  void operator()(const poll_queue::error_message &msg) const noexcept { python_midi1_callbacks.on_error(msg.msg, {}); }
+  void operator()(const poll_queue::warning_message &msg) const noexcept { python_midi1_callbacks.on_warning(msg.msg, {}); }
 };
 } // namespace libremidi
 
 NB_MODULE(pylibremidi, m) {
+#if defined(LIBREMIDI_WINMIDI) || defined(LIBREMIDI_WINUWP)
+  winrt::init_apartment();
+#endif
+
   namespace nb = nanobind;
   nb::class_<stdx::error>(m, "Error")
       .def("__bool__", [](stdx::error e) { return e != stdx::error{}; })
@@ -190,6 +218,7 @@ NB_MODULE(pylibremidi, m) {
       .def("__repr__", [](stdx::error e) { return e.message().data(); });
   nb::enum_<libremidi::API>(m, "API")
       .value("UNSPECIFIED", libremidi::API::UNSPECIFIED)
+
       .value("COREMIDI", libremidi::API::COREMIDI)
       .value("ALSA_SEQ", libremidi::API::ALSA_SEQ)
       .value("ALSA_RAW", libremidi::API::ALSA_RAW)
@@ -199,11 +228,17 @@ NB_MODULE(pylibremidi, m) {
       .value("WEBMIDI", libremidi::API::WEBMIDI)
       .value("PIPEWIRE", libremidi::API::PIPEWIRE)
       .value("KEYBOARD", libremidi::API::KEYBOARD)
+      .value("NETWORK", libremidi::API::NETWORK)
+
       .value("ALSA_RAW_UMP", libremidi::API::ALSA_RAW_UMP)
       .value("ALSA_SEQ_UMP", libremidi::API::ALSA_SEQ_UMP)
       .value("COREMIDI_UMP", libremidi::API::COREMIDI_UMP)
       .value("WINDOWS_MIDI_SERVICES", libremidi::API::WINDOWS_MIDI_SERVICES)
       .value("KEYBOARD_UMP", libremidi::API::KEYBOARD_UMP)
+      .value("NETWORK_UMP", libremidi::API::NETWORK_UMP)
+      .value("JACK_UMP", libremidi::API::JACK_UMP)
+      .value("PIPEWIRE_UMP", libremidi::API::PIPEWIRE_UMP)
+
       .value("DUMMY", libremidi::API::DUMMY)
       .export_values();
 
@@ -282,37 +317,37 @@ NB_MODULE(pylibremidi, m) {
           "notify_in_constructor", [](const libremidi::observer_configuration &obj) { return obj.notify_in_constructor; },
           [](libremidi::observer_configuration &obj, bool v) { obj.notify_in_constructor = v; });
 
-  nb::class_<libremidi::input_configuration>(m, "InputConfiguration")
+  nb::class_<libremidi::input_configuration_wrapper>(m, "InputConfiguration")
       .def(nb::init<>())
-      .def_rw("on_message", &libremidi::input_configuration::on_message)
-      .def_rw("on_raw_data", &libremidi::input_configuration::on_raw_data)
-      .def_rw("get_timestamp", &libremidi::input_configuration::get_timestamp)
-      .def_rw("on_error", &libremidi::input_configuration::on_error)
-      .def_rw("on_warning", &libremidi::input_configuration::on_warning)
+      .def_rw("on_message", &libremidi::input_configuration_wrapper::on_message)
+      .def_rw("on_raw_data", &libremidi::input_configuration_wrapper::on_raw_data_vector)
+      .def_rw("get_timestamp", &libremidi::input_configuration_wrapper::get_timestamp)
+      .def_rw("on_error", &libremidi::input_configuration_wrapper::on_error)
+      .def_rw("on_warning", &libremidi::input_configuration_wrapper::on_warning)
       .def_prop_rw(
-          "ignore_sysex", [](const libremidi::input_configuration &obj) { return obj.ignore_sysex; }, [](libremidi::input_configuration &obj, bool v) { obj.ignore_sysex = v; })
+          "ignore_sysex", [](const libremidi::input_configuration_wrapper &obj) { return obj.ignore_sysex; }, [](libremidi::input_configuration_wrapper &obj, bool v) { obj.ignore_sysex = v; })
       .def_prop_rw(
-          "ignore_timing", [](const libremidi::input_configuration &obj) { return obj.ignore_timing; }, [](libremidi::input_configuration &obj, bool v) { obj.ignore_timing = v; })
+          "ignore_timing", [](const libremidi::input_configuration_wrapper &obj) { return obj.ignore_timing; }, [](libremidi::input_configuration_wrapper &obj, bool v) { obj.ignore_timing = v; })
       .def_prop_rw(
-          "ignore_sensing", [](const libremidi::input_configuration &obj) { return obj.ignore_sensing; }, [](libremidi::input_configuration &obj, bool v) { obj.ignore_sensing = v; })
+          "ignore_sensing", [](const libremidi::input_configuration_wrapper &obj) { return obj.ignore_sensing; }, [](libremidi::input_configuration_wrapper &obj, bool v) { obj.ignore_sensing = v; })
       .def_prop_rw(
-          "timestamps", [](const libremidi::input_configuration &obj) { return obj.timestamps; }, [](libremidi::input_configuration &obj, libremidi::timestamp_mode v) { obj.timestamps = v; });
+          "timestamps", [](const libremidi::input_configuration_wrapper &obj) { return obj.timestamps; }, [](libremidi::input_configuration_wrapper &obj, libremidi::timestamp_mode v) { obj.timestamps = v; });
 
-  nb::class_<libremidi::ump_input_configuration>(m, "UmpInputConfiguration")
+  nb::class_<libremidi::ump_input_configuration_wrapper>(m, "UmpInputConfiguration")
       .def(nb::init<>())
-      .def_rw("on_message", &libremidi::ump_input_configuration::on_message)
-      .def_rw("on_raw_data", &libremidi::ump_input_configuration::on_raw_data)
-      .def_rw("get_timestamp", &libremidi::ump_input_configuration::get_timestamp)
-      .def_rw("on_error", &libremidi::ump_input_configuration::on_error)
-      .def_rw("on_warning", &libremidi::ump_input_configuration::on_warning)
+      .def_rw("on_message", &libremidi::ump_input_configuration_wrapper::on_message)
+      .def_rw("on_raw_data", &libremidi::ump_input_configuration_wrapper::on_raw_data_vector)
+      .def_rw("get_timestamp", &libremidi::ump_input_configuration_wrapper::get_timestamp)
+      .def_rw("on_error", &libremidi::ump_input_configuration_wrapper::on_error)
+      .def_rw("on_warning", &libremidi::ump_input_configuration_wrapper::on_warning)
       .def_prop_rw(
-          "ignore_sysex", [](const libremidi::ump_input_configuration &obj) { return obj.ignore_sysex; }, [](libremidi::ump_input_configuration &obj, bool v) { obj.ignore_sysex = v; })
+          "ignore_sysex", [](const libremidi::ump_input_configuration_wrapper &obj) { return obj.ignore_sysex; }, [](libremidi::ump_input_configuration_wrapper &obj, bool v) { obj.ignore_sysex = v; })
       .def_prop_rw(
-          "ignore_timing", [](const libremidi::ump_input_configuration &obj) { return obj.ignore_timing; }, [](libremidi::ump_input_configuration &obj, bool v) { obj.ignore_timing = v; })
+          "ignore_timing", [](const libremidi::ump_input_configuration_wrapper &obj) { return obj.ignore_timing; }, [](libremidi::ump_input_configuration_wrapper &obj, bool v) { obj.ignore_timing = v; })
       .def_prop_rw(
-          "ignore_sensing", [](const libremidi::ump_input_configuration &obj) { return obj.ignore_sensing; }, [](libremidi::ump_input_configuration &obj, bool v) { obj.ignore_sensing = v; })
+          "ignore_sensing", [](const libremidi::ump_input_configuration_wrapper &obj) { return obj.ignore_sensing; }, [](libremidi::ump_input_configuration_wrapper &obj, bool v) { obj.ignore_sensing = v; })
       .def_prop_rw(
-          "timestamps", [](const libremidi::ump_input_configuration &obj) { return obj.timestamps; }, [](libremidi::ump_input_configuration &obj, libremidi::timestamp_mode v) { obj.timestamps = v; });
+          "timestamps", [](const libremidi::ump_input_configuration_wrapper &obj) { return obj.timestamps; }, [](libremidi::ump_input_configuration_wrapper &obj, libremidi::timestamp_mode v) { obj.timestamps = v; });
 
   nb::class_<libremidi::output_configuration>(m, "OutputConfiguration")
       .def(nb::init<>())
@@ -321,30 +356,97 @@ NB_MODULE(pylibremidi, m) {
       .def_prop_rw(
           "timestamps", [](const libremidi::output_configuration &obj) { return obj.timestamps; }, [](libremidi::output_configuration &obj, libremidi::timestamp_mode v) { obj.timestamps = v; });
 
+  nb::class_<libremidi::observer_api_configuration>(m, "ObserverApiConfiguration");
+  nb::class_<libremidi::input_api_configuration>(m, "InputApiConfiguration");
+  nb::class_<libremidi::output_api_configuration>(m, "OutputApiConfiguration");
+
+  nb::class_<libremidi::unspecified_configuration>(m, "UnspecifiedConfiguration");
+  nb::class_<libremidi::dummy_configuration>(m, "DummyConfiguration");
+
+  nb::class_<libremidi::alsa_raw_input_configuration>(m, "AlsaRawInputConfiguration").def(nb::init<>()).def_rw("poll_period", &libremidi::alsa_raw_input_configuration::poll_period);
+  nb::class_<libremidi::alsa_raw_ump::input_configuration>(m, "AlsaRawUmpInputConfiguration").def(nb::init<>()).def_rw("poll_period", &libremidi::alsa_raw_ump::input_configuration::poll_period);
+  nb::class_<libremidi::alsa_seq::input_configuration>(m, "AlsaSeqInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::alsa_seq::input_configuration::client_name);
+  nb::class_<libremidi::alsa_seq_ump::input_configuration>(m, "AlsaSeqUmpInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::alsa_seq_ump::input_configuration::client_name);
+  nb::class_<libremidi::coremidi_input_configuration>(m, "CoremidiInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::coremidi_input_configuration::client_name);
+  nb::class_<libremidi::coremidi_ump::input_configuration>(m, "CoremidiUmpInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::coremidi_ump::input_configuration::client_name);
+  nb::class_<libremidi::emscripten_input_configuration>(m, "EmscriptenInputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::jack_input_configuration>(m, "JackInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::jack_input_configuration::client_name);
+  nb::class_<libremidi::jack_ump::input_configuration>(m, "JackUmpInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::jack_ump::input_configuration::client_name);
+  nb::class_<libremidi::kbd_input_configuration>(m, "KeyboardInputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::net::dgram_input_configuration>(m, "DatagramInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::net::dgram_input_configuration::client_name);
+  nb::class_<libremidi::net_ump::dgram_input_configuration>(m, "DatagramUmpInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::net_ump::dgram_input_configuration::client_name);
+  nb::class_<libremidi::pipewire_input_configuration>(m, "PipewireInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::pipewire_input_configuration::client_name);
+  nb::class_<libremidi::pipewire_ump::input_configuration>(m, "PipewireUmpInputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::pipewire_ump::input_configuration::client_name);
+  nb::class_<libremidi::winmidi::input_configuration>(m, "WinmidiInputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::winmm_input_configuration>(m, "WinmmInputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::winuwp_input_configuration>(m, "WinuwpInputConfiguration").def(nb::init<>());
+
+  nb::class_<libremidi::alsa_raw_output_configuration>(m, "AlsaRawOutputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::alsa_raw_ump::output_configuration>(m, "AlsaRawUmpOutputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::alsa_seq::output_configuration>(m, "AlsaSeqOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::alsa_seq::output_configuration::client_name);
+  nb::class_<libremidi::alsa_seq_ump::output_configuration>(m, "AlsaSeqUmpOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::alsa_seq_ump::output_configuration::client_name);
+  nb::class_<libremidi::coremidi_output_configuration>(m, "CoremidiOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::coremidi_output_configuration::client_name);
+  nb::class_<libremidi::coremidi_ump::output_configuration>(m, "CoremidiUmpOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::coremidi_ump::output_configuration::client_name);
+  nb::class_<libremidi::emscripten_output_configuration>(m, "EmscriptenOutputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::jack_output_configuration>(m, "JackOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::jack_output_configuration::client_name);
+  nb::class_<libremidi::jack_ump::output_configuration>(m, "JackUmpOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::jack_ump::output_configuration::client_name);
+  nb::class_<libremidi::net::dgram_output_configuration>(m, "DatagramOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::net::dgram_output_configuration::client_name);
+  nb::class_<libremidi::net_ump::dgram_output_configuration>(m, "DatagramUmpOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::net_ump::dgram_output_configuration::client_name);
+  nb::class_<libremidi::pipewire_output_configuration>(m, "PipewireOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::pipewire_output_configuration::client_name);
+  nb::class_<libremidi::pipewire_ump::output_configuration>(m, "PipewireUmpOutputConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::pipewire_ump::output_configuration::client_name);
+  nb::class_<libremidi::winmidi::output_configuration>(m, "WinmidiOutputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::winmm_output_configuration>(m, "WinmmOutputConfiguration").def(nb::init<>());
+  nb::class_<libremidi::winuwp_output_configuration>(m, "WinuwpOutputConfiguration").def(nb::init<>());
+
+  nb::class_<libremidi::alsa_raw_observer_configuration>(m, "AlsaRawObserverConfiguration").def(nb::init<>());
+  nb::class_<libremidi::alsa_raw_ump::observer_configuration>(m, "AlsaRawUmpObserverConfiguration").def(nb::init<>());
+  nb::class_<libremidi::alsa_seq::observer_configuration>(m, "AlsaSeqObserverConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::alsa_seq::observer_configuration::client_name);
+  nb::class_<libremidi::alsa_seq_ump::observer_configuration>(m, "AlsaSeqUmpObserverConfiguration")
+      .def(nb::init<>())
+      .def_rw("client_name", &libremidi::alsa_seq_ump::observer_configuration::client_name);
+  nb::class_<libremidi::coremidi_observer_configuration>(m, "CoremidiObserverConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::coremidi_observer_configuration::client_name);
+  nb::class_<libremidi::coremidi_ump::observer_configuration>(m, "CoremidiUmpObserverConfiguration")
+      .def(nb::init<>())
+      .def_rw("client_name", &libremidi::coremidi_ump::observer_configuration::client_name);
+  nb::class_<libremidi::emscripten_observer_configuration>(m, "EmscriptenObserverConfiguration").def(nb::init<>());
+  nb::class_<libremidi::jack_observer_configuration>(m, "JackObserverConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::jack_observer_configuration::client_name);
+  nb::class_<libremidi::jack_ump::observer_configuration>(m, "JackUmpObserverConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::jack_ump::observer_configuration::client_name);
+  nb::class_<libremidi::net::dgram_observer_configuration>(m, "DatagramObserverConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::net::dgram_observer_configuration::client_name);
+  nb::class_<libremidi::net_ump::dgram_observer_configuration>(m, "DatagramUmpObserverConfiguration")
+      .def(nb::init<>())
+      .def_rw("client_name", &libremidi::net_ump::dgram_observer_configuration::client_name);
+  nb::class_<libremidi::pipewire_observer_configuration>(m, "PipewireObserverConfiguration").def(nb::init<>()).def_rw("client_name", &libremidi::pipewire_observer_configuration::client_name);
+  nb::class_<libremidi::pipewire_ump::observer_configuration>(m, "PipewireObserverConfiguration")
+      .def(nb::init<>())
+      .def_rw("client_name", &libremidi::pipewire_ump::observer_configuration::client_name);
+  nb::class_<libremidi::winmidi::observer_configuration>(m, "WinmidiObserverConfiguration").def(nb::init<>());
+  nb::class_<libremidi::winmm_observer_configuration>(m, "WinmmObserverConfiguration").def(nb::init<>());
+  nb::class_<libremidi::winuwp_observer_configuration>(m, "WinuwpObserverConfiguration").def(nb::init<>());
+
   nb::class_<libremidi::observer_poll_wrapper>(m, "Observer")
       .def(nb::init<>())
       .def(nb::init<libremidi::observer_configuration>())
       .def(nb::init<libremidi::observer_configuration, libremidi::API>())
-      .def("get_current_api", [](libremidi::observer_poll_wrapper &self) { return self.observer.get_current_api(); })
-      .def("get_input_ports", [](libremidi::observer_poll_wrapper &self) { return self.observer.get_input_ports(); })
-      .def("get_output_ports", [](libremidi::observer_poll_wrapper &self) { return self.observer.get_output_ports(); })
+      .def("get_current_api", [](libremidi::observer_poll_wrapper &self) { return self.impl.get_current_api(); })
+      .def("get_input_ports", [](libremidi::observer_poll_wrapper &self) { return self.impl.get_input_ports(); })
+      .def("get_output_ports", [](libremidi::observer_poll_wrapper &self) { return self.impl.get_output_ports(); })
       .def("poll", [](libremidi::observer_poll_wrapper &self) { return self.poll(); });
 
   nb::class_<libremidi::midi_in_poll_wrapper>(m, "MidiIn")
-      .def(nb::init<libremidi::input_configuration>())
-      .def(nb::init<libremidi::input_configuration, libremidi::API>())
-      .def(nb::init<libremidi::ump_input_configuration>())
-      .def(nb::init<libremidi::ump_input_configuration, libremidi::API>())
-      .def("get_current_api", [](libremidi::midi_in_poll_wrapper &self) { return self.midi_in.get_current_api(); })
-      .def("open_port", [](libremidi::midi_in_poll_wrapper &self, const libremidi::input_port &p) { return self.midi_in.open_port(p); })
-      .def("open_port", [](libremidi::midi_in_poll_wrapper &self, const libremidi::input_port &p, std::string_view name) { return self.midi_in.open_port(p, name); })
-      .def("open_virtual_port", [](libremidi::midi_in_poll_wrapper &self) { return self.midi_in.open_virtual_port(); })
-      .def("open_virtual_port", [](libremidi::midi_in_poll_wrapper &self, std::string_view name) { return self.midi_in.open_virtual_port(name); })
-      .def("set_port_name", [](libremidi::midi_in_poll_wrapper &self, std::string_view name) { return self.midi_in.set_port_name(name); })
-      .def("close_port", [](libremidi::midi_in_poll_wrapper &self) { return self.midi_in.close_port(); })
-      .def("is_port_open", [](libremidi::midi_in_poll_wrapper &self) { return self.midi_in.is_port_open(); })
-      .def("is_port_connected", [](libremidi::midi_in_poll_wrapper &self) { return self.midi_in.is_port_connected(); })
-      .def("absolute_timestamp", [](libremidi::midi_in_poll_wrapper &self) { return self.midi_in.absolute_timestamp(); })
+      .def(nb::init<libremidi::input_configuration_wrapper>())
+      .def(nb::init<libremidi::input_configuration_wrapper, libremidi::API>())
+      .def(nb::init<libremidi::ump_input_configuration_wrapper>())
+      .def(nb::init<libremidi::ump_input_configuration_wrapper, libremidi::API>())
+      .def("get_current_api", [](libremidi::midi_in_poll_wrapper &self) { return self.impl.get_current_api(); })
+      .def("open_port", [](libremidi::midi_in_poll_wrapper &self, const libremidi::input_port &p) { return self.impl.open_port(p); })
+      .def("open_port", [](libremidi::midi_in_poll_wrapper &self, const libremidi::input_port &p, std::string_view name) { return self.impl.open_port(p, name); })
+      .def("open_virtual_port", [](libremidi::midi_in_poll_wrapper &self) { return self.impl.open_virtual_port(); })
+      .def("open_virtual_port", [](libremidi::midi_in_poll_wrapper &self, std::string_view name) { return self.impl.open_virtual_port(name); })
+      .def("set_port_name", [](libremidi::midi_in_poll_wrapper &self, std::string_view name) { return self.impl.set_port_name(name); })
+      .def("close_port", [](libremidi::midi_in_poll_wrapper &self) { return self.impl.close_port(); })
+      .def("is_port_open", [](libremidi::midi_in_poll_wrapper &self) { return self.impl.is_port_open(); })
+      .def("is_port_connected", [](libremidi::midi_in_poll_wrapper &self) { return self.impl.is_port_connected(); })
+      .def("absolute_timestamp", [](libremidi::midi_in_poll_wrapper &self) { return self.impl.absolute_timestamp(); })
       .def("poll", &libremidi::midi_in_poll_wrapper::poll);
 
   nb::class_<libremidi::midi_out>(m, "MidiOutBase");
@@ -352,36 +454,36 @@ NB_MODULE(pylibremidi, m) {
       .def(nb::init<>())
       .def(nb::init<libremidi::output_configuration>())
       .def(nb::init<libremidi::output_configuration, libremidi::API>())
-      .def("get_current_api", [](libremidi::midi_out_poll_wrapper &self) { return self.midi_out.get_current_api(); })
-      .def("open_port", [](libremidi::midi_out_poll_wrapper &self, const libremidi::output_port &p) { return self.midi_out.open_port(p); })
-      .def("open_port", [](libremidi::midi_out_poll_wrapper &self, const libremidi::output_port &p, std::string_view name) { return self.midi_out.open_port(p, name); })
-      .def("open_virtual_port", [](libremidi::midi_out_poll_wrapper &self) { return self.midi_out.open_virtual_port(); })
-      .def("open_virtual_port", [](libremidi::midi_out_poll_wrapper &self, std::string_view name) { return self.midi_out.open_virtual_port(name); })
-      .def("set_port_name", [](libremidi::midi_out_poll_wrapper &self, std::string_view name) { return self.midi_out.set_port_name(name); })
-      .def("close_port", [](libremidi::midi_out_poll_wrapper &self) { return self.midi_out.close_port(); })
-      .def("is_port_open", [](libremidi::midi_out_poll_wrapper &self) { return self.midi_out.is_port_open(); })
-      .def("is_port_connected", [](libremidi::midi_out_poll_wrapper &self) { return self.midi_out.is_port_connected(); })
-      .def("absolute_timestamp", [](libremidi::midi_out_poll_wrapper &self) { return self.midi_out.current_time(); })
+      .def("get_current_api", [](libremidi::midi_out_poll_wrapper &self) { return self.impl.get_current_api(); })
+      .def("open_port", [](libremidi::midi_out_poll_wrapper &self, const libremidi::output_port &p) { return self.impl.open_port(p); })
+      .def("open_port", [](libremidi::midi_out_poll_wrapper &self, const libremidi::output_port &p, std::string_view name) { return self.impl.open_port(p, name); })
+      .def("open_virtual_port", [](libremidi::midi_out_poll_wrapper &self) { return self.impl.open_virtual_port(); })
+      .def("open_virtual_port", [](libremidi::midi_out_poll_wrapper &self, std::string_view name) { return self.impl.open_virtual_port(name); })
+      .def("set_port_name", [](libremidi::midi_out_poll_wrapper &self, std::string_view name) { return self.impl.set_port_name(name); })
+      .def("close_port", [](libremidi::midi_out_poll_wrapper &self) { return self.impl.close_port(); })
+      .def("is_port_open", [](libremidi::midi_out_poll_wrapper &self) { return self.impl.is_port_open(); })
+      .def("is_port_connected", [](libremidi::midi_out_poll_wrapper &self) { return self.impl.is_port_connected(); })
+      .def("absolute_timestamp", [](libremidi::midi_out_poll_wrapper &self) { return self.impl.current_time(); })
 
       // clang-format off
-      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, const libremidi::message& m) { return self.midi_out.send_message(m); })
-      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, const unsigned char* m, size_t size) { return self.midi_out.send_message(m, size); })
-      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, std::span<const unsigned char> m)  { return self.midi_out.send_message(m); })
-      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, unsigned char b0)  { return self.midi_out.send_message(b0); })
-      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, unsigned char b0, unsigned char  b1)  { return self.midi_out.send_message(b0, b1); })
-      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, unsigned char b0, unsigned char  b1, unsigned char b2)  { return self.midi_out.send_message(b0, b1, b2); })
+      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, const libremidi::message& m) { return self.impl.send_message(m); })
+      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, const unsigned char* m, size_t size) { return self.impl.send_message(m, size); })
+      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, std::vector<unsigned char> m)  { return self.impl.send_message(m); })
+      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, unsigned char b0)  { return self.impl.send_message(b0); })
+      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, unsigned char b0, unsigned char  b1)  { return self.impl.send_message(b0, b1); })
+      .def("send_message", [](libremidi::midi_out_poll_wrapper &self, unsigned char b0, unsigned char  b1, unsigned char b2)  { return self.impl.send_message(b0, b1, b2); })
 
-      .def("schedule_message", [](libremidi::midi_out_poll_wrapper &self, int64_t t, const unsigned char* m, size_t size) { return self.midi_out.schedule_message(t, m, size); })
+      .def("schedule_message", [](libremidi::midi_out_poll_wrapper &self, int64_t t, const unsigned char* m, size_t size) { return self.impl.schedule_message(t, m, size); })
 
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, const libremidi::ump& m) { return self.midi_out.send_ump(m); })
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, const uint32_t* ump, size_t size) { return self.midi_out.send_ump(ump, size); })
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, std::span<const uint32_t> m) { return self.midi_out.send_ump(m); })
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0) { return self.midi_out.send_ump(u0); })
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0, uint32_t u1) { return self.midi_out.send_ump(u0, u1); })
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0, uint32_t u1, uint32_t u2) { return self.midi_out.send_ump(u0, u1, u2); })
-      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3) { return self.midi_out.send_ump(u0, u1, u2, u3); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, const libremidi::ump& m) { return self.impl.send_ump(m); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, const uint32_t* ump, size_t size) { return self.impl.send_ump(ump, size); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, std::vector<uint32_t> m) { return self.impl.send_ump(m); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0) { return self.impl.send_ump(u0); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0, uint32_t u1) { return self.impl.send_ump(u0, u1); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0, uint32_t u1, uint32_t u2) { return self.impl.send_ump(u0, u1, u2); })
+      .def("send_ump", [](libremidi::midi_out_poll_wrapper &self, uint32_t u0, uint32_t u1, uint32_t u2, uint32_t u3) { return self.impl.send_ump(u0, u1, u2, u3); })
 
-      .def("schedule_message", [](libremidi::midi_out_poll_wrapper &self, int64_t t, const uint32_t* m, size_t size) { return self.midi_out.schedule_ump(t, m, size); })
+      .def("schedule_message", [](libremidi::midi_out_poll_wrapper &self, int64_t t, const uint32_t* m, size_t size) { return self.impl.schedule_ump(t, m, size); })
       // clang-format on
 
       .def("poll", &libremidi::midi_out_poll_wrapper::poll);

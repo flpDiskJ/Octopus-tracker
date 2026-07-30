@@ -4,7 +4,7 @@
 #include <libremidi/detail/midi_in.hpp>
 #include <libremidi/detail/midi_stream_decoder.hpp>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 class midi_in_pipewire final
     : public midi1::in_api
@@ -47,7 +47,8 @@ public:
 
   stdx::error open_port(const input_port& in_port, std::string_view name) override
   {
-    if (auto err = create_local_port(*this, name, SPA_DIRECTION_INPUT); err != stdx::error{})
+    if (auto err = create_local_port(*this, name, SPA_DIRECTION_INPUT, "8 bit raw midi");
+        err != stdx::error{})
       return err;
 
     if (auto err = link_ports(*this, in_port); err != stdx::error{})
@@ -59,7 +60,8 @@ public:
 
   stdx::error open_virtual_port(std::string_view name) override
   {
-    if (auto err = create_local_port(*this, name, SPA_DIRECTION_INPUT); err != stdx::error{})
+    if (auto err = create_local_port(*this, name, SPA_DIRECTION_INPUT, "8 bit raw midi");
+        err != stdx::error{})
       return err;
 
     start_thread();
@@ -72,10 +74,7 @@ public:
     return do_close_port();
   }
 
-  stdx::error set_port_name(std::string_view port_name) override
-  {
-    return rename_port(port_name);
-  }
+  stdx::error set_port_name(std::string_view port_name) override { return rename_port(port_name); }
 
   timestamp absolute_timestamp() const noexcept override { return system_ns(); }
 

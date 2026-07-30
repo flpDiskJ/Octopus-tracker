@@ -5,7 +5,7 @@
 #include <libremidi/detail/midi_out.hpp>
 #include <libremidi/detail/ump_stream.hpp>
 
-namespace libremidi::alsa_seq_ump
+NAMESPACE_LIBREMIDI::alsa_seq_ump
 {
 
 class midi_out_impl final
@@ -64,8 +64,9 @@ public:
 
   stdx::error open_port(const output_port& p, std::string_view portName) override
   {
-    unsigned int nSrc = this->get_port_count(SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE);
-    if (nSrc < 1)
+    unsigned int n_src
+        = this->get_port_count(SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE);
+    if (n_src < 1)
     {
       libremidi_handle_error(this->configuration, "no MIDI output sources found!");
       return make_error_code(std::errc::no_such_device);
@@ -105,11 +106,6 @@ public:
     return stdx::error{};
   }
 
-  stdx::error set_client_name(std::string_view clientName) override
-  {
-    return alsa_data::set_client_name(clientName);
-  }
-
   stdx::error set_port_name(std::string_view portName) override
   {
     return alsa_data::set_port_name(portName);
@@ -133,9 +129,10 @@ public:
         libremidi_handle_warning(this->configuration, "error sending MIDI message to port.");
         return static_cast<std::errc>(-ret);
       }
-      return std::errc{0};
+      static_assert(std::errc{0} == std::errc{});
+      return std::errc{};
     };
-    segment_ump_stream(ump_stream, count, write_func, []() {});
+    segment_ump_stream(ump_stream, count, write_func, []() { });
 
     snd.seq.drain_output(this->seq);
     return stdx::error{};

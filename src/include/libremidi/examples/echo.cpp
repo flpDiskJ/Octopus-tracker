@@ -2,6 +2,10 @@
 
 #include <libremidi/libremidi.hpp>
 
+#if defined(_WIN32) && __has_include(<winrt/base.h>)
+  #include <winrt/base.h>
+#endif
+
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
@@ -9,6 +13,11 @@
 
 int main()
 {
+#if defined(_WIN32) && __has_include(<winrt/base.h>)
+  // Necessary for using WinUWP and WinMIDI, must be done as early as possible in your main()
+  winrt::init_apartment();
+#endif
+
   libremidi::observer obs;
   auto inputs = obs.get_input_ports();
   auto outputs = obs.get_output_ports();
@@ -30,11 +39,11 @@ int main()
   libremidi::midi_in midiin{
       {
           // Set our callback function.
-          .on_message
-          = [&](const libremidi::message& message) {
+          .on_message =
+              [&](const libremidi::message& message) {
     std::cout << message << std::endl;
-    auto _ = midiout.send_message(message); 
-          },
+    auto _ = midiout.send_message(message);
+  },
       },
       libremidi::midi_in_configuration_for(obs)};
 

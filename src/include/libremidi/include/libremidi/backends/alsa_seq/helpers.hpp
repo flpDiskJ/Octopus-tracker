@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 
-namespace libremidi::alsa_seq
+NAMESPACE_LIBREMIDI::alsa_seq
 {
 struct event_handle
 {
@@ -42,23 +42,39 @@ struct event_handle
   ~event_handle() { snd.seq.free_event(ev); }
 };
 
-namespace
-{
 inline constexpr port_handle seq_to_port_handle(uint64_t client, uint64_t port) noexcept
 {
-  return (client << 32) + port;
+  return (port << 32) + client;
 }
 
 inline constexpr std::pair<int, int> seq_from_port_handle(port_handle p) noexcept
 {
-  int client = p >> 32;
-  int port = p & 0xFFFFFFFF;
+  int port = p >> 32;
+  int client = p & 0xFFFFFFFF;
   return {client, port};
+}
+
+inline void for_all_clients(
+    const libasound& snd, snd_seq_t* seq, const std::function<void(snd_seq_client_info_t&)>& func)
+{
+  snd_seq_client_info_t* cinfo{};
+  snd_seq_client_info_alloca(&cinfo);
+  snd_seq_port_info_t* pinfo{};
+  snd_seq_port_info_alloca(&pinfo);
+
+  snd.seq.client_info_set_client(cinfo, -1);
+  while (snd.seq.query_next_client(seq, cinfo) >= 0)
+  {
+    int client = snd.seq.client_info_get_client(cinfo);
+    if (client == 0)
+      continue;
+    func(*cinfo);
+  }
 }
 
 inline void for_all_ports(
     const libasound& snd, snd_seq_t* seq,
-    std::function<void(snd_seq_client_info_t&, snd_seq_port_info_t&)> func)
+    const std::function<void(snd_seq_client_info_t&, snd_seq_port_info_t&)>& func)
 {
   snd_seq_client_info_t* cinfo{};
   snd_seq_client_info_alloca(&cinfo);
@@ -79,6 +95,21 @@ inline void for_all_ports(
     {
       func(*cinfo, *pinfo);
     }
+  }
+}
+
+inline void for_all_ports(
+    const libasound& snd, snd_seq_t* seq, int client,
+    const std::function<void(snd_seq_port_info_t&)>& func)
+{
+  snd_seq_port_info_t* pinfo{};
+  snd_seq_port_info_alloca(&pinfo);
+
+  snd.seq.port_info_set_client(pinfo, client);
+  snd.seq.port_info_set_port(pinfo, -1);
+  while (snd.seq.query_next_port(seq, pinfo) >= 0)
+  {
+    func(*pinfo);
   }
 }
 
@@ -125,7 +156,6 @@ inline unsigned int iterate_port_info(
     return count;
   return 0;
 }
-}
 
 // A structure to hold variables related to the ALSA API
 // implementation.
@@ -159,15 +189,15 @@ struct alsa_data
         snd.seq.set_client_name(seq, configuration.client_name.data());
 
 #if __has_include(<alsa/ump.h>)
-      if (snd.seq.ump.set_client_midi_version)
+      if (snd.seq.set_client_midi_version)
       {
         switch (configuration.midi_version)
         {
           case 1:
-            snd.seq.ump.set_client_midi_version(seq, SND_SEQ_CLIENT_LEGACY_MIDI);
+            snd.seq.set_client_midi_version(seq, SND_SEQ_CLIENT_LEGACY_MIDI);
             break;
           case 2:
-            snd.seq.ump.set_client_midi_version(seq, SND_SEQ_CLIENT_UMP_MIDI_2_0);
+            snd.seq.set_client_midi_version(seq, SND_SEQ_CLIENT_UMP_MIDI_2_0);
             break;
         }
       }
@@ -272,8 +302,7 @@ struct alsa_data
     // Make subscription
     if (int err = snd.seq.port_subscribe_malloc(&this->subscription); err < 0)
     {
-      self.libremidi_handle_error(
-          self.configuration, "ALSA error allocation port subscription.");
+      self.libremidi_handle_error(self.configuration, "ALSA error allocation port subscription.");
       return err;
     }
 

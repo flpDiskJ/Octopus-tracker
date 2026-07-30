@@ -5,7 +5,7 @@
 
   #include <chrono>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 LIBREMIDI_INLINE midi_in_emscripten::midi_in_emscripten(
     input_configuration&& conf, emscripten_input_configuration&& apiconf)
@@ -32,13 +32,12 @@ LIBREMIDI_INLINE stdx::error midi_in_emscripten::open_port(int portNumber, std::
 
   if (portNumber < 0 || portNumber >= midi.input_count())
   {
-    libremidi_handle_error(
-        this->configuration, "no MIDI output sources found.");
+    libremidi_handle_error(this->configuration, "no MIDI output sources found.");
     return std::errc::invalid_argument;
   }
 
   midi.open_input(portNumber, *this);
-  portNumber_ = portNumber;
+  m_portNumber = portNumber;
   return stdx::error{};
 }
 
@@ -52,7 +51,7 @@ LIBREMIDI_INLINE stdx::error midi_in_emscripten::close_port()
 {
   auto& midi = webmidi_helpers::midi_access_emscripten::instance();
 
-  midi.close_input(portNumber_, *this);
+  midi.close_input(m_portNumber, *this);
 
   return stdx::error{};
 }

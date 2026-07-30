@@ -5,7 +5,7 @@
 #include <libremidi/detail/midi_in.hpp>
 #include <libremidi/detail/midi_stream_decoder.hpp>
 
-namespace libremidi::alsa_seq
+NAMESPACE_LIBREMIDI::alsa_seq
 {
 struct dummy_processing
 {
@@ -195,11 +195,6 @@ public:
     return stdx::error{};
   }
 
-  stdx::error set_client_name(std::string_view clientName) override
-  {
-    return alsa_data::set_client_name(clientName);
-  }
-
   stdx::error set_port_name(std::string_view portName) override
   {
     return alsa_data::set_port_name(portName);
@@ -212,7 +207,7 @@ public:
         .count();
   }
 
-  int process_event(const snd_seq_event_t& ev)
+  int64_t process_event(const snd_seq_event_t& ev)
   {
     if constexpr (ConfigurationImpl::midi_version == 1)
     {
@@ -258,17 +253,17 @@ public:
     return 0;
   }
 
-  int process_events()
+  int64_t process_events()
   {
     if constexpr (ConfigurationImpl::midi_version == 1)
     {
       snd_seq_event_t* ev{};
       event_handle handle{snd};
-      int result = 0;
+      int64_t result = 0;
       if ((result = snd.seq.event_input(seq, &ev)) > 0)
       {
         handle.reset(ev);
-        if (int err = process_event(*ev); err < 0)
+        if (auto err = process_event(*ev); err < 0)
         {
           return err;
         }
@@ -353,7 +348,7 @@ public:
   midi_in_alsa_threaded(ConfigurationBase&& conf, ConfigurationImpl&& apiconf)
       : midi_in_impl<ConfigurationBase, ConfigurationImpl>{std::move(conf), std::move(apiconf)}
   {
-    if (this->termination_event < 0)
+    if (this->m_termination_event < 0)
     {
       this->libremidi_handle_error(this->configuration, "error creating eventfd.");
       return;
@@ -364,7 +359,7 @@ public:
 
   ~midi_in_alsa_threaded()
   {
-    this->close_port();
+    midi_in_alsa_threaded::close_port();
     this->client_open_ = std::errc::not_connected;
   }
 
@@ -399,7 +394,7 @@ private:
   {
     try
     {
-      this->thread = std::thread([this] { thread_handler(); });
+      this->m_thread = std::thread([this] { thread_handler(); });
       return stdx::error{};
     }
     catch (const std::system_error& e)
@@ -415,12 +410,12 @@ private:
 
   stdx::error stop_thread()
   {
-    termination_event.notify();
+    m_termination_event.notify();
 
-    if (this->thread.joinable())
-      this->thread.join();
+    if (this->m_thread.joinable())
+      this->m_thread.join();
 
-    termination_event.consume();
+    m_termination_event.consume();
     return stdx::error{};
   }
 
@@ -428,7 +423,7 @@ private:
   {
     int poll_fd_count = alsa_data::snd.seq.poll_descriptors_count(this->seq, POLLIN) + 1;
     auto poll_fds = (struct pollfd*)alloca(poll_fd_count * sizeof(struct pollfd));
-    poll_fds[0] = this->termination_event;
+    poll_fds[0] = this->m_termination_event;
     alsa_data::snd.seq.poll_descriptors(this->seq, poll_fds + 1, poll_fd_count - 1, POLLIN);
 
     const auto period
@@ -439,10 +434,10 @@ private:
       if (alsa_data::snd.seq.event_input_pending(this->seq, 1) == 0)
       {
         // No data pending
-        if (poll(poll_fds, poll_fd_count, period) >= 0)
+        if (poll(poll_fds, poll_fd_count, static_cast<int32_t>(period)) >= 0)
         {
           // We got our stop-thread signal
-          if (termination_event.ready(poll_fds[0]))
+          if (m_termination_event.ready(poll_fds[0]))
           {
             break;
           }
@@ -450,7 +445,7 @@ private:
         continue;
       }
 
-      int res{};
+      int64_t res{};
       if constexpr (ConfigurationImpl::midi_version == 1)
       {
         res = this->process_events();
@@ -467,8 +462,8 @@ private:
     }
   }
 
-  std::thread thread{};
-  eventfd_notifier termination_event{};
+  std::thread m_thread{};
+  eventfd_notifier m_termination_event{};
 };
 
 template <typename ConfigurationBase, typename ConfigurationImpl>
@@ -487,17 +482,17 @@ public:
     using poll_params = typename ConfigurationImpl::poll_parameters_type;
     this->configuration.manual_poll(
         poll_params{.addr = this->vaddr, .callback = [this](const auto& ev) {
-                      if constexpr (ConfigurationImpl::midi_version == 1)
-                        return this->process_event(ev);
+      if constexpr (ConfigurationImpl::midi_version == 1)
+        return this->process_event(ev);
 #if __has_include(<alsa/ump.h>)
-                      else
-                        return this->process_ump_event(ev);
+      else
+        return this->process_ump_event(ev);
 #endif
-                    }});
+    }});
     return 0;
   }
 
-  ~midi_in_alsa_manual() { this->close_port(); }
+  ~midi_in_alsa_manual() { midi_in_alsa_manual::close_port(); }
 
   stdx::error open_port(const input_port& pt, std::string_view local_port_name) override
   {
@@ -530,7 +525,7 @@ public:
 };
 }
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 template <>
 inline std::unique_ptr<midi_in_api>

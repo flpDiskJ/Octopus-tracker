@@ -10,7 +10,7 @@
 #include <atomic>
 #include <thread>
 
-namespace libremidi::alsa_raw_ump
+NAMESPACE_LIBREMIDI::alsa_raw_ump
 {
 class midi_in_impl
     : public midi2::in_api
@@ -44,7 +44,8 @@ public:
     SND_RAWMIDI_NONBLOCK; // fixme
     if (int err = snd.ump.open(&midiport_, 0, portname, mode); err < 0)
     {
-      libremidi_handle_error(this->configuration, "alsa_raw_ump::ump::open_port: cannot open device.");
+      libremidi_handle_error(
+          this->configuration, "alsa_raw_ump::ump::open_port: cannot open device.");
       return from_errc(err);
     }
 
@@ -143,7 +144,8 @@ public:
     while ((err = snd.ump.read(this->midiport_, words, nwords * 4)) > 0)
     {
       const auto to_ns = [this] { return absolute_timestamp(); };
-      m_processing.on_bytes({words, words + err / 4}, m_processing.timestamp<timestamp_info>(to_ns, 0));
+      m_processing.on_bytes(
+          {words, words + err / 4}, m_processing.timestamp<timestamp_info>(to_ns, 0));
     }
     return err;
   }
@@ -166,7 +168,8 @@ public:
       const auto to_ns = [ts] {
         return static_cast<int64_t>(ts.tv_sec) * 1'000'000'000 + static_cast<int64_t>(ts.tv_nsec);
       };
-      m_processing.on_bytes({words, words + err / 4}, m_processing.timestamp<timestamp_info>(to_ns, 0));
+      m_processing.on_bytes(
+          {words, words + err / 4}, m_processing.timestamp<timestamp_info>(to_ns, 0));
     }
     return err;
   }
@@ -194,7 +197,7 @@ public:
       libremidi::ump_input_configuration&& conf, alsa_raw_ump::input_configuration&& apiconf)
       : midi_in_impl{std::move(conf), std::move(apiconf)}
   {
-    if (this->termination_event < 0)
+    if (this->m_termination_event < 0)
     {
       libremidi_handle_error(this->configuration, "error creating eventfd.");
       return;
@@ -206,14 +209,14 @@ public:
   ~midi_in_impl_threaded()
   {
     // Close a connection if it exists.
-    this->close_port();
+    midi_in_impl_threaded::close_port();
     client_open_ = std::errc::not_connected;
   }
 
 private:
   void run_thread(auto parse_func)
   {
-    fds_.push_back(this->termination_event);
+    fds_.push_back(this->m_termination_event);
     const auto period
         = std::chrono::duration_cast<std::chrono::milliseconds>(this->configuration.poll_period)
               .count();
@@ -221,12 +224,12 @@ private:
     for (;;)
     {
       // Poll
-      ssize_t err = poll(fds_.data(), fds_.size(), period);
+      ssize_t err = poll(fds_.data(), fds_.size(), static_cast<int32_t>(period));
       if (err == -EAGAIN)
         continue;
       else if (err < 0)
         return;
-      else if (termination_event.ready(fds_.back()))
+      else if (m_termination_event.ready(fds_.back()))
         break;
 
       err = do_read_events(parse_func, {fds_.data(), fds_.size() - 1});
@@ -243,11 +246,11 @@ private:
     {
       if (configuration.timestamps == timestamp_mode::NoTimestamp)
       {
-        this->thread_ = std::thread{[this] { run_thread(&midi_in_impl::read_input_buffer); }};
+        this->m_thread = std::thread{[this] { run_thread(&midi_in_impl::read_input_buffer); }};
       }
       else
       {
-        this->thread_ = std::thread{
+        this->m_thread = std::thread{
             [this] { run_thread(&midi_in_impl::read_input_buffer_with_timestamps); }};
       }
       return stdx::error{};
@@ -257,8 +260,7 @@ private:
       using namespace std::literals;
 
       libremidi_handle_error(
-          this->configuration,
-          "error starting MIDI input thread: "s + e.what());
+          this->configuration, "error starting MIDI input thread: "s + e.what());
       return e.code();
     }
     return stdx::error{};
@@ -275,16 +277,16 @@ private:
 
   stdx::error close_port() override
   {
-    termination_event.notify();
-    if (thread_.joinable())
-      thread_.join();
-    termination_event.consume(); // Reset to zero
+    m_termination_event.notify();
+    if (m_thread.joinable())
+      m_thread.join();
+    m_termination_event.consume(); // Reset to zero
 
     return midi_in_impl::close_port();
   }
 
-  std::thread thread_;
-  eventfd_notifier termination_event{};
+  std::thread m_thread;
+  eventfd_notifier m_termination_event{};
 };
 
 class midi_in_impl_manual : public midi_in_impl
@@ -299,7 +301,7 @@ public:
   ~midi_in_impl_manual()
   {
     // Close a connection if it exists.
-    this->close_port();
+    midi_in_impl_manual::close_port();
 
     client_open_ = std::errc::not_connected;
   }
@@ -309,19 +311,21 @@ private:
   {
     if (configuration.timestamps == timestamp_mode::NoTimestamp)
     {
-      configuration.manual_poll(manual_poll_parameters{
-          .fds = {this->fds_.data(), this->fds_.size()},
-          .callback = [this](std::span<pollfd> fds) {
-            return do_read_events(&midi_in_impl::read_input_buffer, fds);
-          }});
+      configuration.manual_poll(
+          manual_poll_parameters{
+              .fds = {this->fds_.data(), this->fds_.size()},
+              .callback = [this](std::span<pollfd> fds) {
+        return do_read_events(&midi_in_impl::read_input_buffer, fds);
+      }});
     }
     else
     {
-      configuration.manual_poll(manual_poll_parameters{
-          .fds = {this->fds_.data(), this->fds_.size()},
-          .callback = [this](std::span<pollfd> fds) {
-            return do_read_events(&midi_in_impl::read_input_buffer_with_timestamps, fds);
-          }});
+      configuration.manual_poll(
+          manual_poll_parameters{
+              .fds = {this->fds_.data(), this->fds_.size()},
+              .callback = [this](std::span<pollfd> fds) {
+        return do_read_events(&midi_in_impl::read_input_buffer_with_timestamps, fds);
+      }});
     }
   }
 
@@ -335,7 +339,7 @@ private:
 };
 }
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 template <>
 inline std::unique_ptr<midi_in_api> make<alsa_raw_ump::midi_in_impl>(

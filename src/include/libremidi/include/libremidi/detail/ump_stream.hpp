@@ -2,10 +2,9 @@
 #include <libremidi/cmidi2.hpp>
 #include <libremidi/error.hpp>
 
-#include <cinttypes>
 #include <cstdint>
 
-namespace libremidi
+NAMESPACE_LIBREMIDI
 {
 enum class segmentation_error
 {

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef STDX_COMPILER_HPP
   #define STDX_COMPILER_HPP
 
@@ -63,6 +64,12 @@
     #define STDX_TRIVIALLY_RELOCATABLE
   #endif
 
+#if defined(__clang__) && defined(__has_warning)
+  #pragma clang diagnostic push
+  #if __has_warning("-Wdeprecated-declarations")
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  #endif
+#endif
 #endif // STDX_COMPILER_HPP
 
 
@@ -71,7 +78,7 @@
 
   #include <type_traits>
 
-namespace stdx {
+NAMESPACE_STDX {
 
 // Implementation of std::void_t for use with pre-C++17 compilers.
 //
@@ -180,7 +187,11 @@ using is_trivially_move_constructible = is_trivially_copyable<T>;
   #if defined(__cpp_lib_trivially_relocatable)
 using std::is_trivially_relocatable;
   #elif defined(__has_builtin)
-    #if __has_builtin(__is_trivially_relocatable)
+    #if __has_builtin(__builtin_is_cpp_trivially_relocatable)
+template <class T>
+struct is_trivially_relocatable : std::bool_constant<__builtin_is_cpp_trivially_relocatable(T)> { };
+      #define STDX_MUST_SPECIALIZE_IS_TRIVIALLY_RELOCATABLE
+    #elif __has_builtin(__is_trivially_relocatable)
 template <class T>
 struct is_trivially_relocatable : std::bool_constant<__is_trivially_relocatable(T)> { };
       #define STDX_MUST_SPECIALIZE_IS_TRIVIALLY_RELOCATABLE
@@ -214,7 +225,7 @@ struct is_trivially_relocatable : is_trivially_copyable<T> { };
   #include <cstring>
 
 
-namespace stdx {
+NAMESPACE_STDX {
 
 namespace detail {
 
@@ -374,7 +385,7 @@ struct is_bit_castable
   #include <atomic>
   #include <memory>
 
-namespace stdx {
+NAMESPACE_STDX {
 
 struct default_intrusive_reference_count;
 class default_intrusive_reference_control;
@@ -1151,7 +1162,7 @@ struct is_trivially_relocatable<intrusive_ptr<Y,G,D,P>> : std::true_type
   #include <cstddef>
   #include <atomic>
 
-namespace stdx {
+NAMESPACE_STDX {
 
 class string_ref;
 
@@ -1596,7 +1607,7 @@ public:
   #include <new>
 
 
-namespace stdx {
+NAMESPACE_STDX {
 
   #if __cplusplus >= 201703L
     #if defined(__cpp_lib_launder)
@@ -1638,7 +1649,7 @@ constexpr T* launder(T* p) noexcept
   #include <cassert>
 
 
-namespace stdx {
+NAMESPACE_STDX {
 
 class error;
 
@@ -1685,7 +1696,7 @@ constexpr auto construct_error_from_adl(Args&&... args) noexcept(
 
 } // end namespace stdx_adl
 
-namespace stdx {
+NAMESPACE_STDX {
 
 enum class dynamic_exception_errc
 {
@@ -2844,9 +2855,9 @@ struct is_error_code_enum<stdx::dynamic_exception_errc> : std::true_type
 
 #include <functional>
 
-namespace stdx {
+NAMESPACE_STDX {
 
-namespace {
+// namespace {
 
 inline const char* dynamic_exception_errc_str(unsigned ev) noexcept
 {
@@ -2924,7 +2935,7 @@ inline const std::error_category& dynamic_exception_category() noexcept
   return dynamic_exception_error_category_instance;
 }
 
-} // end anonymous namespace
+//} // end anonymous namespace
 
 inline std::error_code make_error_code(dynamic_exception_errc code) noexcept
 {
@@ -3143,9 +3154,9 @@ inline bool generic_error_domain::equivalent(const error& lhs, const error& rhs)
   return false;
 }
 
-namespace {
+// namespace {
 
-string_ref generic_error_code_message(std::errc code) noexcept
+inline string_ref generic_error_code_message(std::errc code) noexcept
 {
   switch (code)
   {
@@ -3312,7 +3323,7 @@ string_ref generic_error_code_message(std::errc code) noexcept
   }
 }
 
-} // end anonymous namespace
+// } // end anonymous namespace
 
 inline string_ref generic_error_domain::message(const error& e) const noexcept
 {
@@ -3406,9 +3417,9 @@ inline string_ref dynamic_exception_error_domain::message(const error& e) const 
   return string_ref{"Unknown dynamic exception"};
 }
 
-namespace {
+// namespace {
 
-std::errc dynamic_exception_code_to_generic_code(dynamic_exception_errc code) noexcept
+inline std::errc dynamic_exception_code_to_generic_code(dynamic_exception_errc code) noexcept
 {
   switch (code)
   {
@@ -3432,7 +3443,7 @@ std::errc dynamic_exception_code_to_generic_code(dynamic_exception_errc code) no
   return std::errc{};
 }
 
-} // end anonymous namespace
+// } // end anonymous namespace
 
 inline bool dynamic_exception_error_domain::equivalent(const error& lhs, const error& rhs) const noexcept
 {
@@ -3497,5 +3508,6 @@ inline string_ref dynamic_exception_code_error_domain::message(const error& e) c
 
 } // end namespace stdx
 
-
-
+#if defined(__clang__) && defined(__has_warning)
+#pragma clang diagnostic pop
+#endif

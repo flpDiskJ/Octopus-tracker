@@ -8,7 +8,7 @@
 
   #include <variant>
 
-namespace libremidi::pipewire
+NAMESPACE_LIBREMIDI::pipewire
 {
 
 // Create a PipeWire client which will be shared across objects
@@ -23,13 +23,10 @@ struct shared_handler : public libremidi::shared_context
     client = pipewire_client_open(v.data(), PipewireNoStartServer, &status);
     assert(client);
     assert(status == 0);
-    pipewire_set_process_callback(
-        client,
-        +[](pipewire_nframes_t cnt, void* ctx) -> int {
-          ((shared_handler*)ctx)->pipewire_callback(cnt);
-          return 0;
-        },
-        this);
+    pipewire_set_process_callback(client, +[](pipewire_nframes_t cnt, void* ctx) -> int {
+      ((shared_handler*)ctx)->pipewire_callback(cnt);
+      return 0;
+    }, this);
   }
 
   virtual void start_processing() override { pipewire_activate(client); }
@@ -74,10 +71,10 @@ struct shared_handler : public libremidi::shared_context
       {
         case in_callback_added:
           midiin_callbacks.push_back(
-              std::move(*std::get_if<libremidi::pipewire_callback>(&ev.payload)));
+              std::move(*get_if<libremidi::pipewire_callback>(&ev.payload)));
           break;
         case in_callback_removed: {
-          auto idx = *std::get_if<int64_t>(&ev.payload);
+          auto idx = *get_if<int64_t>(&ev.payload);
           for (auto it = midiin_callbacks.begin(); it != midiin_callbacks.end();)
           {
             if (it->token == idx)
@@ -94,10 +91,10 @@ struct shared_handler : public libremidi::shared_context
         }
         case out_callback_added:
           midiout_callbacks.push_back(
-              std::move(*std::get_if<libremidi::pipewire_callback>(&ev.payload)));
+              std::move(*get_if<libremidi::pipewire_callback>(&ev.payload)));
           break;
         case out_callback_removed:
-          auto idx = *std::get_if<int64_t>(&ev.payload);
+          auto idx = *get_if<int64_t>(&ev.payload);
           for (auto it = midiout_callbacks.begin(); it != midiout_callbacks.end();)
           {
             if (it->token == idx)
@@ -141,7 +138,7 @@ struct shared_handler : public libremidi::shared_context
   struct event
   {
     event_type type;
-    std::variant<libremidi::pipewire_callback, int64_t> payload;
+    libremidi_variant_alias::variant<libremidi::pipewire_callback, int64_t> payload;
   };
 
   boost::lockfree::spsc_queue<event> events{16};
